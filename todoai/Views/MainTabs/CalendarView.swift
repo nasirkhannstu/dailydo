@@ -20,6 +20,7 @@ struct CalendarView: View {
     @State private var pickerDate = Date()
     @State private var showingFilterSheet = false
     @State private var focusedTodo: TodoItem? = nil
+    @State private var selectedTodo: TodoItem? = nil
 
     private let calendar = Calendar.current
 
@@ -69,69 +70,83 @@ struct CalendarView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Month/Year Header
-                HStack {
-                    Button {
-                        withAnimation {
-                            currentWeekOffset -= 1
-                        }
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.title2)
-                            .foregroundStyle(.blue)
-                    }
-
-                    Spacer()
-
-                    Button {
-                        pickerDate = currentWeekDates[3] // Set to middle of current week
-                        showingMonthYearPicker = true
-                    } label: {
-                        HStack(spacing: 4) {
-                            Text(monthYearText)
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                            Image(systemName: "chevron.down")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .buttonStyle(.plain)
-
-                    Spacer()
-
-                    Button {
-                        withAnimation {
-                            currentWeekOffset += 1
-                        }
-                    } label: {
-                        Image(systemName: "chevron.right")
-                            .font(.title2)
-                            .foregroundStyle(.blue)
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 12)
-                .background(Color(.systemBackground))
-
-                // Compact Week View (No Scroll)
-                HStack(spacing: 0) {
-                    ForEach(currentWeekDates, id: \.self) { date in
-                        DayButton(
-                            date: date,
-                            isSelected: calendar.isDate(date, inSameDayAs: selectedDate),
-                            isToday: calendar.isDateInToday(date),
-                            taskCount: taskCount(for: date)
-                        ) {
+                // Month/Year Header with Gradient Background
+                VStack(spacing: 8) {
+                    HStack {
+                        Button {
                             withAnimation {
-                                selectedDate = date
+                                currentWeekOffset -= 1
+                            }
+                        } label: {
+                            Image(systemName: "chevron.left")
+                                .font(.title3)
+                                .foregroundStyle(.white)
+                                .frame(width: 32, height: 32)
+                        }
+
+                        Spacer()
+
+                        Button {
+                            pickerDate = currentWeekDates[3] // Set to middle of current week
+                            showingMonthYearPicker = true
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text(monthYearText)
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.white)
+                                Image(systemName: "chevron.down")
+                                    .font(.caption)
+                                    .foregroundStyle(.white.opacity(0.8))
                             }
                         }
-                        .frame(maxWidth: .infinity)
+                        .buttonStyle(.plain)
+
+                        Spacer()
+
+                        Button {
+                            withAnimation {
+                                currentWeekOffset += 1
+                            }
+                        } label: {
+                            Image(systemName: "chevron.right")
+                                .font(.title3)
+                                .foregroundStyle(.white)
+                                .frame(width: 32, height: 32)
+                        }
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
+
+                    // Compact Week View
+                    HStack(spacing: 0) {
+                        ForEach(currentWeekDates, id: \.self) { date in
+                            DayButton(
+                                date: date,
+                                isSelected: calendar.isDate(date, inSameDayAs: selectedDate),
+                                isToday: calendar.isDateInToday(date),
+                                taskCount: taskCount(for: date)
+                            ) {
+                                withAnimation {
+                                    selectedDate = date
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                    }
+                    .padding(.vertical, 8)
+                    .padding(.bottom, 4)
                 }
-                .padding(.vertical, 12)
-                .background(Color(.systemGray6))
+                .background(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(red: 0.6, green: 0.4, blue: 0.9),
+                            Color(red: 0.5, green: 0.4, blue: 0.85)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
                 .gesture(
                     DragGesture(minimumDistance: 50)
                         .onEnded { value in
@@ -210,17 +225,25 @@ struct CalendarView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 60)
                         .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
                     } else {
                         ForEach(todosForSelectedDate) { todo in
-                            TodoCalendarRow(todo: todo) {
+                            TodoCalendarRow(todo: todo, onFocus: {
                                 print("🔵 Focus button tapped for: \(todo.title)")
                                 focusedTodo = todo
                                 print("🔵 Set focusedTodo to: \(focusedTodo?.title ?? "nil")")
-                            }
+                            }, onTap: {
+                                selectedTodo = todo
+                            })
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                         }
                     }
                 }
                 .listStyle(.plain)
+                .background(Color(.systemGray6))
+                .scrollContentBackground(.hidden)
             }
             .navigationBarHidden(true)
             .sheet(isPresented: $showingMonthYearPicker) {
@@ -247,6 +270,9 @@ struct CalendarView: View {
                     print("🔵 FocusView dismissed")
                     focusedTodo = nil
                 }
+            }
+            .navigationDestination(item: $selectedTodo) { todo in
+                TodoDetailView(todo: todo)
             }
         }
     }
@@ -286,32 +312,33 @@ struct DayButton: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 4) {
+            VStack(spacing: 3) {
                 Text(dayName)
                     .font(.caption2)
-                    .foregroundStyle(isToday ? .blue : .secondary)
+                    .fontWeight(.medium)
+                    .foregroundStyle(isSelected ? .white : .white.opacity(0.7))
 
                 Text("\(calendar.component(.day, from: date))")
-                    .font(.system(size: 16, weight: isSelected ? .bold : .regular))
-                    .foregroundStyle(isSelected ? .white : (isToday ? .blue : .primary))
-                    .frame(width: 40, height: 40)
+                    .font(.system(size: 15, weight: isSelected ? .bold : .semibold))
+                    .foregroundStyle(isSelected ? Color(red: 0.5, green: 0.4, blue: 0.85) : .white)
+                    .frame(width: 36, height: 36)
                     .background(
                         Circle()
-                            .fill(isSelected ? Color.blue : Color.clear)
+                            .fill(isSelected ? Color.white : (isToday ? Color.white.opacity(0.2) : Color.clear))
                     )
                     .overlay(
                         Circle()
-                            .stroke(isToday && !isSelected ? Color.blue : Color.clear, lineWidth: 2)
+                            .stroke(isToday && !isSelected ? Color.white.opacity(0.5) : Color.clear, lineWidth: 1.5)
                     )
 
                 if taskCount > 0 {
                     Circle()
-                        .fill(isSelected ? .white : .blue)
-                        .frame(width: 5, height: 5)
+                        .fill(isSelected ? .white : .white.opacity(0.8))
+                        .frame(width: 4, height: 4)
                 } else {
                     Circle()
                         .fill(.clear)
-                        .frame(width: 5, height: 5)
+                        .frame(width: 4, height: 4)
                 }
             }
             .frame(maxWidth: .infinity)
@@ -331,32 +358,28 @@ struct DayButton: View {
 struct TodoCalendarRow: View {
     @Bindable var todo: TodoItem
     let onFocus: () -> Void
+    let onTap: () -> Void
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
-            Button {
-                todo.toggleCompletion()
-            } label: {
-                Image(systemName: todo.completed ? "checkmark.circle.fill" : "circle")
-                    .font(.title3)
-                    .foregroundStyle(todo.completed ? .green : .gray)
-            }
-            .buttonStyle(.plain)
+        Button {
+            onTap()
+        } label: {
+            HStack(alignment: .center, spacing: 12) {
+                Button {
+                    todo.toggleCompletion()
+                } label: {
+                    Image(systemName: todo.completed ? "checkmark.circle.fill" : "circle")
+                        .font(.title3)
+                        .foregroundStyle(todo.completed ? .green : .gray)
+                }
+                .buttonStyle(.plain)
 
-            VStack(alignment: .leading, spacing: 4) {
-                NavigationLink(destination: TodoDetailView(todo: todo)) {
+                HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(todo.title)
                             .font(.body)
                             .strikethrough(todo.completed)
                             .foregroundStyle(todo.completed ? .secondary : .primary)
-
-                        if let description = todo.itemDescription {
-                            Text(description)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(2)
-                        }
 
                         HStack(spacing: 8) {
                             if let subtype = todo.subtype {
@@ -407,19 +430,28 @@ struct TodoCalendarRow: View {
                             }
                         }
                     }
+
+                    Spacer()
+
+                    if todo.starred {
+                        Image(systemName: "star.fill")
+                            .foregroundStyle(.yellow)
+                            .font(.caption)
+                    }
+
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
-                .buttonStyle(.plain)
             }
-
-            Spacer()
-
-            if todo.starred {
-                Image(systemName: "star.fill")
-                    .foregroundStyle(.yellow)
-                    .font(.caption)
-            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Color.white)
+            .cornerRadius(16)
+            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+            .contentShape(RoundedRectangle(cornerRadius: 16))
         }
-        .padding(.vertical, 4)
+        .buttonStyle(.plain)
     }
 }
 

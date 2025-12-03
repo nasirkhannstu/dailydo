@@ -19,6 +19,11 @@ struct ListsView: View {
     @State private var showingAddList = false
     @State private var newListName = ""
 
+    let columns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12)
+    ]
+
     var body: some View {
         NavigationStack {
             Group {
@@ -29,30 +34,19 @@ struct ListsView: View {
                         description: Text("Create your first list to get started")
                     )
                 } else {
-                    List {
-                        ForEach(lists) { list in
-                            NavigationLink(destination: SubtypeDetailView(subtype: list)) {
-                                HStack {
-                                    Image(systemName: list.icon)
-                                        .foregroundStyle(.orange)
-                                    VStack(alignment: .leading) {
-                                        Text(list.name)
-                                            .font(.headline)
-                                        Text("\(list.incompleteTodosCount) active")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    Spacer()
-                                    if list.completionPercentage > 0 {
-                                        Text("\(Int(list.completionPercentage))%")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
+                    ScrollView {
+                        LazyVGrid(columns: columns, spacing: 12) {
+                            ForEach(lists) { list in
+                                NavigationLink(destination: SubtypeDetailView(subtype: list)) {
+                                    ListCardView(list: list)
                                 }
+                                .buttonStyle(.plain)
                             }
                         }
-                        .onDelete(perform: deleteLists)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
                     }
+                    .background(Color(.systemGray6))
                 }
             }
             .navigationTitle("Lists")
@@ -107,6 +101,58 @@ struct ListsView: View {
         for index in offsets {
             modelContext.delete(lists[index])
         }
+    }
+}
+
+// MARK: - List Card View
+
+struct ListCardView: View {
+    let list: Subtype
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: list.icon)
+                    .font(.title2)
+                    .foregroundStyle(.orange)
+                    .frame(width: 44, height: 44)
+                    .background(
+                        Circle()
+                            .fill(Color.orange.opacity(0.1))
+                    )
+
+                Spacer()
+
+                if list.completionPercentage > 0 {
+                    Text("\(Int(list.completionPercentage))%")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.orange)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(Color.orange.opacity(0.1))
+                        )
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(list.name)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                    .lineLimit(2)
+
+                Text("\(list.incompleteTodosCount) active")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white)
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
     }
 }
 

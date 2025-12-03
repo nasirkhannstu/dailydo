@@ -10,6 +10,7 @@ import SwiftData
 
 struct SubtypeDetailView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     @Bindable var subtype: Subtype
 
     @State private var showingAddTodo = false
@@ -27,6 +28,7 @@ struct SubtypeDetailView: View {
     @State private var editName = ""
     @State private var editIcon = ""
     @State private var editShowInCalendar = false
+    @State private var showingDeleteAlert = false
 
     var incompleteTodos: [TodoItem] {
         subtype.todos.filter { !$0.completed }.sorted(by: { $0.createdDate > $1.createdDate })
@@ -175,6 +177,17 @@ struct SubtypeDetailView: View {
 
                         Toggle("Show in Calendar", isOn: $editShowInCalendar)
                     }
+
+                    Section {
+                        Button(role: .destructive) {
+                            showingDeleteAlert = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "trash")
+                                Text("Delete \(subtype.type.displayName)")
+                            }
+                        }
+                    }
                 }
                 .navigationTitle("Edit \(subtype.type.displayName)")
                 .navigationBarTitleDisplayMode(.inline)
@@ -190,6 +203,14 @@ struct SubtypeDetailView: View {
                         }
                         .disabled(editName.isEmpty)
                     }
+                }
+                .alert("Delete \(subtype.type.displayName)?", isPresented: $showingDeleteAlert) {
+                    Button("Cancel", role: .cancel) { }
+                    Button("Delete", role: .destructive) {
+                        deleteSubtype()
+                    }
+                } message: {
+                    Text("This will delete the \(subtype.type.displayName.lowercased()) and all its tasks. This action cannot be undone.")
                 }
             }
             .presentationDetents([.medium])
@@ -256,6 +277,12 @@ struct SubtypeDetailView: View {
         subtype.showInCalendar = editShowInCalendar
         showingEditSubtype = false
     }
+
+    private func deleteSubtype() {
+        showingEditSubtype = false
+        modelContext.delete(subtype)
+        dismiss()
+    }
 }
 
 struct TodoRowView: View {
@@ -263,7 +290,7 @@ struct TodoRowView: View {
     @Bindable var todo: TodoItem
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .center, spacing: 12) {
             // Completion Button
             Button {
                 handleCompletion()

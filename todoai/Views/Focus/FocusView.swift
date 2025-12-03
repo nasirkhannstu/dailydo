@@ -18,7 +18,6 @@ struct FocusView: View {
     @State private var elapsedTime: TimeInterval = 0
     @State private var timer: Timer?
     @State private var isPulsing = false
-    @State private var showingCompletion = false
 
     var currentTodo: TodoItem? {
         guard currentTodoIndex >= 0 && currentTodoIndex < allTodosForDay.count else {
@@ -27,73 +26,22 @@ struct FocusView: View {
         return allTodosForDay[currentTodoIndex]
     }
 
-    var nextActiveTodoIndex: Int? {
-        // Find the next active (non-completed) todo after the current index
-        print("🔍 Finding next active todo from index \(currentTodoIndex)")
-        print("🔍 Total todos in array: \(allTodosForDay.count)")
-
-        for index in (currentTodoIndex + 1)..<allTodosForDay.count {
-            let todo = allTodosForDay[index]
-            print("🔍 Checking index \(index): \(todo.title) - completed: \(todo.completed)")
-            if !todo.completed {
-                print("🔍 Found next active todo at index \(index)")
-                return index
-            }
-        }
-        print("🔍 No more active todos found")
-        return nil
-    }
-
-    var hasNextTodo: Bool {
-        nextActiveTodoIndex != nil
-    }
-
     var body: some View {
         ZStack {
-            // Always show a background color first
-            Color.purple
-                .ignoresSafeArea()
+            // Gradient Background
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    Color(red: 0.6, green: 0.4, blue: 0.9),
+                    Color(red: 0.4, green: 0.5, blue: 1.0),
+                    Color(red: 0.5, green: 0.4, blue: 0.8)
+                ]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
 
             if currentTodoIndex >= 0 && currentTodoIndex < allTodosForDay.count {
-                let todo = allTodosForDay[currentTodoIndex]
-                if !todo.completed {
-                    focusContent(for: todo)
-                } else {
-                    // Current todo is completed, show completion screen
-                    VStack(spacing: 20) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 80))
-                            .foregroundStyle(.green)
-                        Text("Task Completed!")
-                            .font(.title)
-                            .foregroundStyle(.white)
-                    }
-                    .onAppear {
-                        // Auto-dismiss after showing completion
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                            onDismiss()
-                        }
-                    }
-                }
-            } else {
-                VStack(spacing: 20) {
-                    Text("All tasks completed!")
-                        .font(.title)
-                        .foregroundStyle(.white)
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundStyle(.green)
-                    Button("Close") {
-                        onDismiss()
-                    }
-                    .foregroundStyle(.white)
-                    .padding()
-                    .background(Color.blue)
-                    .cornerRadius(8)
-                }
-                .onAppear {
-                    print("⚠️ WARNING: Index \(currentTodoIndex) out of bounds (count: \(allTodosForDay.count))")
-                }
+                focusContent(for: allTodosForDay[currentTodoIndex])
             }
         }
         .onAppear {
@@ -238,11 +186,11 @@ struct FocusView: View {
                     completeTodo()
                 } label: {
                     HStack(spacing: 12) {
-                        Text("Done")
+                        Image(systemName: "checkmark")
                             .font(.title3)
                             .fontWeight(.semibold)
 
-                        Image(systemName: hasNextTodo ? "arrow.right" : "checkmark")
+                        Text("Complete Task")
                             .font(.title3)
                             .fontWeight(.semibold)
                     }
@@ -297,8 +245,6 @@ struct FocusView: View {
         let todo = allTodosForDay[currentTodoIndex]
 
         print("✅ Completing todo: \(todo.title)")
-        print("✅ Current index: \(currentTodoIndex)")
-        print("✅ Array count: \(allTodosForDay.count)")
 
         stopTimer()
 
@@ -330,58 +276,17 @@ struct FocusView: View {
             }
         }
 
-        // Mark current todo as complete using modelContext
+        // Mark current todo as complete
         todo.completed = true
         todo.completedDate = Date()
-        print("✅ Marked as completed: \(todo.completed)")
+        print("✅ Marked as completed")
 
         // Save current context to persist the completion
         try? modelContext.save()
 
-        // Move to next active task or dismiss
-        if let nextIndex = nextActiveTodoIndex {
-            print("✅ Next index calculated: \(nextIndex)")
-            print("✅ Array count: \(allTodosForDay.count)")
-
-            // Validate the next index before using it
-            guard nextIndex >= 0 && nextIndex < allTodosForDay.count else {
-                print("❌ ERROR: nextIndex \(nextIndex) is out of bounds (count: \(allTodosForDay.count))")
-                print("❌ Dismissing instead of crashing")
-                onDismiss()
-                return
-            }
-
-            // Double-check the todo at that index isn't completed
-            let nextTodo = allTodosForDay[nextIndex]
-            guard !nextTodo.completed else {
-                print("❌ ERROR: Next todo at index \(nextIndex) is already completed!")
-                print("❌ Dismissing instead")
-                onDismiss()
-                return
-            }
-
-            // Update to next active todo
-            withAnimation {
-                currentTodoIndex = nextIndex
-                print("✅ Set currentTodoIndex to: \(currentTodoIndex)")
-                elapsedTime = 0
-                isPulsing = false
-                startTimer()
-                // Re-trigger pulsing animation
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    withAnimation {
-                        isPulsing = true
-                    }
-                }
-            }
-        } else {
-            // No more active tasks, show completion and dismiss
-            print("✅ No more tasks, dismissing")
-            showingCompletion = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                onDismiss()
-            }
-        }
+        // Dismiss immediately
+        print("✅ Dismissing")
+        onDismiss()
     }
 }
 

@@ -18,6 +18,7 @@ struct HabitsView: View {
 
     @State private var showingAddHabit = false
     @State private var newHabitName = ""
+    @State private var selectedHabit: Subtype?
 
     var body: some View {
         NavigationStack {
@@ -31,29 +32,25 @@ struct HabitsView: View {
                 } else {
                     List {
                         ForEach(habits) { habit in
-                            NavigationLink(destination: SubtypeDetailView(subtype: habit)) {
-                                HStack {
-                                    Image(systemName: habit.icon)
-                                        .foregroundStyle(.blue)
-                                    VStack(alignment: .leading) {
-                                        Text(habit.name)
-                                            .font(.headline)
-                                        Text("\(habit.incompleteTodosCount) active")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    Spacer()
-                                    if habit.completionPercentage > 0 {
-                                        Text("\(Int(habit.completionPercentage))%")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                }
+                            Button {
+                                selectedHabit = habit
+                            } label: {
+                                HabitCardRow(habit: habit)
                             }
+                            .buttonStyle(.plain)
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                         }
                         .onDelete(perform: deleteHabits)
                     }
+                    .listStyle(.plain)
+                    .background(Color(.systemGray6))
+                    .scrollContentBackground(.hidden)
                 }
+            }
+            .navigationDestination(item: $selectedHabit) { habit in
+                SubtypeDetailView(subtype: habit)
             }
             .navigationTitle("Habits")
             .toolbar {
@@ -107,6 +104,62 @@ struct HabitsView: View {
         for index in offsets {
             modelContext.delete(habits[index])
         }
+    }
+}
+
+// MARK: - Habit Card Row
+
+struct HabitCardRow: View {
+    let habit: Subtype
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            Image(systemName: habit.icon)
+                .font(.title2)
+                .foregroundStyle(.blue)
+                .frame(width: 44, height: 44)
+                .background(
+                    Circle()
+                        .fill(Color.blue.opacity(0.1))
+                )
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(habit.name)
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.primary)
+
+                Text("\(habit.incompleteTodosCount) active")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            if habit.completionPercentage > 0 {
+                Text("\(Int(habit.completionPercentage))%")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.blue)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(Color.blue.opacity(0.1))
+                    )
+            }
+
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white)
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .contentShape(RoundedRectangle(cornerRadius: 16))
     }
 }
 
