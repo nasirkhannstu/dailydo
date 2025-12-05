@@ -256,7 +256,16 @@ struct CalendarView: View {
                     }
                 }
                 .listStyle(.plain)
-                .background(Color(.systemGray6))
+                .background(
+                    LinearGradient(
+                        colors: [
+                            Color.blue.opacity(0.05),
+                            Color.white
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
                 .scrollContentBackground(.hidden)
             }
             .navigationBarHidden(true)
@@ -510,7 +519,90 @@ struct TodoCalendarRow: View {
     let onFocus: () -> Void
     let onTap: () -> Void
 
+    var isHabit: Bool {
+        todo.subtype?.type == .habit
+    }
+
     var body: some View {
+        if isHabit {
+            // Simple flat design for Habits
+            habitRow
+        } else {
+            // Card design for Plans and Lists
+            planListRow
+        }
+    }
+
+    // MARK: - Habit Row (Unified with Left Bar)
+    private var habitRow: some View {
+        HStack(spacing: 0) {
+            // Continuous left bar (full height, no gaps)
+            Rectangle()
+                .fill(Color.blue.opacity(0.1))
+                .frame(width: 1)
+
+            // Space between line and card
+            Spacer()
+                .frame(width: 12)
+
+            // White card with content
+            Button {
+                onTap()
+            } label: {
+                HStack(spacing: 0) {
+                    // Time with margin
+                    if let dueTime = todo.dueTime {
+                        Text(timeString(from: dueTime))
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundStyle(todo.completed ? .secondary : .primary)
+                            .frame(width: 40, alignment: .leading)
+                            .padding(.leading, 12)
+                    } else {
+                        Spacer()
+                            .frame(width: 52)
+                    }
+
+                    // Title with margin
+                    Text(todo.title)
+                        .font(.subheadline)
+                        .strikethrough(todo.completed)
+                        .foregroundStyle(todo.completed ? .secondary : .primary)
+                        .lineLimit(1)
+                        .padding(.leading, 6)
+
+                    Spacer()
+
+                    // Circle checkbox with margin
+                    Button {
+                        todo.toggleCompletion()
+                    } label: {
+                        Image(systemName: todo.completed ? "checkmark.circle.fill" : "circle")
+                            .font(.title3)
+                            .foregroundStyle(todo.completed ? .green : .gray)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.trailing, 12)
+                }
+                .padding(.vertical, 10)
+                .background(Color.white)
+                .cornerRadius(10)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.blue.opacity(0.1), lineWidth: 1)
+                )
+                .shadow(color: Color(.systemGray4).opacity(0.2), radius: 2, x: 0, y: 1)
+            }
+            .buttonStyle(.plain)
+            .padding(.vertical, 6)
+        }
+        .listRowInsets(EdgeInsets(top: 0, leading: 32, bottom: 0, trailing: 16))
+        .listRowSeparator(.hidden)
+        .listRowBackground(Color.clear)
+    }
+
+    // MARK: - Plan/List Row (Card)
+    private var planListRow: some View {
         Button {
             onTap()
         } label: {
@@ -530,7 +622,7 @@ struct TodoCalendarRow: View {
                     }
                     .frame(width: 60)
                     .frame(maxHeight: .infinity)
-                    .background(Color(.systemGray4))
+                    .background(Color.blue.opacity(0.08))
                 } else {
                     VStack(spacing: 2) {
                         Text("")
@@ -540,7 +632,7 @@ struct TodoCalendarRow: View {
                     }
                     .frame(width: 60)
                     .frame(maxHeight: .infinity)
-                    .background(Color(.systemGray4))
+                    .background(Color.blue.opacity(0.08))
                 }
 
                 // Title and details in the middle
@@ -577,6 +669,7 @@ struct TodoCalendarRow: View {
                                 .font(.caption2)
                         }
 
+                        // Show Focus button only for Plans and Lists (not Habits)
                         if !todo.completed {
                             Button {
                                 onFocus()
@@ -614,6 +707,10 @@ struct TodoCalendarRow: View {
             }
             .background(Color.white)
             .cornerRadius(16)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color.blue.opacity(0.1), lineWidth: 1)
+            )
             .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
             .contentShape(RoundedRectangle(cornerRadius: 16))
         }
