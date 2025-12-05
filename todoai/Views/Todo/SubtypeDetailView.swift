@@ -16,9 +16,9 @@ struct SubtypeDetailView: View {
     @State private var showingAddTodo = false
     @State private var newTodoTitle = ""
     @State private var newTodoDescription = ""
-    @State private var newTodoDueDate: Date?
-    @State private var showDueDatePicker = false
+    @State private var newTodoDueDate: Date = Date()
     @State private var enableReminder = false
+    @State private var showInCalendar = true
     @State private var recurringType: RecurringType = .none
     @State private var notificationService = NotificationService.shared
 
@@ -29,6 +29,8 @@ struct SubtypeDetailView: View {
     @State private var editIcon = ""
     @State private var editShowInCalendar = false
     @State private var showingDeleteAlert = false
+    @State private var showingCalendarToggleAlert = false
+    @State private var pendingCalendarValue = false
 
     var incompleteTodos: [TodoItem] {
         subtype.todos.filter { !$0.completed }.sorted(by: { $0.createdDate > $1.createdDate })
@@ -36,6 +38,17 @@ struct SubtypeDetailView: View {
 
     var completedTodos: [TodoItem] {
         subtype.todos.filter { $0.completed }.sorted(by: { $0.completedDate ?? $0.createdDate > $1.completedDate ?? $1.createdDate })
+    }
+
+    var fabColor: Color {
+        switch subtype.type {
+        case .habit:
+            return .blue
+        case .plan:
+            return .green
+        case .list:
+            return .orange
+        }
     }
 
     var body: some View {
@@ -87,13 +100,42 @@ struct SubtypeDetailView: View {
                     Text("Edit")
                 }
             }
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    showingAddTodo = true
-                } label: {
-                    Label("Add Todo", systemImage: "plus")
+
+            ToolbarItem(placement: .navigationBarTrailing) {
+                HStack(spacing: 4) {
+                    Image(systemName: "calendar")
+                        .font(.caption)
+                        .foregroundStyle(.blue)
+
+                    Toggle("", isOn: Binding(
+                        get: { subtype.showInCalendar },
+                        set: { newValue in
+                            pendingCalendarValue = newValue
+                            showingCalendarToggleAlert = true
+                        }
+                    ))
+                    .labelsHidden()
+                    .controlSize(.mini)
                 }
             }
+        }
+        .overlay(alignment: .bottomTrailing) {
+            Button {
+                showingAddTodo = true
+            } label: {
+                Image(systemName: "plus")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
+                    .frame(width: 56, height: 56)
+                    .background(
+                        Circle()
+                            .fill(fabColor.gradient)
+                    )
+                    .shadow(color: fabColor.opacity(0.4), radius: 8, x: 0, y: 4)
+            }
+            .padding(.trailing, 20)
+            .padding(.bottom, 20)
         }
         .sheet(isPresented: $showingAddTodo) {
             NavigationStack {
@@ -104,22 +146,20 @@ struct SubtypeDetailView: View {
                             .lineLimit(3...6)
                     }
 
-                    Section {
-                        Toggle("Set Due Date", isOn: $showDueDatePicker)
+                    Section("Due Date & Time") {
+                        DatePicker(
+                            "Date",
+                            selection: $newTodoDueDate,
+                            displayedComponents: [.date]
+                        )
 
-                        if showDueDatePicker {
-                            DatePicker(
-                                "Due Date",
-                                selection: Binding(
-                                    get: { newTodoDueDate ?? Date() },
-                                    set: { newTodoDueDate = $0 }
-                                ),
-                                displayedComponents: [.date, .hourAndMinute]
-                            )
+                        DatePicker(
+                            "Time",
+                            selection: $newTodoDueDate,
+                            displayedComponents: [.hourAndMinute]
+                        )
 
-                            Toggle("Set Reminder", isOn: $enableReminder)
-                                .disabled(!showDueDatePicker)
-                        }
+                        Toggle("Set Reminder", isOn: $enableReminder)
                     }
 
                     Section("Repeat") {
@@ -131,6 +171,10 @@ struct SubtypeDetailView: View {
                             Text("Yearly").tag(RecurringType.yearly)
                         }
                         .pickerStyle(.menu)
+                    }
+
+                    Section("Display") {
+                        Toggle("Show in Calendar", isOn: $showInCalendar)
                     }
                 }
                 .navigationTitle("New Task")
@@ -210,7 +254,7 @@ struct SubtypeDetailView: View {
                         deleteSubtype()
                     }
                 } message: {
-                    Text("This will delete the \(subtype.type.displayName.lowercased()) and all its tasks. This action cannot be undone.")
+                    Text("This will permanently delete this \(subtype.type.displayName.lowercased()) and all \(subtype.todos.count) task\(subtype.todos.count == 1 ? "" : "s"). This action cannot be undone.")
                 }
             }
             .presentationDetents([.medium])
@@ -218,14 +262,26 @@ struct SubtypeDetailView: View {
                 IconPickerView(selectedIcon: $editIcon)
             }
         }
+        .alert("Update Calendar Visibility?", isPresented: $showingCalendarToggleAlert) {
+            Button("Cancel", role: .cancel) {
+                // Toggle will revert to original value
+            }
+            Button(pendingCalendarValue ? "Show All" : "Hide All") {
+                updateAllTodosCalendarVisibility(pendingCalendarValue)
+            }
+        } message: {
+            Text("This will \(pendingCalendarValue ? "show" : "hide") all \(subtype.todos.count) tasks in this \(subtype.type.displayName.lowercased()) \(pendingCalendarValue ? "in" : "from") the calendar view.")
+        }
     }
 
     private func addTodo() {
         let newTodo = TodoItem(
             title: newTodoTitle,
             itemDescription: newTodoDescription.isEmpty ? nil : newTodoDescription,
-            dueDate: showDueDatePicker ? newTodoDueDate : nil,
-            reminderEnabled: enableReminder && showDueDatePicker,
+            dueDate: newTodoDueDate,
+            dueTime: newTodoDueDate,
+            reminderEnabled: enableReminder,
+            showInCalendar: showInCalendar,
             recurringType: recurringType,
             sortOrder: subtype.todos.count,
             subtype: subtype
@@ -233,7 +289,7 @@ struct SubtypeDetailView: View {
         modelContext.insert(newTodo)
 
         // Schedule notification if enabled
-        if enableReminder && showDueDatePicker {
+        if enableReminder {
             Task {
                 let authorized = await notificationService.requestAuthorization()
                 if authorized {
@@ -251,9 +307,9 @@ struct SubtypeDetailView: View {
         showingAddTodo = false
         newTodoTitle = ""
         newTodoDescription = ""
-        newTodoDueDate = nil
-        showDueDatePicker = false
+        newTodoDueDate = Date()
         enableReminder = false
+        showInCalendar = true
         recurringType = .none
     }
 
@@ -275,6 +331,14 @@ struct SubtypeDetailView: View {
             subtype.icon = editIcon
         }
         subtype.showInCalendar = editShowInCalendar
+
+        // Explicitly save the context to ensure changes persist
+        do {
+            try modelContext.save()
+        } catch {
+            print("Error saving subtype changes: \(error)")
+        }
+
         showingEditSubtype = false
     }
 
@@ -282,6 +346,23 @@ struct SubtypeDetailView: View {
         showingEditSubtype = false
         modelContext.delete(subtype)
         dismiss()
+    }
+
+    private func updateAllTodosCalendarVisibility(_ value: Bool) {
+        // Update the subtype's showInCalendar property
+        subtype.showInCalendar = value
+
+        // Update all todos in this subtype
+        for todo in subtype.todos {
+            todo.showInCalendar = value
+        }
+
+        // Explicitly save the context
+        do {
+            try modelContext.save()
+        } catch {
+            print("Error updating calendar visibility: \(error)")
+        }
     }
 }
 
@@ -376,6 +457,7 @@ struct TodoRowView: View {
                     dueTime: todo.dueTime,
                     starred: todo.starred,
                     reminderEnabled: todo.reminderEnabled,
+                    showInCalendar: todo.showInCalendar,
                     recurringType: todo.recurringType,
                     aiGenerated: todo.aiGenerated,
                     colorID: todo.colorID,

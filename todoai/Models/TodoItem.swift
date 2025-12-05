@@ -18,6 +18,7 @@ class TodoItem {
     var completed: Bool
     var starred: Bool
     var reminderEnabled: Bool
+    var showInCalendar: Bool
     var recurringType: RecurringType
     var aiGenerated: Bool
     var colorID: String?
@@ -39,6 +40,7 @@ class TodoItem {
         completed: Bool = false,
         starred: Bool = false,
         reminderEnabled: Bool = false,
+        showInCalendar: Bool = true,
         recurringType: RecurringType = .none,
         aiGenerated: Bool = false,
         colorID: String? = nil,
@@ -58,6 +60,7 @@ class TodoItem {
         self.completed = completed
         self.starred = starred
         self.reminderEnabled = reminderEnabled
+        self.showInCalendar = showInCalendar
         self.recurringType = recurringType
         self.aiGenerated = aiGenerated
         self.colorID = colorID

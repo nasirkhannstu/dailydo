@@ -19,6 +19,8 @@ struct HabitsView: View {
     @State private var showingAddHabit = false
     @State private var newHabitName = ""
     @State private var selectedHabit: Subtype?
+    @State private var habitToDelete: Subtype?
+    @State private var showingDeleteAlert = false
 
     var body: some View {
         NavigationStack {
@@ -53,14 +55,23 @@ struct HabitsView: View {
                 SubtypeDetailView(subtype: habit)
             }
             .navigationTitle("Habits")
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showingAddHabit = true
-                    } label: {
-                        Label("Add Habit", systemImage: "plus")
-                    }
+            .overlay(alignment: .bottomTrailing) {
+                Button {
+                    showingAddHabit = true
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.white)
+                        .frame(width: 56, height: 56)
+                        .background(
+                            Circle()
+                                .fill(Color.blue.gradient)
+                        )
+                        .shadow(color: Color.blue.opacity(0.4), radius: 8, x: 0, y: 4)
                 }
+                .padding(.trailing, 20)
+                .padding(.bottom, 20)
             }
             .sheet(isPresented: $showingAddHabit) {
                 NavigationStack {
@@ -86,6 +97,21 @@ struct HabitsView: View {
                 }
                 .presentationDetents([.medium])
             }
+            .alert("Delete Habit?", isPresented: $showingDeleteAlert) {
+                Button("Cancel", role: .cancel) {
+                    habitToDelete = nil
+                }
+                Button("Delete", role: .destructive) {
+                    if let habit = habitToDelete {
+                        modelContext.delete(habit)
+                        habitToDelete = nil
+                    }
+                }
+            } message: {
+                if let habit = habitToDelete {
+                    Text("This will permanently delete this habit and all \(habit.todos.count) task\(habit.todos.count == 1 ? "" : "s"). This action cannot be undone.")
+                }
+            }
         }
     }
 
@@ -101,8 +127,9 @@ struct HabitsView: View {
     }
 
     private func deleteHabits(at offsets: IndexSet) {
-        for index in offsets {
-            modelContext.delete(habits[index])
+        if let index = offsets.first {
+            habitToDelete = habits[index]
+            showingDeleteAlert = true
         }
     }
 }

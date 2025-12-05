@@ -50,14 +50,23 @@ struct ListsView: View {
                 }
             }
             .navigationTitle("Lists")
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showingAddList = true
-                    } label: {
-                        Label("Add List", systemImage: "plus")
-                    }
+            .overlay(alignment: .bottomTrailing) {
+                Button {
+                    showingAddList = true
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.white)
+                        .frame(width: 56, height: 56)
+                        .background(
+                            Circle()
+                                .fill(Color.orange.gradient)
+                        )
+                        .shadow(color: Color.orange.opacity(0.4), radius: 8, x: 0, y: 4)
                 }
+                .padding(.trailing, 20)
+                .padding(.bottom, 20)
             }
             .sheet(isPresented: $showingAddList) {
                 NavigationStack {

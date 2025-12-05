@@ -11,6 +11,7 @@ import SwiftData
 struct CalendarView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allTodos: [TodoItem]
+    @Query private var allSubtypes: [Subtype]
 
     @State private var selectedDate = Date()
     @State private var currentWeekOffset = 0
@@ -21,6 +22,14 @@ struct CalendarView: View {
     @State private var showingFilterSheet = false
     @State private var focusedTodo: TodoItem? = nil
     @State private var selectedTodo: TodoItem? = nil
+    @State private var showingAddTodo = false
+    @State private var newTodoTitle = ""
+    @State private var newTodoDescription = ""
+    @State private var newTodoDueDate: Date = Date()
+    @State private var enableReminder = false
+    @State private var showInCalendar = true
+    @State private var recurringType: RecurringType = .none
+    @State private var notificationService = NotificationService.shared
 
     private let calendar = Calendar.current
 
@@ -32,7 +41,7 @@ struct CalendarView: View {
     var todosForSelectedDate: [TodoItem] {
         var filtered = allTodos.filter { todo in
             guard let dueDate = todo.dueDate else { return false }
-            return calendar.isDate(dueDate, inSameDayAs: selectedDate)
+            return calendar.isDate(dueDate, inSameDayAs: selectedDate) && todo.showInCalendar
         }
 
         // Apply status filter
@@ -57,13 +66,18 @@ struct CalendarView: View {
             filtered = filtered.filter { $0.subtype?.type == .list }
         }
 
-        return filtered.sorted { !$0.completed && $1.completed }
+        return filtered.sorted { todo1, todo2 in
+            // Sort by time first
+            let time1 = todo1.dueTime ?? todo1.dueDate ?? Date()
+            let time2 = todo2.dueTime ?? todo2.dueDate ?? Date()
+            return time1 < time2
+        }
     }
 
     func taskCount(for date: Date) -> Int {
         allTodos.filter { todo in
             guard let dueDate = todo.dueDate else { return false }
-            return calendar.isDate(dueDate, inSameDayAs: date)
+            return calendar.isDate(dueDate, inSameDayAs: date) && todo.showInCalendar
         }.count
     }
 
@@ -246,6 +260,24 @@ struct CalendarView: View {
                 .scrollContentBackground(.hidden)
             }
             .navigationBarHidden(true)
+            .overlay(alignment: .bottomTrailing) {
+                Button {
+                    showingAddTodo = true
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.white)
+                        .frame(width: 56, height: 56)
+                        .background(
+                            Circle()
+                                .fill(Color.purple.gradient)
+                        )
+                        .shadow(color: Color.purple.opacity(0.4), radius: 8, x: 0, y: 4)
+                }
+                .padding(.trailing, 20)
+                .padding(.bottom, 20)
+            }
             .sheet(isPresented: $showingMonthYearPicker) {
                 MonthYearPickerView(selectedDate: $pickerDate) {
                     jumpToDate(pickerDate)
@@ -274,7 +306,125 @@ struct CalendarView: View {
             .navigationDestination(item: $selectedTodo) { todo in
                 TodoDetailView(todo: todo)
             }
+            .sheet(isPresented: $showingAddTodo) {
+                NavigationStack {
+                    Form {
+                        Section("Task Details") {
+                            TextField("Title", text: $newTodoTitle)
+                            TextField("Description (optional)", text: $newTodoDescription, axis: .vertical)
+                                .lineLimit(3...6)
+                        }
+
+                        Section("Due Date & Time") {
+                            DatePicker(
+                                "Date",
+                                selection: $newTodoDueDate,
+                                displayedComponents: [.date]
+                            )
+
+                            DatePicker(
+                                "Time",
+                                selection: $newTodoDueDate,
+                                displayedComponents: [.hourAndMinute]
+                            )
+
+                            Toggle("Set Reminder", isOn: $enableReminder)
+                        }
+
+                        Section("Repeat") {
+                            Picker("Recurring", selection: $recurringType) {
+                                Text("Never").tag(RecurringType.none)
+                                Text("Daily").tag(RecurringType.daily)
+                                Text("Weekly").tag(RecurringType.weekly)
+                                Text("Monthly").tag(RecurringType.monthly)
+                                Text("Yearly").tag(RecurringType.yearly)
+                            }
+                            .pickerStyle(.menu)
+                        }
+
+                        Section("Display") {
+                            Toggle("Show in Calendar", isOn: $showInCalendar)
+                        }
+                    }
+                    .navigationTitle("New Task")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") {
+                                resetForm()
+                            }
+                        }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Add") {
+                                addTodo()
+                            }
+                            .disabled(newTodoTitle.isEmpty)
+                        }
+                    }
+                    .onAppear {
+                        // Set the date to the selected calendar date
+                        newTodoDueDate = selectedDate
+                    }
+                }
+                .presentationDetents([.medium, .large])
+            }
         }
+    }
+
+    private func addTodo() {
+        // Find or create "Random" list
+        let allLists = allSubtypes.filter { $0.type == .list }
+        let randomList: Subtype
+        if let existingRandomList = allLists.first(where: { $0.name == "Random" }) {
+            randomList = existingRandomList
+        } else {
+            // Create new "Random" list
+            randomList = Subtype(
+                name: "Random",
+                type: .list,
+                icon: "tray.fill",
+                sortOrder: allLists.count
+            )
+            modelContext.insert(randomList)
+        }
+
+        // Create todo with Random list as subtype
+        let newTodo = TodoItem(
+            title: newTodoTitle,
+            itemDescription: newTodoDescription.isEmpty ? nil : newTodoDescription,
+            dueDate: newTodoDueDate,
+            dueTime: newTodoDueDate,
+            reminderEnabled: enableReminder,
+            showInCalendar: showInCalendar,
+            recurringType: recurringType,
+            sortOrder: randomList.todos.count,
+            subtype: randomList
+        )
+        modelContext.insert(newTodo)
+
+        // Schedule notification if enabled
+        if enableReminder {
+            Task {
+                let authorized = await notificationService.requestAuthorization()
+                if authorized {
+                    await notificationService.scheduleNotification(for: newTodo)
+                } else {
+                    newTodo.reminderEnabled = false
+                }
+            }
+        }
+
+        resetForm()
+    }
+
+    private func resetForm() {
+        showingAddTodo = false
+        newTodoTitle = ""
+        newTodoDescription = ""
+        newTodoDueDate = Date()
+        enableReminder = false
+        showInCalendar = true
+        recurringType = .none
     }
 
     private func jumpToDate(_ date: Date) {
@@ -364,7 +514,94 @@ struct TodoCalendarRow: View {
         Button {
             onTap()
         } label: {
-            HStack(alignment: .center, spacing: 12) {
+            HStack(alignment: .center, spacing: 0) {
+                // Time on the left with full-height gray background
+                if let dueTime = todo.dueTime {
+                    VStack(spacing: 2) {
+                        Text(timeString(from: dueTime))
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(todo.completed ? .secondary : .primary)
+
+                        Text(amPMString(from: dueTime))
+                            .font(.system(size: 9))
+                            .fontWeight(.medium)
+                            .foregroundStyle(todo.completed ? .tertiary : .secondary)
+                    }
+                    .frame(width: 60)
+                    .frame(maxHeight: .infinity)
+                    .background(Color(.systemGray4))
+                } else {
+                    VStack(spacing: 2) {
+                        Text("")
+                            .font(.caption)
+                        Text("")
+                            .font(.system(size: 9))
+                    }
+                    .frame(width: 60)
+                    .frame(maxHeight: .infinity)
+                    .background(Color(.systemGray4))
+                }
+
+                // Title and details in the middle
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(todo.title)
+                        .font(.body)
+                        .strikethrough(todo.completed)
+                        .foregroundStyle(todo.completed ? .secondary : .primary)
+
+                    HStack(spacing: 8) {
+                        if let subtype = todo.subtype {
+                            HStack(spacing: 4) {
+                                if !subtype.icon.isEmpty {
+                                    Image(systemName: subtype.icon)
+                                }
+                                Text(subtype.name)
+                            }
+                            .font(.caption2)
+                            .foregroundStyle(.blue)
+                        }
+
+                        if todo.recurringType != .none {
+                            HStack(spacing: 4) {
+                                Image(systemName: "repeat")
+                                Text(todo.recurringType.displayName)
+                            }
+                            .font(.caption2)
+                            .foregroundStyle(.purple)
+                        }
+
+                        if todo.starred {
+                            Image(systemName: "star.fill")
+                                .foregroundStyle(.yellow)
+                                .font(.caption2)
+                        }
+
+                        if !todo.completed {
+                            Button {
+                                onFocus()
+                            } label: {
+                                Text("Focus")
+                                    .font(.caption2)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 4)
+                                    .background(
+                                        Capsule()
+                                            .fill(Color.purple.gradient)
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                .padding(.leading, 12)
+                .padding(.vertical, 12)
+
+                Spacer()
+
+                // Circle checkbox on the right
                 Button {
                     todo.toggleCompletion()
                 } label: {
@@ -373,85 +610,26 @@ struct TodoCalendarRow: View {
                         .foregroundStyle(todo.completed ? .green : .gray)
                 }
                 .buttonStyle(.plain)
-
-                HStack(spacing: 12) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(todo.title)
-                            .font(.body)
-                            .strikethrough(todo.completed)
-                            .foregroundStyle(todo.completed ? .secondary : .primary)
-
-                        HStack(spacing: 8) {
-                            if let subtype = todo.subtype {
-                                HStack(spacing: 4) {
-                                    if !subtype.icon.isEmpty {
-                                        Image(systemName: subtype.icon)
-                                    }
-                                    Text(subtype.name)
-                                }
-                                .font(.caption2)
-                                .foregroundStyle(.blue)
-                            }
-
-                            if let dueTime = todo.dueTime {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "clock")
-                                    Text(dueTime, style: .time)
-                                }
-                                .font(.caption2)
-                                .foregroundStyle(.orange)
-                            }
-
-                            if todo.recurringType != .none {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "repeat")
-                                    Text(todo.recurringType.displayName)
-                                }
-                                .font(.caption2)
-                                .foregroundStyle(.purple)
-                            }
-
-                            if !todo.completed {
-                                Button {
-                                    onFocus()
-                                } label: {
-                                    Text("Focus")
-                                        .font(.caption2)
-                                        .fontWeight(.semibold)
-                                        .foregroundStyle(.white)
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 4)
-                                        .background(
-                                            Capsule()
-                                                .fill(Color.purple.gradient)
-                                        )
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                    }
-
-                    Spacer()
-
-                    if todo.starred {
-                        Image(systemName: "star.fill")
-                            .foregroundStyle(.yellow)
-                            .font(.caption)
-                    }
-
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+                .padding(.trailing, 16)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
             .background(Color.white)
             .cornerRadius(16)
             .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
             .contentShape(RoundedRectangle(cornerRadius: 16))
         }
         .buttonStyle(.plain)
+    }
+
+    private func timeString(from date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm"
+        return formatter.string(from: date)
+    }
+
+    private func amPMString(from date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "a"
+        return formatter.string(from: date)
     }
 }
 

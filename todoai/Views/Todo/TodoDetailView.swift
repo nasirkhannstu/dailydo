@@ -18,66 +18,149 @@ struct TodoDetailView: View {
     @State private var newSubtaskTitle = ""
     @State private var notificationService = NotificationService.shared
 
-    // Edit todo states
-    @State private var showingEditTodo = false
-    @State private var editTitle = ""
-    @State private var editDescription = ""
-    @State private var editDueDate: Date?
-    @State private var editShowDueDatePicker = false
-    @State private var editRecurringType: RecurringType = .none
-
     var body: some View {
         List {
-            // MARK: - Todo Info Section
-            Section("Task Details") {
-                // Title
-                HStack {
-                    Label("Title", systemImage: "text.alignleft")
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Text(todo.title)
-                }
+            // MARK: - Title, Description & Subtasks Card
+            Section {
+                VStack(alignment: .leading, spacing: 12) {
+                    // Title
+                    TextField("Task title", text: $todo.title)
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .textFieldStyle(.plain)
 
-                // Description
-                if let description = todo.itemDescription, !description.isEmpty {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Label("Description", systemImage: "doc.text")
-                            .foregroundStyle(.secondary)
-                            .font(.caption)
-                        Text(description)
-                            .font(.body)
+                    // Description
+                    TextField("Add description...", text: Binding(
+                        get: { todo.itemDescription ?? "" },
+                        set: { todo.itemDescription = $0.isEmpty ? nil : $0 }
+                    ), axis: .vertical)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .textFieldStyle(.plain)
+                        .lineLimit(2...8)
+                }
+                .padding(.vertical, 4)
+
+                // Subtasks
+                if !todo.subtasks.isEmpty || todo.subtasks.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        // Subtasks Header
+                        HStack {
+                            HStack(spacing: 6) {
+                                Image(systemName: "checklist")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.blue)
+                                Text("Subtasks")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                            }
+                            Spacer()
+                            if !todo.subtasks.isEmpty {
+                                Text("\(completedSubtasksCount)/\(todo.subtasks.count)")
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(
+                                        Capsule()
+                                            .fill(Color.blue)
+                                    )
+                            }
+                        }
+                        .padding(.top, 8)
+
+                        // Subtasks List
+                        if todo.subtasks.isEmpty {
+                            Text("No subtasks yet")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                                .padding(.vertical, 8)
+                        } else {
+                            VStack(spacing: 4) {
+                                ForEach(todo.subtasks.sorted(by: { $0.sortOrder < $1.sortOrder })) { subtask in
+                                    CompactSubtaskRow(subtask: subtask)
+                                }
+                                .onDelete(perform: deleteSubtasks)
+                            }
+                        }
+
+                        // Add Subtask Button
+                        Button {
+                            showingAddSubtask = true
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.subheadline)
+                                Text("Add Subtask")
+                                    .font(.subheadline)
+                            }
+                            .foregroundStyle(.blue)
+                        }
+                        .padding(.top, 4)
                     }
                 }
+            }
 
-                // Due Date
-                if let dueDate = todo.dueDate {
+            // MARK: - Task Settings Card
+            Section("Due Date & Time") {
+                DatePicker(
+                    "Date",
+                    selection: Binding(
+                        get: { todo.dueDate ?? Date() },
+                        set: {
+                            todo.dueDate = $0
+                            todo.dueTime = $0
+                        }
+                    ),
+                    displayedComponents: [.date]
+                )
+                .datePickerStyle(.compact)
+
+                DatePicker(
+                    "Time",
+                    selection: Binding(
+                        get: { todo.dueDate ?? Date() },
+                        set: {
+                            todo.dueDate = $0
+                            todo.dueTime = $0
+                        }
+                    ),
+                    displayedComponents: [.hourAndMinute]
+                )
+                .datePickerStyle(.compact)
+            }
+
+            Section {
+                // Status
+                Button {
+                    withAnimation {
+                        handleCompletion()
+                    }
+                } label: {
                     HStack {
-                        Label("Due Date", systemImage: "calendar")
+                        Label("Status", systemImage: "circle")
                             .foregroundStyle(.secondary)
                         Spacer()
-                        Text(dueDate, style: .date)
-                            .foregroundStyle(todo.isOverdue ? .red : .primary)
+                        Image(systemName: todo.completed ? "checkmark.circle.fill" : "circle")
+                            .font(.title3)
+                            .foregroundStyle(todo.completed ? .green : .gray)
                     }
                 }
-
-                // Status
-                HStack {
-                    Label("Status", systemImage: todo.completed ? "checkmark.circle.fill" : "circle")
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Text(todo.completed ? "Completed" : "Active")
-                        .foregroundStyle(todo.completed ? .green : .blue)
-                }
+                .buttonStyle(.plain)
 
                 // Recurring
-                if todo.recurringType != .none {
-                    HStack {
-                        Label("Repeats", systemImage: "repeat")
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        Text(todo.recurringType.displayName)
-                    }
+                Picker(selection: $todo.recurringType) {
+                    Text("Never").tag(RecurringType.none)
+                    Text("Daily").tag(RecurringType.daily)
+                    Text("Weekly").tag(RecurringType.weekly)
+                    Text("Monthly").tag(RecurringType.monthly)
+                    Text("Yearly").tag(RecurringType.yearly)
+                } label: {
+                    Label("Repeats", systemImage: "repeat")
+                        .foregroundStyle(.secondary)
                 }
+                .pickerStyle(.menu)
 
                 // Reminder Toggle
                 Toggle(isOn: Binding(
@@ -91,63 +174,16 @@ struct TodoDetailView: View {
                     Label("Reminder", systemImage: "bell.fill")
                         .foregroundStyle(.secondary)
                 }
-            }
 
-            // MARK: - Subtasks Section
-            Section {
-                if todo.subtasks.isEmpty {
-                    HStack {
-                        Spacer()
-                        VStack(spacing: 8) {
-                            Image(systemName: "checklist")
-                                .font(.largeTitle)
-                                .foregroundStyle(.secondary)
-                            Text("No subtasks yet")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        .padding(.vertical)
-                        Spacer()
-                    }
-                } else {
-                    ForEach(todo.subtasks.sorted(by: { $0.sortOrder < $1.sortOrder })) { subtask in
-                        SubtaskRow(subtask: subtask)
-                    }
-                    .onDelete(perform: deleteSubtasks)
-                }
-            } header: {
-                HStack {
-                    Text("Subtasks")
-                    Spacer()
-                    if !todo.subtasks.isEmpty {
-                        Text("\(completedSubtasksCount)/\(todo.subtasks.count)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            } footer: {
-                Button {
-                    showingAddSubtask = true
-                } label: {
-                    Label("Add Subtask", systemImage: "plus.circle.fill")
+                // Show in Calendar Toggle
+                Toggle(isOn: $todo.showInCalendar) {
+                    Label("Show in Calendar", systemImage: "calendar")
+                        .foregroundStyle(.secondary)
                 }
             }
 
             // MARK: - Actions Section
             Section {
-                // Toggle Completion
-                Button {
-                    withAnimation {
-                        handleCompletion()
-                    }
-                } label: {
-                    Label(
-                        todo.completed ? "Mark as Incomplete" : "Mark as Complete",
-                        systemImage: todo.completed ? "arrow.uturn.backward.circle" : "checkmark.circle.fill"
-                    )
-                    .foregroundStyle(todo.completed ? .orange : .green)
-                }
-
                 // Toggle Star
                 Button {
                     withAnimation {
@@ -171,69 +207,6 @@ struct TodoDetailView: View {
         }
         .navigationTitle("Task Details")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    prepareEditForm()
-                    showingEditTodo = true
-                } label: {
-                    Text("Edit")
-                }
-            }
-        }
-        .sheet(isPresented: $showingEditTodo) {
-            NavigationStack {
-                Form {
-                    Section("Task Details") {
-                        TextField("Title", text: $editTitle)
-                        TextField("Description (optional)", text: $editDescription, axis: .vertical)
-                            .lineLimit(3...6)
-                    }
-
-                    Section {
-                        Toggle("Set Due Date", isOn: $editShowDueDatePicker)
-
-                        if editShowDueDatePicker {
-                            DatePicker(
-                                "Due Date",
-                                selection: Binding(
-                                    get: { editDueDate ?? Date() },
-                                    set: { editDueDate = $0 }
-                                ),
-                                displayedComponents: [.date, .hourAndMinute]
-                            )
-                        }
-                    }
-
-                    Section("Repeat") {
-                        Picker("Recurring", selection: $editRecurringType) {
-                            Text("Never").tag(RecurringType.none)
-                            Text("Daily").tag(RecurringType.daily)
-                            Text("Weekly").tag(RecurringType.weekly)
-                            Text("Monthly").tag(RecurringType.monthly)
-                            Text("Yearly").tag(RecurringType.yearly)
-                        }
-                        .pickerStyle(.menu)
-                    }
-                }
-                .navigationTitle("Edit Task")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Cancel") {
-                            showingEditTodo = false
-                        }
-                    }
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Save") {
-                            saveEditedTodo()
-                        }
-                        .disabled(editTitle.isEmpty)
-                    }
-                }
-            }
-            .presentationDetents([.large])
-        }
         .sheet(isPresented: $showingAddSubtask) {
             NavigationStack {
                 Form {
@@ -327,6 +300,7 @@ struct TodoDetailView: View {
                     dueTime: todo.dueTime,
                     starred: todo.starred,
                     reminderEnabled: todo.reminderEnabled,
+                    showInCalendar: todo.showInCalendar,
                     recurringType: todo.recurringType,
                     aiGenerated: todo.aiGenerated,
                     colorID: todo.colorID,
@@ -350,30 +324,6 @@ struct TodoDetailView: View {
         todo.toggleCompletion()
     }
 
-    private func prepareEditForm() {
-        editTitle = todo.title
-        editDescription = todo.itemDescription ?? ""
-        editDueDate = todo.dueDate
-        editShowDueDatePicker = todo.dueDate != nil
-        editRecurringType = todo.recurringType
-    }
-
-    private func saveEditedTodo() {
-        // Update todo properties
-        todo.title = editTitle
-        todo.itemDescription = editDescription.isEmpty ? nil : editDescription
-        todo.dueDate = editShowDueDatePicker ? editDueDate : nil
-        todo.recurringType = editRecurringType
-
-        // Update notification if reminder is enabled
-        if todo.reminderEnabled {
-            Task {
-                await notificationService.updateNotification(for: todo)
-            }
-        }
-
-        showingEditTodo = false
-    }
 }
 
 // MARK: - Subtask Row
@@ -403,6 +353,38 @@ struct SubtaskRow: View {
             Spacer()
         }
         .padding(.vertical, 4)
+    }
+}
+
+// MARK: - Compact Subtask Row
+
+struct CompactSubtaskRow: View {
+    @Bindable var subtask: Subtask
+
+    var body: some View {
+        HStack(spacing: 10) {
+            // Completion Button
+            Button {
+                withAnimation(.spring(response: 0.3)) {
+                    subtask.toggleCompletion()
+                }
+            } label: {
+                Image(systemName: subtask.completed ? "checkmark.circle.fill" : "circle")
+                    .font(.body)
+                    .foregroundStyle(subtask.completed ? .green : .gray.opacity(0.5))
+            }
+            .buttonStyle(.plain)
+
+            // Subtask Title
+            Text(subtask.title)
+                .font(.subheadline)
+                .strikethrough(subtask.completed)
+                .foregroundStyle(subtask.completed ? .secondary : .primary)
+
+            Spacer()
+        }
+        .padding(.vertical, 6)
+        .contentShape(Rectangle())
     }
 }
 
