@@ -28,9 +28,12 @@ struct SubtypeDetailView: View {
     @State private var editName = ""
     @State private var editIcon = ""
     @State private var editShowInCalendar = false
+    @State private var editRemindersEnabled = false
     @State private var showingDeleteAlert = false
     @State private var showingCalendarToggleAlert = false
     @State private var pendingCalendarValue = false
+    @State private var showingRemindersToggleAlert = false
+    @State private var pendingRemindersValue = false
 
     var incompleteTodos: [TodoItem] {
         subtype.todos.filter {
@@ -224,6 +227,14 @@ struct SubtypeDetailView: View {
                         }
 
                         Toggle("Show in Calendar", isOn: $editShowInCalendar)
+
+                        Toggle("Enable Reminders", isOn: Binding(
+                            get: { editRemindersEnabled },
+                            set: { newValue in
+                                pendingRemindersValue = newValue
+                                showingRemindersToggleAlert = true
+                            }
+                        ))
                     }
 
                     Section {
@@ -276,6 +287,16 @@ struct SubtypeDetailView: View {
         } message: {
             Text("This will \(pendingCalendarValue ? "show" : "hide") all \(subtype.todos.count) tasks in this \(subtype.type.displayName.lowercased()) \(pendingCalendarValue ? "in" : "from") the calendar view.")
         }
+        .alert("Update Reminders?", isPresented: $showingRemindersToggleAlert) {
+            Button("Cancel", role: .cancel) {
+                // Toggle will revert to original value
+            }
+            Button(pendingRemindersValue ? "Enable All" : "Disable All") {
+                updateAllTodosReminders(pendingRemindersValue)
+            }
+        } message: {
+            Text("This will \(pendingRemindersValue ? "enable" : "disable") reminders for all \(subtype.todos.count) task\(subtype.todos.count == 1 ? "" : "s") in this \(subtype.type.displayName.lowercased()).")
+        }
     }
 
     private func addTodo() {
@@ -327,6 +348,7 @@ struct SubtypeDetailView: View {
         editName = subtype.name
         editIcon = subtype.icon ?? ""
         editShowInCalendar = subtype.showInCalendar
+        editRemindersEnabled = false
     }
 
     private func saveEditedSubtype() {
@@ -366,6 +388,36 @@ struct SubtypeDetailView: View {
             try modelContext.save()
         } catch {
             print("Error updating calendar visibility: \(error)")
+        }
+    }
+
+    private func updateAllTodosReminders(_ value: Bool) {
+        // Update the edit state
+        editRemindersEnabled = value
+
+        // Update all todos in this subtype
+        for todo in subtype.todos {
+            todo.reminderEnabled = value
+
+            if value {
+                // Schedule notification
+                Task {
+                    let authorized = await notificationService.requestAuthorization()
+                    if authorized {
+                        await notificationService.scheduleNotification(for: todo)
+                    }
+                }
+            } else {
+                // Cancel notification
+                notificationService.cancelNotification(for: todo)
+            }
+        }
+
+        // Explicitly save the context
+        do {
+            try modelContext.save()
+        } catch {
+            print("Error updating reminders: \(error)")
         }
     }
 }

@@ -36,7 +36,7 @@ class Subtype {
         textureID: String? = nil,
         screenID: String? = nil,
         icon: String = "",
-        showInCalendar: Bool = true,
+        showInCalendar: Bool = false,
         notificationEnabled: Bool = false,
         isPreCreated: Bool = false,
         isShared: Bool = false,
