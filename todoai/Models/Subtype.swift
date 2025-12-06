@@ -64,19 +64,20 @@ class Subtype {
         self.todos = todos
     }
 
-    // Computed property: count of incomplete todos
+    // Computed property: count of incomplete todos (excludes completion instances and ended recurring)
     var incompleteTodosCount: Int {
-        todos.filter { !$0.completed }.count
+        todos.filter { !$0.completed && !$0.isCompletionInstance && !$0.hasRecurringEnded }.count
     }
 
-    // Computed property: count of completed todos
+    // Computed property: count of completed todos (excludes completion instances and ended recurring)
     var completedTodosCount: Int {
-        todos.filter { $0.completed }.count
+        todos.filter { $0.completed && !$0.isCompletionInstance && !$0.hasRecurringEnded }.count
     }
 
     // Computed property: completion percentage
     var completionPercentage: Double {
-        guard !todos.isEmpty else { return 0 }
-        return Double(completedTodosCount) / Double(todos.count) * 100
+        let activeTodos = todos.filter { !$0.isCompletionInstance && !$0.hasRecurringEnded }
+        guard !activeTodos.isEmpty else { return 0 }
+        return Double(completedTodosCount) / Double(activeTodos.count) * 100
     }
 }

@@ -213,7 +213,7 @@ class DataSeederService {
     // MARK: - Seed Plans
 
     private func seedPlans() {
-        // 1. Study Plan
+        // 1. Study Plan (60-Day IELTS Preparation with end date)
         let studyPlan = Subtype(
             name: "IELTS Preparation",
             type: .plan,
@@ -224,22 +224,108 @@ class DataSeederService {
         )
         modelContext.insert(studyPlan)
 
-        let sDate1 = addDays(to: Date(), days: 1)
-        let sDate2 = addDays(to: Date(), days: 2)
-        let sDate3 = addDays(to: Date(), days: 3)
-        let sDate4 = addDays(to: Date(), days: 7)
-        let sDate5 = addDays(to: Date(), days: 8)
+        let today = Date()
+        let examDate = addDays(to: today, days: 60)
+        let morningStudyTime = createTime(hour: 7, minute: 0)
+        let eveningStudyTime = createTime(hour: 19, minute: 0)
 
         let studyTodos = [
-            TodoItem(title: "Take diagnostic test", itemDescription: "Assess current level in all sections", starred: true, showInCalendar: false, subtype: studyPlan),
-            TodoItem(title: "Identify weak areas", itemDescription: "Review test results and note areas needing improvement", showInCalendar: false, subtype: studyPlan),
-            TodoItem(title: "Create study schedule", itemDescription: "Plan daily study time for next 8 weeks", showInCalendar: false, subtype: studyPlan),
-            TodoItem(title: "Practice listening - Day 1", dueDate: sDate1, dueTime: sDate1, showInCalendar: false, recurringType: .daily, subtype: studyPlan),
-            TodoItem(title: "Practice reading comprehension", dueDate: sDate1, dueTime: sDate1, showInCalendar: false, recurringType: .daily, subtype: studyPlan),
-            TodoItem(title: "Writing task practice", dueDate: sDate2, dueTime: sDate2, showInCalendar: false, recurringType: .weekly, subtype: studyPlan),
-            TodoItem(title: "Speaking practice with partner", dueDate: sDate3, dueTime: sDate3, showInCalendar: false, recurringType: .weekly, subtype: studyPlan),
-            TodoItem(title: "Take mock test", dueDate: sDate4, dueTime: sDate4, showInCalendar: false, recurringType: .weekly, subtype: studyPlan),
-            TodoItem(title: "Review and improve weak areas", dueDate: sDate5, dueTime: sDate5, showInCalendar: false, subtype: studyPlan)
+            // Initial tasks
+            TodoItem(
+                title: "Take diagnostic test",
+                itemDescription: "Assess current level in all sections",
+                dueDate: today,
+                dueTime: today,
+                starred: true,
+                showInCalendar: false,
+                subtype: studyPlan
+            ),
+            TodoItem(
+                title: "Create study schedule",
+                itemDescription: "Plan daily study time for next 60 days",
+                dueDate: today,
+                dueTime: today,
+                showInCalendar: false,
+                subtype: studyPlan
+            ),
+
+            // Daily recurring tasks until exam
+            TodoItem(
+                title: "Listening practice - 30 minutes",
+                itemDescription: "IELTS listening exercises and mock tests",
+                dueDate: morningStudyTime,
+                dueTime: morningStudyTime,
+                reminderEnabled: true,
+                showInCalendar: false,
+                recurringType: .daily,
+                recurringEndDate: examDate,
+                subtype: studyPlan
+            ),
+            TodoItem(
+                title: "Reading comprehension - 45 minutes",
+                itemDescription: "Practice reading passages and questions",
+                dueDate: morningStudyTime,
+                dueTime: morningStudyTime,
+                showInCalendar: false,
+                recurringType: .daily,
+                recurringEndDate: examDate,
+                subtype: studyPlan
+            ),
+            TodoItem(
+                title: "Vocabulary building - 20 minutes",
+                itemDescription: "Learn 10 new words and review previous",
+                dueDate: eveningStudyTime,
+                dueTime: eveningStudyTime,
+                showInCalendar: false,
+                recurringType: .daily,
+                recurringEndDate: examDate,
+                subtype: studyPlan
+            ),
+
+            // Weekly recurring tasks
+            TodoItem(
+                title: "Writing task 1 & 2 practice",
+                itemDescription: "Complete full writing test under timed conditions",
+                dueDate: addDays(to: today, days: 5),
+                dueTime: addDays(to: today, days: 5),
+                starred: true,
+                showInCalendar: false,
+                recurringType: .weekly,
+                recurringEndDate: examDate,
+                subtype: studyPlan
+            ),
+            TodoItem(
+                title: "Speaking practice session",
+                itemDescription: "Practice with partner or record yourself",
+                dueDate: addDays(to: today, days: 6),
+                dueTime: addDays(to: today, days: 6),
+                showInCalendar: false,
+                recurringType: .weekly,
+                recurringEndDate: examDate,
+                subtype: studyPlan
+            ),
+            TodoItem(
+                title: "Full mock test",
+                itemDescription: "Complete all 4 sections under exam conditions",
+                dueDate: addDays(to: today, days: 7),
+                dueTime: addDays(to: today, days: 7),
+                starred: true,
+                showInCalendar: false,
+                recurringType: .weekly,
+                recurringEndDate: examDate,
+                subtype: studyPlan
+            ),
+
+            // Final exam day
+            TodoItem(
+                title: "IELTS Exam Day",
+                itemDescription: "Good luck! You've prepared well.",
+                dueDate: examDate,
+                dueTime: examDate,
+                starred: true,
+                showInCalendar: false,
+                subtype: studyPlan
+            )
         ]
 
         studyTodos.enumerated().forEach { index, todo in
@@ -247,7 +333,7 @@ class DataSeederService {
             modelContext.insert(todo)
         }
 
-        // 2. Fitness Plan
+        // 2. Fitness Plan (30-Day Challenge with recurring end dates)
         let fitnessPlan = Subtype(
             name: "30-Day Fitness Challenge",
             type: .plan,
@@ -258,20 +344,81 @@ class DataSeederService {
         )
         modelContext.insert(fitnessPlan)
 
-        let fDate1 = addDays(to: Date(), days: 7)
-        let fDate2 = addDays(to: Date(), days: 14)
-        let fDate3 = addDays(to: Date(), days: 21)
-        let fDate4 = addDays(to: Date(), days: 28)
+        let fitnessEndDate = addDays(to: today, days: 30)
+        let fitnessMorningTime = createTime(hour: 6, minute: 30)
+        let fitnessEveningTime = createTime(hour: 18, minute: 0)
+        let fitnessNightTime = createTime(hour: 21, minute: 0)
 
         let fitnessTodos = [
-            TodoItem(title: "Week 1: Establish baseline", itemDescription: "Record weight, measurements, and fitness level", starred: true, showInCalendar: false, subtype: fitnessPlan),
-            TodoItem(title: "Week 1: Cut sugary drinks", itemDescription: "Replace with water and healthy alternatives", completed: true, showInCalendar: false, subtype: fitnessPlan),
-            TodoItem(title: "Week 2: Add morning cardio (20 min)", dueDate: fDate1, dueTime: fDate1, showInCalendar: false, subtype: fitnessPlan),
-            TodoItem(title: "Week 2: Track calorie intake", dueDate: fDate1, dueTime: fDate1, showInCalendar: false, subtype: fitnessPlan),
-            TodoItem(title: "Week 3: Increase workout to 30 min", dueDate: fDate2, dueTime: fDate2, showInCalendar: false, subtype: fitnessPlan),
-            TodoItem(title: "Week 3: Meal prep Sundays", dueDate: fDate2, dueTime: fDate2, showInCalendar: false, subtype: fitnessPlan),
-            TodoItem(title: "Week 4: Add strength training", dueDate: fDate3, dueTime: fDate3, showInCalendar: false, subtype: fitnessPlan),
-            TodoItem(title: "Week 4: Final measurements", dueDate: fDate4, dueTime: fDate4, starred: true, showInCalendar: false, subtype: fitnessPlan)
+            // Daily recurring tasks with 30-day end date
+            TodoItem(
+                title: "Morning cardio - 20 minutes",
+                itemDescription: "Running, cycling, or brisk walking",
+                dueDate: fitnessMorningTime,
+                dueTime: fitnessMorningTime,
+                starred: true,
+                reminderEnabled: true,
+                showInCalendar: false,
+                recurringType: .daily,
+                recurringEndDate: fitnessEndDate,
+                subtype: fitnessPlan
+            ),
+            TodoItem(
+                title: "Track daily calorie intake",
+                itemDescription: "Log all meals and snacks",
+                dueDate: fitnessNightTime,
+                dueTime: fitnessNightTime,
+                showInCalendar: false,
+                recurringType: .daily,
+                recurringEndDate: fitnessEndDate,
+                subtype: fitnessPlan
+            ),
+            TodoItem(
+                title: "Drink 8 glasses of water",
+                itemDescription: "Stay hydrated throughout the day",
+                dueDate: fitnessEveningTime,
+                dueTime: fitnessEveningTime,
+                showInCalendar: false,
+                recurringType: .daily,
+                recurringEndDate: fitnessEndDate,
+                subtype: fitnessPlan
+            ),
+
+            // Weekly milestones
+            TodoItem(
+                title: "Week 1: Establish baseline",
+                itemDescription: "Record weight, measurements, and fitness level",
+                dueDate: today,
+                dueTime: today,
+                starred: true,
+                showInCalendar: false,
+                subtype: fitnessPlan
+            ),
+            TodoItem(
+                title: "Week 2: Progress check",
+                itemDescription: "Review progress and adjust plan if needed",
+                dueDate: addDays(to: today, days: 7),
+                dueTime: addDays(to: today, days: 7),
+                showInCalendar: false,
+                subtype: fitnessPlan
+            ),
+            TodoItem(
+                title: "Week 3: Increase intensity",
+                itemDescription: "Add 10 minutes to cardio sessions",
+                dueDate: addDays(to: today, days: 14),
+                dueTime: addDays(to: today, days: 14),
+                showInCalendar: false,
+                subtype: fitnessPlan
+            ),
+            TodoItem(
+                title: "Week 4: Final measurements",
+                itemDescription: "Record final weight, measurements, and celebrate success!",
+                dueDate: fitnessEndDate,
+                dueTime: fitnessEndDate,
+                starred: true,
+                showInCalendar: false,
+                subtype: fitnessPlan
+            )
         ]
 
         fitnessTodos.enumerated().forEach { index, todo in

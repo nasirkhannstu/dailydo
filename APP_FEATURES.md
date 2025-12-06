@@ -150,9 +150,10 @@ Users can:
 **Fields:**
 - Title (required)
 - Description (optional)
-- Due Date (optional)
+- Due Date (optional) - Serves dual purpose: "Due Date" for regular tasks, "Starts" for recurring tasks
 - Due Time (optional)
 - Recurring Type (none, daily, weekly, monthly, yearly)
+- Recurring End Date (optional) - When recurring should stop (nil = never ends)
 - Subtasks (unlimited)
 - Starred flag
 - Reminder enabled
@@ -183,20 +184,235 @@ Users can:
 - Task metadata (due time, category)
 - Only for Plans and Lists (not Habits)
 
-### 3.5 Recurring Todos (New Implementation)
+### 3.5 Recurring Todos
+
+**Architecture:**
+Recurring todos use a **template + completion instances** pattern:
+- **Template** - Defines the recurring pattern (daily, weekly, etc.), never marked complete
+- **Completion Instance** - Created when user marks template complete for a specific date
+- Linked via `parentRecurringTodoId` field
+
+**Key Features:**
+- ✅ **Infinite or Timed Recurring** - Set an optional end date or let it run forever
+- ✅ **Dual-Purpose Date Field** - `dueDate` serves as "Due Date" for regular tasks, "Starts" for recurring tasks
+- ✅ **Smart Calendar Filtering** - Recurring tasks only appear between start and end dates
+- ✅ **Dynamic UI Labels** - Task detail shows "Starts" instead of "Due Date" for recurring templates
+
+---
+
+#### Recurring End Date
+
+**Purpose:** Support timed plans like 30-day challenges or exam preparation.
 
 **How It Works:**
-- Recurring **templates** define the pattern and never get marked complete
-- When user marks a recurring todo complete, a **completion instance** is created
-- Completion instances are linked to their parent template
-- Templates continue showing on future dates
-- Completed dates are filtered out automatically
+1. **Create recurring todo** with pattern (daily/weekly/monthly/yearly)
+2. **Toggle "End Date"** in task details to enable
+3. **Set end date** using date picker (defaults to 30 days from start)
+4. **Task auto-hides** from calendar AND lists after end date passes
+5. **Completion history preserved** - View past completions in detail view even after task ends
 
-**Example:**
-- Create "Drink water" habit (daily recurring, starts Dec 1)
-- On Dec 5, mark it complete → creates completion instance for Dec 5
-- "Drink water" disappears from Dec 5 calendar
-- "Drink water" still shows on Dec 6, 7, 8, etc.
+**Use Cases:**
+- 30-Day Fitness Challenge (daily workouts until day 30)
+- 60-Day IELTS Preparation (daily study until exam date)
+- Weekly team meetings (ends when project completes)
+- Monthly medication (stops after treatment period)
+
+**Examples:**
+
+**Example 1: 30-Day Fitness Challenge**
+```
+Title: Morning cardio - 20 minutes
+Starts: Dec 6, 2025 at 6:30 AM
+Repeats: Daily
+End Date: Jan 5, 2026 (30 days later)
+
+Result:
+- Shows on calendar: Dec 6 - Jan 5
+- Auto-hides from calendar AND lists on Jan 6 (day after end date)
+- Completion history preserved for future reference
+```
+
+**Example 2: IELTS Exam Preparation**
+```
+Title: Listening practice - 30 minutes
+Starts: Dec 6, 2025 at 7:00 AM
+Repeats: Daily
+End Date: Feb 4, 2026 (60 days - exam day)
+
+Result:
+- Practice every day until exam (Feb 4)
+- Auto-hides from calendar AND lists on Feb 5
+- All 60 days of completion history preserved
+```
+
+**Example 3: Never-Ending Habit**
+```
+Title: Drink water (8 glasses)
+Starts: Dec 6, 2025 at 8:00 AM
+Repeats: Daily
+End Date: (none - toggle off)
+
+Result:
+- Shows forever on calendar
+- Never auto-hides
+- Perfect for lifelong habits
+```
+
+---
+
+#### How It Works
+
+**Creating a Recurring Todo:**
+1. User creates "Drink water" with recurring pattern = Daily
+2. Template is created with `recurringType = .daily`, `parentRecurringTodoId = nil`
+3. Template shows on all applicable dates in Calendar
+
+**Completing from Different Views:**
+
+**From Calendar View:**
+- User selects Dec 6, sees "Drink water"
+- Clicks completion circle
+- Creates completion instance with `dueDate = Dec 6`, `parentRecurringTodoId = [template id]`
+- Template disappears from Dec 6 calendar
+- Template still shows on Dec 7, 8, 9...
+
+**From List View (Habits/Plans/Lists):**
+- User sees "Drink water" with 🔁 Daily icon
+- Clicks completion circle → turns green ✅
+- Creates completion instance for TODAY
+- Tomorrow, circle resets to empty ⭕
+- Template stays in list (never removed)
+
+---
+
+#### Visual Behavior
+
+**In SubtypeDetailView (Lists):**
+```
+Active Tasks
+  ⭕ Drink water (daily) 🔁 Daily    ← Not completed today
+  ✅ Exercise (daily) 🔁 Daily       ← Completed today
+  ⭕ Read book (one-time)            ← Regular task
+
+Completed Tasks
+  ✅ Buy groceries                   ← Non-recurring completed
+```
+
+**Notes:**
+- Completion instances are HIDDEN from lists (only show templates)
+- Smart circle shows green if completed TODAY
+- Click to toggle (creates/deletes today's completion instance)
+
+---
+
+**In TodoDetailView (Details):**
+
+**For Templates:**
+```
+Task Details
+━━━━━━━━━━━━━━━━━━━
+Title: Drink water
+Starts: Every day at 9:00 AM        ← "Starts" for recurring
+Recurring: Daily
+End Date: [Toggle]                   ← NEW: Optional end date
+  Ends On: Jan 5, 2026              ← Shows if toggle enabled
+Reminder: Enabled
+
+Completion History:
+  ✓ Friday, Dec 6 at 2:30 PM
+  ✓ Thursday, Dec 5 at 3:15 PM
+  ✓ Wednesday, Dec 4 at 1:45 PM
+
+Actions:
+  ⭐ Star
+  🗑️ Delete
+```
+
+**For Completion Instances:**
+```
+Completed Task
+━━━━━━━━━━━━━━━━━━━
+Title: Drink water (grayed out)
+Due: Dec 5 at 9:00 AM (grayed out)
+
+Subtasks: (grayed out)
+  ✓ Morning glass
+  ✓ Afternoon glass
+
+(No actions, no buttons)
+(Everything read-only)
+```
+
+**Completion Instance Rules:**
+- ❌ Cannot edit any fields
+- ❌ Cannot toggle completion status
+- ❌ Cannot star/unstar
+- ❌ Cannot add subtasks
+- ❌ No action buttons visible
+- ✅ Can only view (read-only)
+- To delete: Use list view or calendar
+
+---
+
+**In CalendarView:**
+- Templates show on ALL applicable dates
+- When completed for a date, template hides for that date only
+- Completion instances NOT shown in calendar list (filtered out)
+- Templates auto-hide when completion instance exists for that date
+
+---
+
+#### Implementation Details
+
+**Data Model:**
+- `TodoItem.recurringType`: .none, .daily, .weekly, .monthly, .yearly
+- `TodoItem.parentRecurringTodoId`: nil for templates, UUID for completion instances
+- `TodoItem.recurringEndDate`: Date? (nil = never ends, Date = stops after this date)
+- `TodoItem.dueDate`: Serves dual purpose (due date for regular, start date for recurring)
+
+**Computed Properties:**
+- `isRecurringTemplate`: `recurringType != .none && parentRecurringTodoId == nil`
+- `isCompletionInstance`: `parentRecurringTodoId != nil`
+- `dueDateLabel`: Returns "Starts" for recurring templates, "Due Date" for others
+
+**Filtering Logic:**
+- **Lists**: Show only templates, hide completion instances and ended recurring tasks
+- **Calendar**: Show templates on applicable dates between start and end dates, hide if completion instance exists for that date
+- **Detail View**: Full access for templates, read-only for completion instances
+- **Auto-Hide**: Tasks with `recurringEndDate` past today are automatically filtered out from all views
+
+**Calendar Date Range Logic:**
+```swift
+// Show recurring template only if:
+1. selectedDate >= dueDate (start date)
+2. selectedDate <= recurringEndDate (if set)
+3. No completion instance exists for selectedDate
+```
+
+**Example Scenario:**
+
+1. **Dec 1:** Create "Drink water" (daily recurring)
+2. **Dec 5:** Complete from calendar
+   - Creates: `TodoItem(dueDate=Dec 5, parentRecurringTodoId=[template id], completed=true)`
+   - Calendar Dec 5: "Drink water" disappears
+   - List view: Still shows template with empty circle
+3. **Dec 6:** Template shows again in calendar (empty circle)
+4. **Dec 6:** Complete from list view
+   - Creates: `TodoItem(dueDate=Dec 6, parentRecurringTodoId=[template id], completed=true)`
+   - List view: Circle turns green for today
+   - Calendar Dec 6: "Drink water" disappears
+5. **Dec 7:** List view circle resets to empty
+6. **Open template details:** See completion history (Dec 5, Dec 6)
+
+---
+
+#### Benefits
+
+✅ **Clean Lists** - One row per task, no clutter
+✅ **Historical Records** - All completions tracked
+✅ **Flexible Completion** - Complete from calendar or list
+✅ **Visual Feedback** - Smart circle shows today's status
+✅ **Data Integrity** - Templates never modified, only instances created
 
 ---
 

@@ -33,11 +33,15 @@ struct SubtypeDetailView: View {
     @State private var pendingCalendarValue = false
 
     var incompleteTodos: [TodoItem] {
-        subtype.todos.filter { !$0.completed }.sorted(by: { $0.createdDate > $1.createdDate })
+        subtype.todos.filter {
+            !$0.completed && !$0.isCompletionInstance && !$0.hasRecurringEnded
+        }.sorted(by: { $0.createdDate > $1.createdDate })
     }
 
     var completedTodos: [TodoItem] {
-        subtype.todos.filter { $0.completed }.sorted(by: { $0.completedDate ?? $0.createdDate > $1.completedDate ?? $1.createdDate })
+        subtype.todos.filter {
+            $0.completed && !$0.isCompletionInstance && !$0.hasRecurringEnded
+        }.sorted(by: { $0.completedDate ?? $0.createdDate > $1.completedDate ?? $1.createdDate })
     }
 
     var fabColor: Color {
@@ -369,6 +373,18 @@ struct SubtypeDetailView: View {
 struct TodoRowView: View {
     @Environment(\.modelContext) private var modelContext
     @Bindable var todo: TodoItem
+    @Query private var allTodos: [TodoItem]
+
+    private var isCompletedToday: Bool {
+        guard todo.isRecurringTemplate else { return todo.completed }
+
+        // Check if there's a completion instance for today
+        return allTodos.contains { completion in
+            completion.parentRecurringTodoId == todo.id &&
+            completion.dueDate != nil &&
+            Calendar.current.isDateInToday(completion.dueDate!)
+        }
+    }
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
@@ -376,9 +392,9 @@ struct TodoRowView: View {
             Button {
                 handleCompletion()
             } label: {
-                Image(systemName: todo.completed ? "checkmark.circle.fill" : "circle")
+                Image(systemName: isCompletedToday ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
-                    .foregroundStyle(todo.completed ? .green : .gray)
+                    .foregroundStyle(isCompletedToday ? .green : .gray)
             }
             .buttonStyle(.plain)
 
@@ -406,6 +422,16 @@ struct TodoRowView: View {
                     }
                     .font(.caption2)
                     .foregroundStyle(todo.isOverdue ? .red : .blue)
+                }
+
+                // Recurring indicator
+                if todo.recurringType != .none {
+                    HStack(spacing: 4) {
+                        Image(systemName: "repeat")
+                        Text(todo.recurringType.displayName)
+                    }
+                    .font(.caption2)
+                    .foregroundStyle(.purple)
                 }
 
                 // Subtasks indicator
@@ -446,32 +472,41 @@ struct TodoRowView: View {
     }
 
     private func handleCompletion() {
-        // Check if this is a recurring template being marked as complete
-        if !todo.completed && todo.isRecurringTemplate {
-            // Create a completion instance instead of marking template as complete
-            // Use today's date since we don't have calendar context in list view
-            let completionInstance = TodoItem(
-                title: todo.title,
-                itemDescription: todo.itemDescription,
-                dueDate: Date(), // Use today's date for list view completion
-                dueTime: todo.dueTime,
-                completed: true,
-                starred: todo.starred,
-                reminderEnabled: false,
-                showInCalendar: todo.showInCalendar,
-                recurringType: .none,
-                aiGenerated: todo.aiGenerated,
-                colorID: todo.colorID,
-                textureID: todo.textureID,
-                flagColor: todo.flagColor,
-                sortOrder: todo.sortOrder,
-                completedDate: Date(),
-                parentRecurringTodoId: todo.id,
-                subtype: todo.subtype
-            )
-            modelContext.insert(completionInstance)
+        // Handle recurring templates differently
+        if todo.isRecurringTemplate {
+            // Check if there's already a completion instance for today
+            if let todayCompletion = allTodos.first(where: { completion in
+                completion.parentRecurringTodoId == todo.id &&
+                completion.dueDate != nil &&
+                Calendar.current.isDateInToday(completion.dueDate!)
+            }) {
+                // Already completed today - uncomplete by deleting the instance
+                modelContext.delete(todayCompletion)
+            } else {
+                // Not completed today - create completion instance
+                let completionInstance = TodoItem(
+                    title: todo.title,
+                    itemDescription: todo.itemDescription,
+                    dueDate: Date(), // Use today's date
+                    dueTime: todo.dueTime,
+                    completed: true,
+                    starred: todo.starred,
+                    reminderEnabled: false,
+                    showInCalendar: todo.showInCalendar,
+                    recurringType: .none,
+                    aiGenerated: todo.aiGenerated,
+                    colorID: todo.colorID,
+                    textureID: todo.textureID,
+                    flagColor: todo.flagColor,
+                    sortOrder: todo.sortOrder,
+                    completedDate: Date(),
+                    parentRecurringTodoId: todo.id,
+                    subtype: todo.subtype
+                )
+                modelContext.insert(completionInstance)
+            }
         } else {
-            // For non-recurring or completion instances, toggle normally
+            // For non-recurring todos, toggle normally
             todo.toggleCompletion()
         }
     }

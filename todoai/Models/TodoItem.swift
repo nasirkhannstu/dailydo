@@ -28,6 +28,7 @@ class TodoItem {
     var createdDate: Date
     var completedDate: Date?
     var parentRecurringTodoId: UUID?
+    var recurringEndDate: Date?
 
     @Relationship(inverse: \Subtype.todos) var subtype: Subtype?
     @Relationship(deleteRule: .cascade) var subtasks: [Subtask]
@@ -51,6 +52,7 @@ class TodoItem {
         createdDate: Date = Date(),
         completedDate: Date? = nil,
         parentRecurringTodoId: UUID? = nil,
+        recurringEndDate: Date? = nil,
         subtype: Subtype? = nil,
         subtasks: [Subtask] = []
     ) {
@@ -72,6 +74,7 @@ class TodoItem {
         self.createdDate = createdDate
         self.completedDate = completedDate
         self.parentRecurringTodoId = parentRecurringTodoId
+        self.recurringEndDate = recurringEndDate
         self.subtype = subtype
         self.subtasks = subtasks
     }
@@ -99,6 +102,18 @@ class TodoItem {
     // Check if this is a completion instance of a recurring todo
     var isCompletionInstance: Bool {
         return parentRecurringTodoId != nil
+    }
+
+    // Dynamic label for due date based on recurring status
+    var dueDateLabel: String {
+        return isRecurringTemplate ? "Starts" : "Due Date"
+    }
+
+    // Check if recurring task has ended (past end date)
+    var hasRecurringEnded: Bool {
+        guard isRecurringTemplate else { return false }
+        guard let endDate = recurringEndDate else { return false }
+        return Calendar.current.startOfDay(for: Date()) > Calendar.current.startOfDay(for: endDate)
     }
 
     // Check if todo is overdue

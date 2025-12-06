@@ -40,9 +40,14 @@ struct CalendarView: View {
 
     var todosForSelectedDate: [TodoItem] {
         // 1. Get regular todos and completion instances for this date
+        // Exclude recurring templates - they are handled separately below
         var filtered = allTodos.filter { todo in
             guard let dueDate = todo.dueDate else { return false }
-            return calendar.isDate(dueDate, inSameDayAs: selectedDate) && todo.showInCalendar
+            guard calendar.isDate(dueDate, inSameDayAs: selectedDate) && todo.showInCalendar else { return false }
+
+            // Only include non-recurring todos OR completion instances
+            // Exclude recurring templates (they're added via the recurring logic below)
+            return !todo.isRecurringTemplate
         }
 
         // 2. Get recurring templates that should appear on this date
@@ -52,6 +57,11 @@ struct CalendarView: View {
 
             // Only show if selectedDate is on or after the original start date
             guard selectedDate >= calendar.startOfDay(for: originalDueDate) else { return false }
+
+            // Check end date if it exists
+            if let endDate = todo.recurringEndDate {
+                guard selectedDate <= calendar.startOfDay(for: endDate) else { return false }
+            }
 
             return shouldRecurringTodoAppear(todo: todo, on: selectedDate)
         }
@@ -138,9 +148,13 @@ struct CalendarView: View {
 
     func taskCount(for date: Date) -> Int {
         // Count regular todos and completion instances for this date
+        // Exclude recurring templates - they are counted separately below
         let count = allTodos.filter { todo in
             guard let dueDate = todo.dueDate else { return false }
-            return calendar.isDate(dueDate, inSameDayAs: date) && todo.showInCalendar
+            guard calendar.isDate(dueDate, inSameDayAs: date) && todo.showInCalendar else { return false }
+
+            // Only count non-recurring todos OR completion instances
+            return !todo.isRecurringTemplate
         }.count
 
         // Count recurring templates that should appear on this date
@@ -148,6 +162,11 @@ struct CalendarView: View {
             guard todo.isRecurringTemplate, todo.showInCalendar else { return false }
             guard let originalDueDate = todo.dueDate else { return false }
             guard date >= calendar.startOfDay(for: originalDueDate) else { return false }
+
+            // Check end date if it exists
+            if let endDate = todo.recurringEndDate {
+                guard date <= calendar.startOfDay(for: endDate) else { return false }
+            }
 
             // Only count if it should appear and doesn't have a completion instance
             return shouldRecurringTodoAppear(todo: todo, on: date) &&

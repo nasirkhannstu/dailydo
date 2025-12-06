@@ -15,9 +15,16 @@ struct TodoDetailView: View {
     @Bindable var todo: TodoItem
     var completionContextDate: Date? = nil
 
+    @Query private var allTodos: [TodoItem]
     @State private var showingAddSubtask = false
     @State private var newSubtaskTitle = ""
     @State private var notificationService = NotificationService.shared
+
+    private var completionInstances: [TodoItem] {
+        guard todo.isRecurringTemplate else { return [] }
+        return allTodos.filter { $0.parentRecurringTodoId == todo.id }
+            .sorted { ($0.dueDate ?? Date()) > ($1.dueDate ?? Date()) }
+    }
 
     var body: some View {
         List {
@@ -86,51 +93,54 @@ struct TodoDetailView: View {
                             }
                         }
 
-                        // Add Subtask Button
-                        Button {
-                            showingAddSubtask = true
-                        } label: {
-                            HStack(spacing: 6) {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.subheadline)
-                                Text("Add Subtask")
-                                    .font(.subheadline)
+                        // Add Subtask Button (Hide for completion instances)
+                        if !todo.isCompletionInstance {
+                            Button {
+                                showingAddSubtask = true
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "plus.circle.fill")
+                                        .font(.subheadline)
+                                    Text("Add Subtask")
+                                        .font(.subheadline)
+                                }
+                                .foregroundStyle(.blue)
                             }
-                            .foregroundStyle(.blue)
+                            .padding(.top, 4)
                         }
-                        .padding(.top, 4)
                     }
                 }
             }
 
-            // MARK: - Task Settings Card
-            Section("Due Date & Time") {
-                DatePicker(
-                    "Date",
-                    selection: Binding(
-                        get: { todo.dueDate ?? Date() },
-                        set: {
-                            todo.dueDate = $0
-                            todo.dueTime = $0
-                        }
-                    ),
-                    displayedComponents: [.date]
-                )
-                .datePickerStyle(.compact)
+            // MARK: - Task Settings Card (Hide for completion instances)
+            if !todo.isCompletionInstance {
+                Section(todo.dueDateLabel) {
+                    DatePicker(
+                        "Date",
+                        selection: Binding(
+                            get: { todo.dueDate ?? Date() },
+                            set: {
+                                todo.dueDate = $0
+                                todo.dueTime = $0
+                            }
+                        ),
+                        displayedComponents: [.date]
+                    )
+                    .datePickerStyle(.compact)
 
-                DatePicker(
-                    "Time",
-                    selection: Binding(
-                        get: { todo.dueDate ?? Date() },
-                        set: {
-                            todo.dueDate = $0
-                            todo.dueTime = $0
-                        }
-                    ),
-                    displayedComponents: [.hourAndMinute]
-                )
-                .datePickerStyle(.compact)
-            }
+                    DatePicker(
+                        "Time",
+                        selection: Binding(
+                            get: { todo.dueDate ?? Date() },
+                            set: {
+                                todo.dueDate = $0
+                                todo.dueTime = $0
+                            }
+                        ),
+                        displayedComponents: [.hourAndMinute]
+                    )
+                    .datePickerStyle(.compact)
+                }
 
             Section {
                 // Status
@@ -163,6 +173,36 @@ struct TodoDetailView: View {
                 }
                 .pickerStyle(.menu)
 
+                // End Date (only show if recurring)
+                if todo.recurringType != .none {
+                    Toggle(isOn: Binding(
+                        get: { todo.recurringEndDate != nil },
+                        set: { enabled in
+                            if enabled {
+                                // Set end date to 30 days from start as default
+                                todo.recurringEndDate = Calendar.current.date(byAdding: .day, value: 30, to: todo.dueDate ?? Date())
+                            } else {
+                                todo.recurringEndDate = nil
+                            }
+                        }
+                    )) {
+                        Label("End Date", systemImage: "calendar.badge.clock")
+                            .foregroundStyle(.secondary)
+                    }
+
+                    if todo.recurringEndDate != nil {
+                        DatePicker(
+                            "Ends On",
+                            selection: Binding(
+                                get: { todo.recurringEndDate ?? Date() },
+                                set: { todo.recurringEndDate = $0 }
+                            ),
+                            displayedComponents: [.date]
+                        )
+                        .datePickerStyle(.compact)
+                    }
+                }
+
                 // Reminder Toggle
                 Toggle(isOn: Binding(
                     get: { todo.reminderEnabled },
@@ -183,8 +223,8 @@ struct TodoDetailView: View {
                 }
             }
 
-            // MARK: - Actions Section
-            Section {
+                // MARK: - Actions Section
+                Section {
                 // Toggle Star
                 Button {
                     withAnimation {
@@ -205,9 +245,49 @@ struct TodoDetailView: View {
                     Label("Delete Task", systemImage: "trash")
                 }
             }
+
+                // MARK: - Completion History Section (Recurring Templates Only)
+                if todo.isRecurringTemplate {
+                    Section("Completion History") {
+                        if completionInstances.isEmpty {
+                            HStack {
+                                Image(systemName: "clock")
+                                    .foregroundStyle(.secondary)
+                                Text("Not yet completed")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .font(.subheadline)
+                        } else {
+                            ForEach(completionInstances) { completion in
+                                HStack(spacing: 12) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundStyle(.green)
+                                        .font(.title3)
+
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        if let date = completion.dueDate {
+                                            Text(date, style: .date)
+                                                .font(.subheadline)
+                                                .fontWeight(.medium)
+                                        }
+                                        if let time = completion.completedDate {
+                                            Text("Completed at \(time, style: .time)")
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                    }
+
+                                    Spacer()
+                                }
+                            }
+                        }
+                    }
+                }
+            } // End of !todo.isCompletionInstance
         }
-        .navigationTitle("Task Details")
+        .navigationTitle(todo.isCompletionInstance ? "Completed Task" : "Task Details")
         .navigationBarTitleDisplayMode(.inline)
+        .disabled(todo.isCompletionInstance)
         .sheet(isPresented: $showingAddSubtask) {
             NavigationStack {
                 Form {
