@@ -446,39 +446,34 @@ struct TodoRowView: View {
     }
 
     private func handleCompletion() {
-        // Check if this is a recurring todo being marked as complete
-        if !todo.completed && todo.recurringType != .none {
-            // Create next instance before marking current as complete
-            if let nextDate = todo.nextRecurringDate() {
-                let nextTodo = TodoItem(
-                    title: todo.title,
-                    itemDescription: todo.itemDescription,
-                    dueDate: nextDate,
-                    dueTime: todo.dueTime,
-                    starred: todo.starred,
-                    reminderEnabled: todo.reminderEnabled,
-                    showInCalendar: todo.showInCalendar,
-                    recurringType: todo.recurringType,
-                    aiGenerated: todo.aiGenerated,
-                    colorID: todo.colorID,
-                    textureID: todo.textureID,
-                    flagColor: todo.flagColor,
-                    sortOrder: todo.sortOrder,
-                    subtype: todo.subtype
-                )
-                modelContext.insert(nextTodo)
-
-                // Schedule notification for the next instance if reminders are enabled
-                if todo.reminderEnabled {
-                    Task {
-                        await NotificationService.shared.scheduleNotification(for: nextTodo)
-                    }
-                }
-            }
+        // Check if this is a recurring template being marked as complete
+        if !todo.completed && todo.isRecurringTemplate {
+            // Create a completion instance instead of marking template as complete
+            // Use today's date since we don't have calendar context in list view
+            let completionInstance = TodoItem(
+                title: todo.title,
+                itemDescription: todo.itemDescription,
+                dueDate: Date(), // Use today's date for list view completion
+                dueTime: todo.dueTime,
+                completed: true,
+                starred: todo.starred,
+                reminderEnabled: false,
+                showInCalendar: todo.showInCalendar,
+                recurringType: .none,
+                aiGenerated: todo.aiGenerated,
+                colorID: todo.colorID,
+                textureID: todo.textureID,
+                flagColor: todo.flagColor,
+                sortOrder: todo.sortOrder,
+                completedDate: Date(),
+                parentRecurringTodoId: todo.id,
+                subtype: todo.subtype
+            )
+            modelContext.insert(completionInstance)
+        } else {
+            // For non-recurring or completion instances, toggle normally
+            todo.toggleCompletion()
         }
-
-        // Toggle completion of current todo
-        todo.toggleCompletion()
     }
 }
 

@@ -13,6 +13,7 @@ struct TodoDetailView: View {
     @Environment(\.dismiss) private var dismiss
 
     @Bindable var todo: TodoItem
+    var completionContextDate: Date? = nil
 
     @State private var showingAddSubtask = false
     @State private var newSubtaskTitle = ""
@@ -289,39 +290,40 @@ struct TodoDetailView: View {
     }
 
     private func handleCompletion() {
-        // Check if this is a recurring todo being marked as complete
-        if !todo.completed && todo.recurringType != .none {
-            // Create next instance before marking current as complete
-            if let nextDate = todo.nextRecurringDate() {
-                let nextTodo = TodoItem(
-                    title: todo.title,
-                    itemDescription: todo.itemDescription,
-                    dueDate: nextDate,
-                    dueTime: todo.dueTime,
-                    starred: todo.starred,
-                    reminderEnabled: todo.reminderEnabled,
-                    showInCalendar: todo.showInCalendar,
-                    recurringType: todo.recurringType,
-                    aiGenerated: todo.aiGenerated,
-                    colorID: todo.colorID,
-                    textureID: todo.textureID,
-                    flagColor: todo.flagColor,
-                    sortOrder: todo.sortOrder,
-                    subtype: todo.subtype
-                )
-                modelContext.insert(nextTodo)
+        // Check if this is a recurring template being marked as complete
+        if !todo.completed && todo.isRecurringTemplate {
+            // Use completion context date if provided, otherwise use today
+            let effectiveDate = completionContextDate ?? Date()
 
-                // Schedule notification for the next instance if reminders are enabled
-                if todo.reminderEnabled {
-                    Task {
-                        await notificationService.scheduleNotification(for: nextTodo)
-                    }
-                }
-            }
+            // Create a completion instance instead of marking template as complete
+            let completionInstance = TodoItem(
+                title: todo.title,
+                itemDescription: todo.itemDescription,
+                dueDate: effectiveDate, // Use the date being completed for
+                dueTime: todo.dueTime,
+                completed: true,
+                starred: todo.starred,
+                reminderEnabled: false, // Completion instances don't need reminders
+                showInCalendar: todo.showInCalendar,
+                recurringType: .none, // Completion instances are not recurring
+                aiGenerated: todo.aiGenerated,
+                colorID: todo.colorID,
+                textureID: todo.textureID,
+                flagColor: todo.flagColor,
+                sortOrder: todo.sortOrder,
+                completedDate: Date(),
+                parentRecurringTodoId: todo.id, // Link to parent recurring todo
+                subtype: todo.subtype
+            )
+            modelContext.insert(completionInstance)
+
+            // Dismiss view since we created a completion instance
+            // The recurring template stays in the list
+            dismiss()
+        } else {
+            // For non-recurring or completion instances, toggle normally
+            todo.toggleCompletion()
         }
-
-        // Toggle completion of current todo
-        todo.toggleCompletion()
     }
 
 }

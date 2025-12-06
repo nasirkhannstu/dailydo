@@ -2,164 +2,220 @@
 
 An AI-powered iOS productivity app for managing tasks, building habits, and organizing daily life.
 
-## Project Status
+---
 
-**Current Phase:** Planning & Documentation
-**Version:** MVP Development
+## 🚀 Quick Info
+
 **Platform:** iOS 17.0+
+**Status:** Active Development (40% Complete)
+**Language:** Swift 5.9+ with SwiftUI
+**Size:** ~2-3 MB (estimated release)
 
-## Documentation
+---
 
-### Core Documents
-- **[PROJECT_SPECIFICATION.md](./PROJECT_SPECIFICATION.md)** - Complete project requirements and features
-- **[MVP_PLAN.md](./MVP_PLAN.md)** - Phased development roadmap and sprint breakdown
+## ✨ Features
 
-### Folder Structure
-```
-todoai/
-├── README.md                    # This file
-├── PROJECT_SPECIFICATION.md     # Full project spec
-├── MVP_PLAN.md                  # MVP development plan
-├── docs/                        # Additional documentation
-├── design/                      # UI/UX design files
-└── research/                    # Research and analysis
-```
+### Currently Working ✅
+- ✅ **Habits, Plans & Lists** - Three-way organization system
+- ✅ **Smart Calendar** - Unified view across all categories
+- ✅ **Recurring Todos** - Daily, weekly, monthly, yearly patterns
+- ✅ **Subtasks** - Break down complex tasks
+- ✅ **Focus Mode** - Distraction-free task completion
+- ✅ **Reminders** - Local notifications for due tasks
+- ✅ **Modern UI** - Card-based design with dark mode
 
-## Project Overview
+### Coming Soon 🔄
+- 🔄 **AI Generation** - Create todos with AI assistance
+- 🔄 **Cloud Sync** - CloudKit synchronization
+- 🔄 **Premium Features** - Subscriptions and themes
+- 🔄 **Collaboration** - Share lists with others
 
-DailyDo is a freemium iOS app that combines traditional todo list functionality with AI-powered task generation. Users can organize their activities across three main categories:
+---
 
-### Core Features
-1. **Habits** - Track recurring activities and build consistent routines
-2. **Plans** - Organize goal-oriented activities with timelines
-3. **Lists** - Manage collections and one-off tasks
+## 📖 Documentation
 
-### Key Differentiators
-- AI-powered todo generation with contextual questions
-- Unified calendar view across all categories
-- Customizable visual themes (colors, textures, screens)
-- Referral program with AI credit rewards
-- Collaborative sharing (premium feature)
+- **[APP_FEATURES.md](./APP_FEATURES.md)** - Complete feature list, development plan, and progress
+- **[SERVER_FEATURES.md](./SERVER_FEATURES.md)** - Backend/API documentation (if building server)
+- **[CHANGELOG.md](./CHANGELOG.md)** - Version history and recent changes
 
-## Technology Stack
+---
+
+## 🛠 Tech Stack
 
 | Component | Technology |
 |-----------|------------|
 | Platform | iOS 17.0+ |
 | Language | Swift 5.9+ |
-| UI Framework | SwiftUI |
-| Data Persistence | SwiftData (SQLite) |
-| Cloud Sync | CloudKit |
+| UI | SwiftUI |
+| Data | SwiftData (Core Data) |
+| Storage | SQLite |
+| Sync | CloudKit (planned) |
 | Architecture | MVVM |
-| AI API | OpenAI GPT-4 or Claude |
-| Analytics | Firebase Analytics |
-| Crash Reporting | Firebase Crashlytics |
-| In-App Purchases | StoreKit 2 |
 
-## Business Model
+---
 
-**Freemium:** Free core features with premium upgrades
-
-### Free Features
-- Unlimited todos, habits, plans, and lists
-- Basic colors and themes
-- Calendar view
-- Reminders and notifications
-- 5 free AI credits
-
-### Premium Features
-- Unlimited AI generations
-- Sharing and collaboration
-- Advanced analytics
-- Export functionality
-- Priority support
-- Ad-free experience
-
-### Monetization
-- Premium subscription: $4.99/month or $39.99/year
-- AI credit packs: $2.99 - $16.99
-- Color/texture/theme packs: $0.99 - $12.99
-- Referral rewards: 10 credits per referred premium user
-
-## Development Timeline
-
-**MVP Development:** 27 weeks (6-7 months)
-
-### Key Milestones
-- **Weeks 1-3:** Foundation (project setup, data models)
-- **Weeks 4-6:** Core UI (navigation, main screens)
-- **Weeks 7-11:** Todo management & calendar
-- **Weeks 12-16:** AI integration & sync
-- **Weeks 17-20:** Monetization & referrals
-- **Weeks 21-24:** Onboarding, polish, testing
-- **Weeks 25-26:** Beta testing
-- **Week 27:** App Store launch
-
-## Getting Started
+## 🎯 Getting Started
 
 ### Prerequisites
 - macOS 14.0+
 - Xcode 15.0+
 - iOS 17.0+ device or simulator
-- Apple Developer Account (for deployment)
 
-### Setup
+### Quick Start
 
-**📖 See [docs/SETUP_GUIDE.md](./docs/SETUP_GUIDE.md) for detailed instructions**
+1. **Clone or open the project**
+   ```bash
+   cd /path/to/todoai
+   open todoai.xcodeproj
+   ```
 
-**Quick Start:**
-1. Open Xcode
-2. Create new iOS App project with SwiftUI + SwiftData
-3. Add all files from `todoai/` folder to the project
-4. Build and run (⌘R)
+2. **Build and run** (⌘R)
+   - Select a simulator or device
+   - Click Run or press ⌘R
+   - App launches with sample data
 
-### Current Status
-
-✅ **Foundation Complete (Sprint 1-3)**
-- SwiftData models created
-- MVVM architecture implemented
-- 5-tab navigation built
-- Todo CRUD functionality working
-- Calendar view functional
-
-### What's Working
-
-- ✅ Create habits, plans, and lists
-- ✅ Add todos to any category
-- ✅ Mark todos complete/incomplete
-- ✅ Star important todos
-- ✅ Set due dates and times
-- ✅ View todos on calendar
-- ✅ Delete todos and subtypes
-- ✅ Swipe actions
-
-## Team
-
-(Team roles and contacts to be added)
-
-## License
-
-Proprietary - All rights reserved
-
-## Support
-
-For questions or issues:
-- Email: support@dailydo.app (to be set up)
-- Documentation: See docs/ folder
-
-## Version History
-
-| Version | Date | Status |
-|---------|------|--------|
-| 0.1 | 2025-12-02 | Planning phase |
+3. **Start using**
+   - Create Habits, Plans, or Lists
+   - Add todos with due dates
+   - View in Calendar
+   - Try Focus Mode
 
 ---
 
-**Next Steps:**
-1. Review and approve project specification
-2. Review and approve MVP plan
-3. Assemble development team
-4. Set up Xcode project
-5. Begin Sprint 1
+## 📂 Project Structure
 
-See [MVP_PLAN.md](./MVP_PLAN.md) for detailed development roadmap.
+```
+todoai/
+├── README.md                    # This file
+├── APP_FEATURES.md              # Full documentation
+├── SERVER_FEATURES.md           # API/Backend docs
+├── CHANGELOG.md                 # Version history
+│
+├── todoai.xcodeproj/            # Xcode project
+│
+└── todoai/                      # Source code
+    ├── Models/                  # Data models
+    ├── Views/                   # SwiftUI views
+    │   ├── MainTabs/           # Main tab views
+    │   ├── Todo/               # Todo-related views
+    │   └── Focus/              # Focus mode
+    ├── Services/               # Business logic
+    └── todoaiApp.swift         # App entry point
+```
+
+---
+
+## 🎨 App Overview
+
+### Main Sections
+
+**1. Habits** 🔄
+- Track recurring activities
+- Build consistent routines
+- Examples: Exercise, Water intake, Reading
+
+**2. Plans** 📋
+- Goal-oriented activities
+- Timeline-based tracking
+- Examples: Study plan, Tour plan, Fitness plan
+
+**3. Lists** ✅
+- Collections and one-off tasks
+- Quick checklists
+- Examples: Shopping list, Watch list, Books to read
+
+**4. Calendar** 📅
+- Unified view of all todos
+- Week navigation
+- Filter by type and status
+- Recurring todos on applicable dates
+
+**5. Settings** ⚙️
+- App preferences
+- Account settings (coming soon)
+
+---
+
+## 💡 How It Works
+
+### Recurring Todos (New!)
+- Create a recurring todo (e.g., "Drink water" - daily)
+- It appears on all matching dates
+- Mark it complete on any date → creates a completion instance
+- The recurring todo continues showing on future dates
+- Completed dates are automatically filtered out
+
+### Focus Mode
+- Tap "Focus" on any todo (Plans/Lists only)
+- Enter distraction-free full-screen mode
+- Swipe to complete and move to next task
+- Auto-advances through your day's tasks
+
+---
+
+## 📊 Development Status
+
+**Current Sprint:** 10 of 27
+**Completed:** Foundation, Core UI, Todo Management, Notifications
+**Next Up:** AI Integration
+
+See [APP_FEATURES.md](./APP_FEATURES.md) for detailed progress.
+
+---
+
+## 🏗 Business Model
+
+**Freemium** - Free core features with premium upgrades
+
+### Free (Forever)
+- Unlimited todos, habits, plans, lists
+- Calendar and reminders
+- Focus Mode
+- Basic themes
+
+### Premium (Planned)
+- Unlimited AI generations
+- Cloud sync across devices
+- Collaboration and sharing
+- Advanced analytics
+- Custom themes
+- **$4.99/month or $39.99/year**
+
+---
+
+## 📝 Recent Updates
+
+**v0.2 (Dec 6, 2025)**
+- ✅ Fixed recurring todos functionality
+- ✅ Improved completion instance tracking
+
+**v0.1 (Dec 2-5, 2025)**
+- ✅ Initial release
+- ✅ Core features implemented
+- ✅ Calendar with modern UI
+
+See [CHANGELOG.md](./CHANGELOG.md) for full history.
+
+---
+
+## 🤝 Contributing
+
+This is a proprietary project. For questions or feedback, contact the development team.
+
+---
+
+## 📄 License
+
+Proprietary - All rights reserved
+
+---
+
+## 🔗 Links
+
+- Documentation: [APP_FEATURES.md](./APP_FEATURES.md)
+- Changelog: [CHANGELOG.md](./CHANGELOG.md)
+- Server Docs: [SERVER_FEATURES.md](./SERVER_FEATURES.md)
+
+---
+
+**Built with ❤️ using Swift and SwiftUI**

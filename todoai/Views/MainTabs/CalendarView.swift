@@ -39,10 +39,30 @@ struct CalendarView: View {
     }
 
     var todosForSelectedDate: [TodoItem] {
+        // 1. Get regular todos and completion instances for this date
         var filtered = allTodos.filter { todo in
             guard let dueDate = todo.dueDate else { return false }
             return calendar.isDate(dueDate, inSameDayAs: selectedDate) && todo.showInCalendar
         }
+
+        // 2. Get recurring templates that should appear on this date
+        let recurringTemplates = allTodos.filter { todo in
+            guard todo.isRecurringTemplate, todo.showInCalendar else { return false }
+            guard let originalDueDate = todo.dueDate else { return false }
+
+            // Only show if selectedDate is on or after the original start date
+            guard selectedDate >= calendar.startOfDay(for: originalDueDate) else { return false }
+
+            return shouldRecurringTodoAppear(todo: todo, on: selectedDate)
+        }
+
+        // 3. Filter out recurring templates that already have a completion instance for this date
+        let recurringToShow = recurringTemplates.filter { template in
+            !hasCompletionInstance(for: template, on: selectedDate)
+        }
+
+        // 4. Combine regular todos and recurring templates
+        filtered.append(contentsOf: recurringToShow)
 
         // Apply status filter
         switch selectedStatusFilter {
@@ -74,11 +94,67 @@ struct CalendarView: View {
         }
     }
 
+    // Check if a recurring todo should appear on a given date
+    func shouldRecurringTodoAppear(todo: TodoItem, on date: Date) -> Bool {
+        guard let originalDueDate = todo.dueDate else { return false }
+
+        switch todo.recurringType {
+        case .none:
+            return false
+
+        case .daily:
+            return true // Appears every day
+
+        case .weekly:
+            // Appears if day of week matches
+            let originalWeekday = calendar.component(.weekday, from: originalDueDate)
+            let targetWeekday = calendar.component(.weekday, from: date)
+            return originalWeekday == targetWeekday
+
+        case .monthly:
+            // Appears if day of month matches
+            let originalDay = calendar.component(.day, from: originalDueDate)
+            let targetDay = calendar.component(.day, from: date)
+            return originalDay == targetDay
+
+        case .yearly:
+            // Appears if day and month match
+            let originalMonth = calendar.component(.month, from: originalDueDate)
+            let originalDay = calendar.component(.day, from: originalDueDate)
+            let targetMonth = calendar.component(.month, from: date)
+            let targetDay = calendar.component(.day, from: date)
+            return originalMonth == targetMonth && originalDay == targetDay
+        }
+    }
+
+    // Check if a recurring template has a completion instance for a given date
+    func hasCompletionInstance(for template: TodoItem, on date: Date) -> Bool {
+        return allTodos.contains { todo in
+            todo.parentRecurringTodoId == template.id &&
+            todo.dueDate != nil &&
+            calendar.isDate(todo.dueDate!, inSameDayAs: date)
+        }
+    }
+
     func taskCount(for date: Date) -> Int {
-        allTodos.filter { todo in
+        // Count regular todos and completion instances for this date
+        let count = allTodos.filter { todo in
             guard let dueDate = todo.dueDate else { return false }
             return calendar.isDate(dueDate, inSameDayAs: date) && todo.showInCalendar
         }.count
+
+        // Count recurring templates that should appear on this date
+        let recurringCount = allTodos.filter { todo in
+            guard todo.isRecurringTemplate, todo.showInCalendar else { return false }
+            guard let originalDueDate = todo.dueDate else { return false }
+            guard date >= calendar.startOfDay(for: originalDueDate) else { return false }
+
+            // Only count if it should appear and doesn't have a completion instance
+            return shouldRecurringTodoAppear(todo: todo, on: date) &&
+                   !hasCompletionInstance(for: todo, on: date)
+        }.count
+
+        return count + recurringCount
     }
 
     var body: some View {
@@ -242,13 +318,18 @@ struct CalendarView: View {
                         .listRowSeparator(.hidden)
                     } else {
                         ForEach(todosForSelectedDate) { todo in
-                            TodoCalendarRow(todo: todo, onFocus: {
-                                print("🔵 Focus button tapped for: \(todo.title)")
-                                focusedTodo = todo
-                                print("🔵 Set focusedTodo to: \(focusedTodo?.title ?? "nil")")
-                            }, onTap: {
-                                selectedTodo = todo
-                            })
+                            TodoCalendarRow(
+                                todo: todo,
+                                completionDate: selectedDate,
+                                onFocus: {
+                                    print("🔵 Focus button tapped for: \(todo.title)")
+                                    focusedTodo = todo
+                                    print("🔵 Set focusedTodo to: \(focusedTodo?.title ?? "nil")")
+                                },
+                                onTap: {
+                                    selectedTodo = todo
+                                }
+                            )
                             .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
                             .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
@@ -313,7 +394,7 @@ struct CalendarView: View {
                 }
             }
             .navigationDestination(item: $selectedTodo) { todo in
-                TodoDetailView(todo: todo)
+                TodoDetailView(todo: todo, completionContextDate: selectedDate)
             }
             .sheet(isPresented: $showingAddTodo) {
                 NavigationStack {
@@ -515,7 +596,9 @@ struct DayButton: View {
 // MARK: - Todo Calendar Row
 
 struct TodoCalendarRow: View {
+    @Environment(\.modelContext) private var modelContext
     @Bindable var todo: TodoItem
+    let completionDate: Date
     let onFocus: () -> Void
     let onTap: () -> Void
 
@@ -575,7 +658,9 @@ struct TodoCalendarRow: View {
 
                     // Circle checkbox with margin
                     Button {
-                        todo.toggleCompletion()
+                        withAnimation {
+                            handleCompletion()
+                        }
                     } label: {
                         Image(systemName: todo.completed ? "checkmark.circle.fill" : "circle")
                             .font(.title3)
@@ -696,7 +781,9 @@ struct TodoCalendarRow: View {
 
                 // Circle checkbox on the right
                 Button {
-                    todo.toggleCompletion()
+                    withAnimation {
+                        handleCompletion()
+                    }
                 } label: {
                     Image(systemName: todo.completed ? "checkmark.circle.fill" : "circle")
                         .font(.title3)
@@ -715,6 +802,36 @@ struct TodoCalendarRow: View {
             .contentShape(RoundedRectangle(cornerRadius: 16))
         }
         .buttonStyle(.plain)
+    }
+
+    private func handleCompletion() {
+        // Check if this is a recurring template being marked as complete
+        if !todo.completed && todo.isRecurringTemplate {
+            // Create a completion instance instead of marking template as complete
+            let completionInstance = TodoItem(
+                title: todo.title,
+                itemDescription: todo.itemDescription,
+                dueDate: completionDate, // Use the date being viewed/completed for
+                dueTime: todo.dueTime,
+                completed: true,
+                starred: todo.starred,
+                reminderEnabled: false,
+                showInCalendar: todo.showInCalendar,
+                recurringType: .none,
+                aiGenerated: todo.aiGenerated,
+                colorID: todo.colorID,
+                textureID: todo.textureID,
+                flagColor: todo.flagColor,
+                sortOrder: todo.sortOrder,
+                completedDate: Date(),
+                parentRecurringTodoId: todo.id,
+                subtype: todo.subtype
+            )
+            modelContext.insert(completionInstance)
+        } else {
+            // For non-recurring or completion instances, toggle normally
+            todo.toggleCompletion()
+        }
     }
 
     private func timeString(from date: Date) -> String {

@@ -27,6 +27,7 @@ class TodoItem {
     var sortOrder: Int
     var createdDate: Date
     var completedDate: Date?
+    var parentRecurringTodoId: UUID?
 
     @Relationship(inverse: \Subtype.todos) var subtype: Subtype?
     @Relationship(deleteRule: .cascade) var subtasks: [Subtask]
@@ -49,6 +50,7 @@ class TodoItem {
         sortOrder: Int = 0,
         createdDate: Date = Date(),
         completedDate: Date? = nil,
+        parentRecurringTodoId: UUID? = nil,
         subtype: Subtype? = nil,
         subtasks: [Subtask] = []
     ) {
@@ -69,6 +71,7 @@ class TodoItem {
         self.sortOrder = sortOrder
         self.createdDate = createdDate
         self.completedDate = completedDate
+        self.parentRecurringTodoId = parentRecurringTodoId
         self.subtype = subtype
         self.subtasks = subtasks
     }
@@ -86,6 +89,16 @@ class TodoItem {
     // Toggle starred status
     func toggleStarred() {
         starred.toggle()
+    }
+
+    // Check if this is a recurring template (not a completion instance)
+    var isRecurringTemplate: Bool {
+        return recurringType != .none && parentRecurringTodoId == nil
+    }
+
+    // Check if this is a completion instance of a recurring todo
+    var isCompletionInstance: Bool {
+        return parentRecurringTodoId != nil
     }
 
     // Check if todo is overdue
