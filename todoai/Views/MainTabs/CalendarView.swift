@@ -30,6 +30,9 @@ struct CalendarView: View {
     @State private var showInCalendar = true
     @State private var recurringType: RecurringType = .none
     @State private var notificationService = NotificationService.shared
+    @State private var showDatePicker = false
+    @State private var showRecurringOptions = false
+    @FocusState private var isTodoTitleFocused: Bool
 
     private let calendar = Calendar.current
 
@@ -387,6 +390,13 @@ struct CalendarView: View {
                 .padding(.trailing, 20)
                 .padding(.bottom, 20)
             }
+            .onChange(of: showingAddTodo) { oldValue, newValue in
+                if newValue {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                        isTodoTitleFocused = true
+                    }
+                }
+            }
             .sheet(isPresented: $showingMonthYearPicker) {
                 MonthYearPickerView(selectedDate: $pickerDate) {
                     jumpToDate(pickerDate)
@@ -416,66 +426,153 @@ struct CalendarView: View {
                 TodoDetailView(todo: todo, completionContextDate: selectedDate)
             }
             .sheet(isPresented: $showingAddTodo) {
-                NavigationStack {
-                    Form {
-                        Section("Task Details") {
-                            TextField("Title", text: $newTodoTitle)
-                            TextField("Description (optional)", text: $newTodoDescription, axis: .vertical)
-                                .lineLimit(3...6)
-                        }
+                VStack(spacing: 16) {
+                    // Title field
+                    TextField("Task name", text: $newTodoTitle)
+                        .font(.title3)
+                        .focused($isTodoTitleFocused)
+                        .padding()
+                        .padding(.horizontal)
+                        .padding(.top, 20)
 
-                        Section("Due Date & Time") {
-                            DatePicker(
-                                "Date",
-                                selection: $newTodoDueDate,
-                                displayedComponents: [.date]
-                            )
-
-                            DatePicker(
-                                "Time",
-                                selection: $newTodoDueDate,
-                                displayedComponents: [.hourAndMinute]
-                            )
-
-                            Toggle("Set Reminder", isOn: $enableReminder)
-                        }
-
-                        Section("Repeat") {
-                            Picker("Recurring", selection: $recurringType) {
-                                Text("Never").tag(RecurringType.none)
-                                Text("Daily").tag(RecurringType.daily)
-                                Text("Weekly").tag(RecurringType.weekly)
-                                Text("Monthly").tag(RecurringType.monthly)
-                                Text("Yearly").tag(RecurringType.yearly)
+                    // Icon buttons row
+                    HStack(spacing: 12) {
+                        // Date/Time button
+                        Button {
+                            withAnimation {
+                                showDatePicker.toggle()
+                                if showDatePicker {
+                                    showRecurringOptions = false
+                                }
                             }
-                            .pickerStyle(.menu)
+                        } label: {
+                            Image(systemName: showDatePicker ? "clock.fill" : "clock")
+                                .font(.body)
+                                .foregroundStyle(showDatePicker ? .white : .purple)
+                                .frame(width: 44, height: 44)
+                                .background(
+                                    Circle()
+                                        .fill(showDatePicker ? Color.purple : Color.purple.opacity(0.1))
+                                )
                         }
 
-                        Section("Display") {
-                            Toggle("Show in Calendar", isOn: $showInCalendar)
+                        // Reminder button
+                        Button {
+                            enableReminder.toggle()
+                        } label: {
+                            Image(systemName: enableReminder ? "bell.badge.fill" : "bell")
+                                .font(.body)
+                                .foregroundStyle(enableReminder ? .white : .purple)
+                                .frame(width: 44, height: 44)
+                                .background(
+                                    Circle()
+                                        .fill(enableReminder ? Color.purple : Color.purple.opacity(0.1))
+                                )
                         }
+
+                        // Repeat button
+                        Button {
+                            withAnimation {
+                                showRecurringOptions.toggle()
+                                if showRecurringOptions {
+                                    showDatePicker = false
+                                }
+                            }
+                        } label: {
+                            Image(systemName: recurringType != .none ? "repeat.circle.fill" : "repeat")
+                                .font(.body)
+                                .foregroundStyle(recurringType != .none ? .white : .purple)
+                                .frame(width: 44, height: 44)
+                                .background(
+                                    Circle()
+                                        .fill(recurringType != .none ? Color.purple : Color.purple.opacity(0.1))
+                                )
+                        }
+
+                        // Calendar visibility button
+                        Button {
+                            showInCalendar.toggle()
+                        } label: {
+                            Image(systemName: showInCalendar ? "calendar.badge.checkmark" : "calendar.badge.minus")
+                                .font(.body)
+                                .foregroundStyle(showInCalendar ? .white : .purple)
+                                .frame(width: 44, height: 44)
+                                .background(
+                                    Circle()
+                                        .fill(showInCalendar ? Color.purple : Color.purple.opacity(0.1))
+                                )
+                        }
+
+                        Spacer()
+
+                        // Add button
+                        Button {
+                            addTodo()
+                        } label: {
+                            Image(systemName: "checkmark")
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .frame(width: 44, height: 44)
+                                .background(
+                                    Circle()
+                                        .fill(newTodoTitle.isEmpty ? Color.gray : Color.purple)
+                                )
+                        }
+                        .disabled(newTodoTitle.isEmpty)
                     }
-                    .navigationTitle("New Task")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Cancel") {
-                                resetForm()
+                    .padding(.horizontal)
+
+                    // Expandable date picker section
+                    if showDatePicker {
+                        VStack(spacing: 12) {
+                            DatePicker("Date", selection: $newTodoDueDate, displayedComponents: [.date])
+                                .datePickerStyle(.wheel)
+                                .padding(.horizontal)
+
+                            DatePicker("Time", selection: $newTodoDueDate, displayedComponents: [.hourAndMinute])
+                                .datePickerStyle(.wheel)
+                                .padding(.horizontal)
+                        }
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+
+                    // Expandable recurring options section
+                    if showRecurringOptions {
+                        VStack(spacing: 8) {
+                            ForEach([RecurringType.none, .daily, .weekly, .monthly, .yearly], id: \.self) { type in
+                                Button {
+                                    recurringType = type
+                                    withAnimation {
+                                        showRecurringOptions = false
+                                    }
+                                } label: {
+                                    HStack {
+                                        Text(type.displayName)
+                                            .foregroundStyle(.primary)
+                                        Spacer()
+                                        if recurringType == type {
+                                            Image(systemName: "checkmark")
+                                                .foregroundStyle(.purple)
+                                        }
+                                    }
+                                    .padding()
+                                    .background(recurringType == type ? Color.purple.opacity(0.1) : Color.clear)
+                                    .cornerRadius(10)
+                                }
                             }
                         }
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button("Add") {
-                                addTodo()
-                            }
-                            .disabled(newTodoTitle.isEmpty)
-                        }
+                        .padding(.horizontal)
+                        .transition(.move(edge: .top).combined(with: .opacity))
                     }
-                    .onAppear {
-                        // Set the date to the selected calendar date
-                        newTodoDueDate = selectedDate
-                    }
+
+                    Spacer()
                 }
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.height(showDatePicker ? 550 : (showRecurringOptions ? 400 : 200))])
+                .presentationDragIndicator(.visible)
+                .onAppear {
+                    // Set the date to the selected calendar date
+                    newTodoDueDate = selectedDate
+                }
             }
         }
     }
@@ -534,6 +631,9 @@ struct CalendarView: View {
         enableReminder = false
         showInCalendar = true
         recurringType = .none
+        showDatePicker = false
+        showRecurringOptions = false
+        isTodoTitleFocused = false
     }
 
     private func jumpToDate(_ date: Date) {
@@ -652,17 +752,21 @@ struct TodoCalendarRow: View {
                 onTap()
             } label: {
                 HStack(spacing: 0) {
-                    // Time with margin
+                    // Time with AM/PM
                     if let dueTime = todo.dueTime {
-                        Text(timeString(from: dueTime))
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .foregroundStyle(todo.completed ? .secondary : .primary)
-                            .frame(width: 40, alignment: .leading)
-                            .padding(.leading, 12)
+                        VStack(alignment: .center, spacing: 2) {
+                            Text(timeString(from: dueTime))
+                                .font(.system(size: 11))
+                                .fontWeight(.medium)
+                                .foregroundStyle(todo.completed ? .secondary : .primary)
+                            Text(amPMString(from: dueTime))
+                                .font(.system(size: 8))
+                                .foregroundStyle(todo.completed ? .secondary : .secondary)
+                        }
+                        .frame(width: 45, alignment: .center)
                     } else {
                         Spacer()
-                            .frame(width: 52)
+                            .frame(width: 45)
                     }
 
                     // Title with margin
