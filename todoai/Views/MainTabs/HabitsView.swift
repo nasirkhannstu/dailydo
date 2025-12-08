@@ -72,9 +72,9 @@ struct HabitsView: View {
                         .frame(width: 56, height: 56)
                         .background(
                             Circle()
-                                .fill(Color.blue.gradient)
+                                .fill(Color.green.gradient)
                         )
-                        .shadow(color: Color.blue.opacity(0.4), radius: 8, x: 0, y: 4)
+                        .shadow(color: Color.green.opacity(0.4), radius: 8, x: 0, y: 4)
                 }
                 .padding(.trailing, 20)
                 .padding(.bottom, 20)
@@ -101,12 +101,12 @@ struct HabitsView: View {
                                 Text("Calendar")
                                     .font(.subheadline)
                             }
-                            .foregroundStyle(newHabitShowInCalendar ? .white : .blue)
+                            .foregroundStyle(newHabitShowInCalendar ? .white : .green)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 10)
                             .background(
                                 RoundedRectangle(cornerRadius: 10)
-                                    .fill(newHabitShowInCalendar ? Color.blue : Color.blue.opacity(0.1))
+                                    .fill(newHabitShowInCalendar ? Color.green : Color.green.opacity(0.1))
                             )
                         }
 
@@ -120,12 +120,12 @@ struct HabitsView: View {
                                 Text("Reminder")
                                     .font(.subheadline)
                             }
-                            .foregroundStyle(newHabitRemindersEnabled ? .white : .blue)
+                            .foregroundStyle(newHabitRemindersEnabled ? .white : .green)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 10)
                             .background(
                                 RoundedRectangle(cornerRadius: 10)
-                                    .fill(newHabitRemindersEnabled ? Color.blue : Color.blue.opacity(0.1))
+                                    .fill(newHabitRemindersEnabled ? Color.green : Color.green.opacity(0.1))
                             )
                         }
 
@@ -141,7 +141,7 @@ struct HabitsView: View {
                                 .frame(width: 44, height: 44)
                                 .background(
                                     Circle()
-                                        .fill(newHabitName.isEmpty ? Color.gray : Color.blue)
+                                        .fill(newHabitName.isEmpty ? Color.gray : Color.green)
                                 )
                         }
                         .disabled(newHabitName.isEmpty)
@@ -207,11 +207,11 @@ struct HabitCardRow: View {
         HStack(alignment: .center, spacing: 12) {
             Image(systemName: habit.icon)
                 .font(.title2)
-                .foregroundStyle(.blue)
+                .foregroundStyle(.green)
                 .frame(width: 44, height: 44)
                 .background(
                     Circle()
-                        .fill(Color.blue.opacity(0.1))
+                        .fill(Color.green.opacity(0.1))
                 )
 
             VStack(alignment: .leading, spacing: 4) {
@@ -231,12 +231,12 @@ struct HabitCardRow: View {
                 Text("\(Int(habit.completionPercentage))%")
                     .font(.caption)
                     .fontWeight(.semibold)
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(.green)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
                     .background(
                         Capsule()
-                            .fill(Color.blue.opacity(0.1))
+                            .fill(Color.green.opacity(0.1))
                     )
             }
 

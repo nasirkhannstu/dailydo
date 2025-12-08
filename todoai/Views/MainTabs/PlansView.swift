@@ -72,9 +72,9 @@ struct PlansView: View {
                         .frame(width: 56, height: 56)
                         .background(
                             Circle()
-                                .fill(Color.green.gradient)
+                                .fill(Color.blue.gradient)
                         )
-                        .shadow(color: Color.green.opacity(0.4), radius: 8, x: 0, y: 4)
+                        .shadow(color: Color.blue.opacity(0.4), radius: 8, x: 0, y: 4)
                 }
                 .padding(.trailing, 20)
                 .padding(.bottom, 20)
@@ -101,12 +101,12 @@ struct PlansView: View {
                                 Text("Calendar")
                                     .font(.subheadline)
                             }
-                            .foregroundStyle(newPlanShowInCalendar ? .white : .green)
+                            .foregroundStyle(newPlanShowInCalendar ? .white : .blue)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 10)
                             .background(
                                 RoundedRectangle(cornerRadius: 10)
-                                    .fill(newPlanShowInCalendar ? Color.green : Color.green.opacity(0.1))
+                                    .fill(newPlanShowInCalendar ? Color.blue : Color.blue.opacity(0.1))
                             )
                         }
 
@@ -120,12 +120,12 @@ struct PlansView: View {
                                 Text("Reminder")
                                     .font(.subheadline)
                             }
-                            .foregroundStyle(newPlanRemindersEnabled ? .white : .green)
+                            .foregroundStyle(newPlanRemindersEnabled ? .white : .blue)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 10)
                             .background(
                                 RoundedRectangle(cornerRadius: 10)
-                                    .fill(newPlanRemindersEnabled ? Color.green : Color.green.opacity(0.1))
+                                    .fill(newPlanRemindersEnabled ? Color.blue : Color.blue.opacity(0.1))
                             )
                         }
 
@@ -141,7 +141,7 @@ struct PlansView: View {
                                 .frame(width: 44, height: 44)
                                 .background(
                                     Circle()
-                                        .fill(newPlanName.isEmpty ? Color.gray : Color.green)
+                                        .fill(newPlanName.isEmpty ? Color.gray : Color.blue)
                                 )
                         }
                         .disabled(newPlanName.isEmpty)
@@ -209,11 +209,11 @@ struct PlanCardRow: View {
             HStack(alignment: .center, spacing: 12) {
                 Image(systemName: plan.icon)
                     .font(.title2)
-                    .foregroundStyle(.green)
+                    .foregroundStyle(.blue)
                     .frame(width: 44, height: 44)
                     .background(
                         Circle()
-                            .fill(Color.green.opacity(0.1))
+                            .fill(Color.blue.opacity(0.1))
                     )
 
                 Text(plan.name)
@@ -245,7 +245,7 @@ struct PlanCardRow: View {
                 .padding(.vertical, 12)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.green.opacity(0.1))
+                        .fill(Color.blue.opacity(0.1))
                 )
 
                 // Total todos
@@ -263,7 +263,7 @@ struct PlanCardRow: View {
                 .padding(.vertical, 12)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.blue.opacity(0.1))
+                        .fill(Color.green.opacity(0.1))
                 )
 
                 // Remaining todos

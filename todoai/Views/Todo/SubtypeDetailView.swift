@@ -21,6 +21,9 @@ struct SubtypeDetailView: View {
     @State private var showInCalendar = true
     @State private var recurringType: RecurringType = .none
     @State private var notificationService = NotificationService.shared
+    @State private var showDatePicker = false
+    @State private var showRecurringOptions = false
+    @FocusState private var isTodoTitleFocused: Bool
 
     // Edit subtype states
     @State private var showingEditSubtype = false
@@ -50,9 +53,9 @@ struct SubtypeDetailView: View {
     var fabColor: Color {
         switch subtype.type {
         case .habit:
-            return .blue
-        case .plan:
             return .green
+        case .plan:
+            return .blue
         case .list:
             return .orange
         }
@@ -129,6 +132,9 @@ struct SubtypeDetailView: View {
         .overlay(alignment: .bottomTrailing) {
             Button {
                 showingAddTodo = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                    isTodoTitleFocused = true
+                }
             } label: {
                 Image(systemName: "plus")
                     .font(.title2)
@@ -145,62 +151,149 @@ struct SubtypeDetailView: View {
             .padding(.bottom, 20)
         }
         .sheet(isPresented: $showingAddTodo) {
-            NavigationStack {
-                Form {
-                    Section("Task Details") {
-                        TextField("Title", text: $newTodoTitle)
-                        TextField("Description (optional)", text: $newTodoDescription, axis: .vertical)
-                            .lineLimit(3...6)
-                    }
+            VStack(spacing: 16) {
+                // Title field
+                TextField("Task name", text: $newTodoTitle)
+                    .font(.title3)
+                    .focused($isTodoTitleFocused)
+                    .padding()
+                    .padding(.horizontal)
+                    .padding(.top, 20)
 
-                    Section("Due Date & Time") {
-                        DatePicker(
-                            "Date",
-                            selection: $newTodoDueDate,
-                            displayedComponents: [.date]
-                        )
-
-                        DatePicker(
-                            "Time",
-                            selection: $newTodoDueDate,
-                            displayedComponents: [.hourAndMinute]
-                        )
-
-                        Toggle("Set Reminder", isOn: $enableReminder)
-                    }
-
-                    Section("Repeat") {
-                        Picker("Recurring", selection: $recurringType) {
-                            Text("Never").tag(RecurringType.none)
-                            Text("Daily").tag(RecurringType.daily)
-                            Text("Weekly").tag(RecurringType.weekly)
-                            Text("Monthly").tag(RecurringType.monthly)
-                            Text("Yearly").tag(RecurringType.yearly)
+                // Icon buttons row
+                HStack(spacing: 12) {
+                    // Date/Time button
+                    Button {
+                        withAnimation {
+                            showDatePicker.toggle()
+                            if showDatePicker {
+                                showRecurringOptions = false
+                            }
                         }
-                        .pickerStyle(.menu)
+                    } label: {
+                        Image(systemName: showDatePicker ? "calendar.badge.checkmark" : "calendar")
+                            .font(.body)
+                            .foregroundStyle(showDatePicker ? .white : fabColor)
+                            .frame(width: 44, height: 44)
+                            .background(
+                                Circle()
+                                    .fill(showDatePicker ? fabColor : fabColor.opacity(0.1))
+                            )
                     }
 
-                    Section("Display") {
-                        Toggle("Show in Calendar", isOn: $showInCalendar)
+                    // Reminder button
+                    Button {
+                        enableReminder.toggle()
+                    } label: {
+                        Image(systemName: enableReminder ? "bell.badge.fill" : "bell")
+                            .font(.body)
+                            .foregroundStyle(enableReminder ? .white : fabColor)
+                            .frame(width: 44, height: 44)
+                            .background(
+                                Circle()
+                                    .fill(enableReminder ? fabColor : fabColor.opacity(0.1))
+                            )
                     }
+
+                    // Repeat button
+                    Button {
+                        withAnimation {
+                            showRecurringOptions.toggle()
+                            if showRecurringOptions {
+                                showDatePicker = false
+                            }
+                        }
+                    } label: {
+                        Image(systemName: recurringType != .none ? "repeat.circle.fill" : "repeat")
+                            .font(.body)
+                            .foregroundStyle(recurringType != .none ? .white : fabColor)
+                            .frame(width: 44, height: 44)
+                            .background(
+                                Circle()
+                                    .fill(recurringType != .none ? fabColor : fabColor.opacity(0.1))
+                            )
+                    }
+
+                    // Calendar visibility button
+                    Button {
+                        showInCalendar.toggle()
+                    } label: {
+                        Image(systemName: showInCalendar ? "calendar.badge.checkmark" : "calendar.badge.minus")
+                            .font(.body)
+                            .foregroundStyle(showInCalendar ? .white : fabColor)
+                            .frame(width: 44, height: 44)
+                            .background(
+                                Circle()
+                                    .fill(showInCalendar ? fabColor : fabColor.opacity(0.1))
+                            )
+                    }
+
+                    Spacer()
+
+                    // Add button
+                    Button {
+                        addTodo()
+                    } label: {
+                        Image(systemName: "checkmark")
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                            .frame(width: 44, height: 44)
+                            .background(
+                                Circle()
+                                    .fill(newTodoTitle.isEmpty ? Color.gray : fabColor)
+                            )
+                    }
+                    .disabled(newTodoTitle.isEmpty)
                 }
-                .navigationTitle("New Task")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Cancel") {
-                            resetForm()
-                        }
+                .padding(.horizontal)
+
+                // Expandable date picker section
+                if showDatePicker {
+                    VStack(spacing: 12) {
+                        DatePicker("Date", selection: $newTodoDueDate, displayedComponents: [.date])
+                            .datePickerStyle(.wheel)
+                            .padding(.horizontal)
+
+                        DatePicker("Time", selection: $newTodoDueDate, displayedComponents: [.hourAndMinute])
+                            .datePickerStyle(.wheel)
+                            .padding(.horizontal)
                     }
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Add") {
-                            addTodo()
-                        }
-                        .disabled(newTodoTitle.isEmpty)
-                    }
+                    .transition(.move(edge: .top).combined(with: .opacity))
                 }
+
+                // Expandable recurring options section
+                if showRecurringOptions {
+                    VStack(spacing: 8) {
+                        ForEach([RecurringType.none, .daily, .weekly, .monthly, .yearly], id: \.self) { type in
+                            Button {
+                                recurringType = type
+                                withAnimation {
+                                    showRecurringOptions = false
+                                }
+                            } label: {
+                                HStack {
+                                    Text(type.displayName)
+                                        .foregroundStyle(.primary)
+                                    Spacer()
+                                    if recurringType == type {
+                                        Image(systemName: "checkmark")
+                                            .foregroundStyle(fabColor)
+                                    }
+                                }
+                                .padding()
+                                .background(recurringType == type ? fabColor.opacity(0.1) : Color.clear)
+                                .cornerRadius(10)
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                }
+
+                Spacer()
             }
-            .presentationDetents([.medium, .large])
+            .presentationDetents([.height(showDatePicker ? 550 : (showRecurringOptions ? 400 : 200))])
+            .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingEditSubtype) {
             NavigationStack {
@@ -336,6 +429,9 @@ struct SubtypeDetailView: View {
         enableReminder = false
         showInCalendar = true
         recurringType = .none
+        showDatePicker = false
+        showRecurringOptions = false
+        isTodoTitleFocused = false
     }
 
     private func deleteTodos(from array: [TodoItem], at offsets: IndexSet) {
