@@ -132,9 +132,6 @@ struct SubtypeDetailView: View {
         .overlay(alignment: .bottomTrailing) {
             Button {
                 showingAddTodo = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                    isTodoTitleFocused = true
-                }
             } label: {
                 Image(systemName: "plus")
                     .font(.title2)
@@ -149,6 +146,13 @@ struct SubtypeDetailView: View {
             }
             .padding(.trailing, 20)
             .padding(.bottom, 20)
+        }
+        .onChange(of: showingAddTodo) { oldValue, newValue in
+            if newValue {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                    isTodoTitleFocused = true
+                }
+            }
         }
         .sheet(isPresented: $showingAddTodo) {
             VStack(spacing: 16) {
@@ -171,7 +175,7 @@ struct SubtypeDetailView: View {
                             }
                         }
                     } label: {
-                        Image(systemName: showDatePicker ? "calendar.badge.checkmark" : "calendar")
+                        Image(systemName: showDatePicker ? "clock.fill" : "clock")
                             .font(.body)
                             .foregroundStyle(showDatePicker ? .white : fabColor)
                             .frame(width: 44, height: 44)
