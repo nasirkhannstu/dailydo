@@ -446,7 +446,7 @@ struct SubtypeDetailView: View {
 
     private func prepareEditForm() {
         editName = subtype.name
-        editIcon = subtype.icon ?? ""
+        editIcon = subtype.icon
         editShowInCalendar = subtype.showInCalendar
         editRemindersEnabled = false
     }

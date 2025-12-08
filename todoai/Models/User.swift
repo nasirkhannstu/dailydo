@@ -13,6 +13,9 @@ class User {
     @Attribute(.unique) var id: UUID
     var name: String
     var email: String?
+    var age: Int?
+    var bedtime: Date?
+    var hasCompletedOnboarding: Bool
     var isPremium: Bool
     var premiumExpiryDate: Date?
     var aiCreditBalance: Int
@@ -26,6 +29,9 @@ class User {
         id: UUID = UUID(),
         name: String = "",
         email: String? = nil,
+        age: Int? = nil,
+        bedtime: Date? = nil,
+        hasCompletedOnboarding: Bool = false,
         isPremium: Bool = false,
         premiumExpiryDate: Date? = nil,
         aiCreditBalance: Int = 5, // 5 free credits
@@ -37,6 +43,9 @@ class User {
         self.id = id
         self.name = name
         self.email = email
+        self.age = age
+        self.bedtime = bedtime
+        self.hasCompletedOnboarding = hasCompletedOnboarding
         self.isPremium = isPremium
         self.premiumExpiryDate = premiumExpiryDate
         self.aiCreditBalance = aiCreditBalance

@@ -6,11 +6,20 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct OnboardingView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var users: [User]
     @Binding var isOnboardingComplete: Bool
     @State private var currentPage = 0
+    @State private var dragOffset: CGFloat = 0
+    @State private var userName = ""
+    @State private var userAge: Int = 25
+    @State private var userBedtime = Calendar.current.date(from: DateComponents(hour: 22, minute: 0)) ?? Date()
     @State private var selectedPurposes: Set<String> = []
+    @State private var showSkipButton = false
+    @FocusState private var isNameFieldFocused: Bool
 
     let pages: [OnboardingPage] = [
         OnboardingPage(
@@ -23,7 +32,7 @@ struct OnboardingView: View {
                 "Visualize your progress over time",
                 "Build streaks and maintain momentum"
             ],
-            color: .blue
+            color: .green
         ),
         OnboardingPage(
             icon: "calendar.badge.checkmark",
@@ -35,7 +44,7 @@ struct OnboardingView: View {
                 "Organize tasks by projects or themes",
                 "Stay focused with calendar integration"
             ],
-            color: .green
+            color: .blue
         ),
         OnboardingPage(
             icon: "list.clipboard.fill",
@@ -75,41 +84,92 @@ struct OnboardingView: View {
         "Other"
     ]
 
+    var totalPages: Int {
+        pages.count + 3 // 4 info pages + name + age/bedtime + purpose
+    }
+
     var body: some View {
         ZStack {
-            // Background gradient
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    currentPageColor.opacity(0.3),
-                    currentPageColor.opacity(0.1)
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            // Animated background gradient with parallax
+            AnimatedBackgroundGradient(currentPage: currentPage, pages: pages, totalPages: totalPages)
+                .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Page content
-                TabView(selection: $currentPage) {
-                    // Informative pages
-                    ForEach(0..<pages.count, id: \.self) { index in
-                        OnboardingPageView(page: pages[index])
-                            .tag(index)
+                // Skip button
+                HStack {
+                    Spacer()
+                    if showSkipButton && currentPage < totalPages - 1 {
+                        Button {
+                            skipOnboarding()
+                        } label: {
+                            Text("Skip")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                        }
+                        .transition(.opacity.combined(with: .move(edge: .top)))
                     }
-
-                    // Purpose selection page
-                    PurposeSelectionView(
-                        selectedPurposes: $selectedPurposes,
-                        purposeOptions: purposeOptions
-                    )
-                    .tag(pages.count)
                 }
-                .tabViewStyle(.page(indexDisplayMode: .never))
+                .frame(height: 44)
+                .padding(.horizontal, 16)
+
+                // Page indicator dots
+                HStack(spacing: 8) {
+                    ForEach(0..<totalPages, id: \.self) { index in
+                        Circle()
+                            .fill(index == currentPage ? currentPageColor : Color.gray.opacity(0.3))
+                            .frame(width: index == currentPage ? 10 : 6, height: index == currentPage ? 10 : 6)
+                            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentPage)
+                    }
+                }
+                .padding(.vertical, 12)
+
+                // Page content with custom gesture
+                GeometryReader { geometry in
+                    ZStack {
+                        ForEach(0..<totalPages, id: \.self) { index in
+                            Group {
+                                if index < pages.count {
+                                    OnboardingPageView(page: pages[index], offset: parallaxOffset(for: index))
+                                } else if index == pages.count {
+                                    NameInputView(userName: $userName, isNameFieldFocused: $isNameFieldFocused)
+                                } else if index == pages.count + 1 {
+                                    AgeAndBedtimeView(userAge: $userAge, userBedtime: $userBedtime)
+                                } else {
+                                    PurposeSelectionView(
+                                        selectedPurposes: $selectedPurposes,
+                                        purposeOptions: purposeOptions
+                                    )
+                                }
+                            }
+                            .opacity(index == currentPage ? 1 : 0)
+                            .offset(x: CGFloat(index - currentPage) * geometry.size.width + dragOffset)
+                        }
+                    }
+                    .gesture(
+                        DragGesture()
+                            .onChanged { value in
+                                dragOffset = value.translation.width
+                            }
+                            .onEnded { value in
+                                let threshold: CGFloat = 50
+                                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                                    if value.translation.width < -threshold && currentPage < totalPages - 1 {
+                                        currentPage += 1
+                                    } else if value.translation.width > threshold && currentPage > 0 {
+                                        currentPage -= 1
+                                    }
+                                    dragOffset = 0
+                                }
+                            }
+                    )
+                }
 
                 // Bottom button
                 VStack(spacing: 20) {
-                    if currentPage == pages.count {
-                        // Get Started button on purpose selection page
+                    if currentPage == totalPages - 1 {
+                        // Get Started button on last page
                         Button {
                             completeOnboarding()
                         } label: {
@@ -118,14 +178,25 @@ struct OnboardingView: View {
                                 .foregroundStyle(.white)
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.indigo)
+                                .background(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color.indigo, Color.purple]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
                                 .cornerRadius(16)
+                                .shadow(color: Color.indigo.opacity(0.4), radius: 8, x: 0, y: 4)
                         }
                         .padding(.horizontal, 32)
                     } else {
                         // Next button
                         Button {
-                            withAnimation {
+                            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                                if currentPage == pages.count && userName.isEmpty {
+                                    // Shake animation for empty name
+                                    return
+                                }
                                 currentPage += 1
                             }
                         } label: {
@@ -137,8 +208,9 @@ struct OnboardingView: View {
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(pages[currentPage].color)
+                            .background(currentPageColor)
                             .cornerRadius(16)
+                            .shadow(color: currentPageColor.opacity(0.4), radius: 8, x: 0, y: 4)
                         }
                         .padding(.horizontal, 32)
                     }
@@ -146,17 +218,58 @@ struct OnboardingView: View {
                 .padding(.bottom, 32)
             }
         }
-        .animation(.easeInOut, value: currentPage)
+        .onAppear {
+            // Show skip button after 2 seconds
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                withAnimation {
+                    showSkipButton = true
+                }
+            }
+        }
     }
 
     private var currentPageColor: Color {
         if currentPage < pages.count {
             return pages[currentPage].color
+        } else if currentPage == pages.count {
+            return .blue
+        } else if currentPage == pages.count + 1 {
+            return .purple
         }
         return .indigo
     }
 
+    private func parallaxOffset(for index: Int) -> CGFloat {
+        let offset = CGFloat(currentPage - index) * 20
+        return offset
+    }
+
+    private func skipOnboarding() {
+        withAnimation {
+            isOnboardingComplete = true
+            UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+        }
+    }
+
     private func completeOnboarding() {
+        // Save user data
+        let user: User
+        if let existingUser = users.first {
+            user = existingUser
+            user.name = userName.isEmpty ? "User" : userName
+            user.age = userAge
+            user.bedtime = userBedtime
+            user.hasCompletedOnboarding = true
+        } else {
+            user = User(
+                name: userName.isEmpty ? "User" : userName,
+                age: userAge,
+                bedtime: userBedtime,
+                hasCompletedOnboarding: true
+            )
+            modelContext.insert(user)
+        }
+
         withAnimation {
             isOnboardingComplete = true
             UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
@@ -164,18 +277,54 @@ struct OnboardingView: View {
     }
 }
 
+// MARK: - Animated Background Gradient
+
+struct AnimatedBackgroundGradient: View {
+    let currentPage: Int
+    let pages: [OnboardingPage]
+    let totalPages: Int
+
+    var body: some View {
+        LinearGradient(
+            gradient: Gradient(colors: [
+                backgroundColorForPage.opacity(0.3),
+                backgroundColorForPage.opacity(0.1)
+            ]),
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .animation(.easeInOut(duration: 0.5), value: currentPage)
+    }
+
+    private var backgroundColorForPage: Color {
+        if currentPage < pages.count {
+            return pages[currentPage].color
+        } else if currentPage == pages.count {
+            return .blue
+        } else if currentPage == pages.count + 1 {
+            return .purple
+        }
+        return .indigo
+    }
+}
+
+// MARK: - Onboarding Page View with Parallax
+
 struct OnboardingPageView: View {
     let page: OnboardingPage
+    let offset: CGFloat
 
     var body: some View {
         VStack(spacing: 32) {
             Spacer()
 
-            // Icon
+            // Icon with floating animation
             Image(systemName: page.icon)
                 .font(.system(size: 80))
                 .foregroundStyle(page.color)
                 .padding(.bottom, 10)
+                .offset(y: offset * 0.5)
+                .shadow(color: page.color.opacity(0.3), radius: 20, x: 0, y: 10)
 
             // Title
             Text(page.title)
@@ -183,10 +332,11 @@ struct OnboardingPageView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
                 .padding(.bottom, 10)
+                .offset(y: offset * 0.3)
 
             // Benefits list
             VStack(alignment: .leading, spacing: 12) {
-                ForEach(page.benefits, id: \.self) { benefit in
+                ForEach(Array(page.benefits.enumerated()), id: \.offset) { index, benefit in
                     HStack(alignment: .top, spacing: 12) {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundStyle(page.color)
@@ -196,6 +346,7 @@ struct OnboardingPageView: View {
                             .foregroundStyle(.primary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
+                    .offset(y: offset * 0.1 * CGFloat(index))
                 }
             }
             .padding(.horizontal, 40)
@@ -204,6 +355,139 @@ struct OnboardingPageView: View {
         }
     }
 }
+
+// MARK: - Name Input View
+
+struct NameInputView: View {
+    @Binding var userName: String
+    @FocusState.Binding var isNameFieldFocused: Bool
+
+    var body: some View {
+        VStack(spacing: 32) {
+            Spacer()
+
+            // Icon
+            Image(systemName: "person.circle.fill")
+                .font(.system(size: 80))
+                .foregroundStyle(.blue)
+                .padding(.bottom, 10)
+
+            // Title
+            Text("What's your name?")
+                .font(.system(size: 28, weight: .bold))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+
+            // Subtitle
+            Text("We'll use this to personalize your experience")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+
+            // Name input
+            VStack(spacing: 8) {
+                TextField("Enter your name", text: $userName)
+                    .font(.title2)
+                    .padding()
+                    .background(Color.white)
+                    .cornerRadius(16)
+                    .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
+                    .focused($isNameFieldFocused)
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            isNameFieldFocused = true
+                        }
+                    }
+            }
+            .padding(.horizontal, 32)
+            .padding(.top, 20)
+
+            Spacer()
+        }
+    }
+}
+
+// MARK: - Age and Bedtime View
+
+struct AgeAndBedtimeView: View {
+    @Binding var userAge: Int
+    @Binding var userBedtime: Date
+
+    var body: some View {
+        VStack(spacing: 32) {
+            Spacer()
+
+            // Icon
+            Image(systemName: "moon.stars.fill")
+                .font(.system(size: 80))
+                .foregroundStyle(.purple)
+                .padding(.bottom, 10)
+
+            // Title
+            Text("Help us personalize")
+                .font(.system(size: 28, weight: .bold))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+
+            // Subtitle
+            Text("This helps us show the right content at the right time")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+
+            // Age and Bedtime pickers
+            VStack(spacing: 24) {
+                // Age picker
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "person.fill")
+                            .foregroundStyle(.purple)
+                        Text("Age")
+                            .font(.headline)
+                    }
+                    .padding(.horizontal, 16)
+
+                    Picker("Age", selection: $userAge) {
+                        ForEach(13..<100, id: \.self) { age in
+                            Text("\(age) years").tag(age)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .frame(height: 120)
+                    .background(Color.white)
+                    .cornerRadius(16)
+                    .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
+                }
+
+                // Bedtime picker
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "bed.double.fill")
+                            .foregroundStyle(.purple)
+                        Text("Usual Bedtime")
+                            .font(.headline)
+                    }
+                    .padding(.horizontal, 16)
+
+                    DatePicker("Bedtime", selection: $userBedtime, displayedComponents: [.hourAndMinute])
+                        .datePickerStyle(.wheel)
+                        .labelsHidden()
+                        .frame(height: 120)
+                        .background(Color.white)
+                        .cornerRadius(16)
+                        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
+                }
+            }
+            .padding(.horizontal, 32)
+
+            Spacer()
+        }
+    }
+}
+
+// MARK: - Purpose Selection View
 
 struct PurposeSelectionView: View {
     @Binding var selectedPurposes: Set<String>
@@ -224,14 +508,22 @@ struct PurposeSelectionView: View {
                 .font(.system(size: 28, weight: .bold))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
-                .padding(.bottom, 10)
+
+            // Subtitle
+            Text("Select all that apply")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
 
             // Purpose options
             ScrollView {
                 VStack(spacing: 12) {
                     ForEach(purposeOptions, id: \.self) { option in
                         Button {
-                            togglePurpose(option)
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                togglePurpose(option)
+                            }
                         } label: {
                             HStack(spacing: 12) {
                                 Image(systemName: selectedPurposes.contains(option) ? "checkmark.square.fill" : "square")
@@ -246,12 +538,13 @@ struct PurposeSelectionView: View {
                             .padding()
                             .background(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .fill(selectedPurposes.contains(option) ? Color.indigo.opacity(0.1) : Color.gray.opacity(0.05))
+                                    .fill(selectedPurposes.contains(option) ? Color.indigo.opacity(0.1) : Color.white)
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
                                     .stroke(selectedPurposes.contains(option) ? Color.indigo : Color.clear, lineWidth: 2)
                             )
+                            .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         }
                         .buttonStyle(.plain)
                     }
@@ -272,6 +565,8 @@ struct PurposeSelectionView: View {
     }
 }
 
+// MARK: - Onboarding Page Model
+
 struct OnboardingPage {
     let icon: String
     let title: String
@@ -281,4 +576,5 @@ struct OnboardingPage {
 
 #Preview {
     OnboardingView(isOnboardingComplete: .constant(false))
+        .modelContainer(for: [User.self, Subtype.self, TodoItem.self])
 }
