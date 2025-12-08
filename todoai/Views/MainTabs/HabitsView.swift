@@ -18,9 +18,12 @@ struct HabitsView: View {
 
     @State private var showingAddHabit = false
     @State private var newHabitName = ""
+    @State private var newHabitShowInCalendar = false
+    @State private var newHabitRemindersEnabled = false
     @State private var selectedHabit: Subtype?
     @State private var habitToDelete: Subtype?
     @State private var showingDeleteAlert = false
+    @FocusState private var isHabitNameFocused: Bool
 
     var body: some View {
         NavigationStack {
@@ -58,6 +61,9 @@ struct HabitsView: View {
             .overlay(alignment: .bottomTrailing) {
                 Button {
                     showingAddHabit = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                        isHabitNameFocused = true
+                    }
                 } label: {
                     Image(systemName: "plus")
                         .font(.title2)
@@ -74,28 +80,78 @@ struct HabitsView: View {
                 .padding(.bottom, 20)
             }
             .sheet(isPresented: $showingAddHabit) {
-                NavigationStack {
-                    Form {
-                        TextField("Habit Name", text: $newHabitName)
-                    }
-                    .navigationTitle("New Habit")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Cancel") {
-                                showingAddHabit = false
-                                newHabitName = ""
+                VStack(spacing: 20) {
+                    // Name field
+                    TextField("Habit Name", text: $newHabitName)
+                        .font(.title3)
+                        .focused($isHabitNameFocused)
+                        .padding()
+                        .padding(.horizontal)
+                        .padding(.top, 20)
+
+                    // Toggle buttons and Add button
+                    HStack(spacing: 12) {
+                        // Calendar toggle button
+                        Button {
+                            newHabitShowInCalendar.toggle()
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: newHabitShowInCalendar ? "calendar.badge.checkmark" : "calendar")
+                                    .font(.subheadline)
+                                Text("Calendar")
+                                    .font(.subheadline)
                             }
+                            .foregroundStyle(newHabitShowInCalendar ? .white : .blue)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(newHabitShowInCalendar ? Color.blue : Color.blue.opacity(0.1))
+                            )
                         }
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button("Add") {
-                                addHabit()
+
+                        // Reminder toggle button
+                        Button {
+                            newHabitRemindersEnabled.toggle()
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: newHabitRemindersEnabled ? "bell.badge.fill" : "bell")
+                                    .font(.subheadline)
+                                Text("Reminder")
+                                    .font(.subheadline)
                             }
-                            .disabled(newHabitName.isEmpty)
+                            .foregroundStyle(newHabitRemindersEnabled ? .white : .blue)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(newHabitRemindersEnabled ? Color.blue : Color.blue.opacity(0.1))
+                            )
                         }
+
+                        Spacer()
+
+                        // Add button
+                        Button {
+                            addHabit()
+                        } label: {
+                            Image(systemName: "checkmark")
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .frame(width: 44, height: 44)
+                                .background(
+                                    Circle()
+                                        .fill(newHabitName.isEmpty ? Color.gray : Color.blue)
+                                )
+                        }
+                        .disabled(newHabitName.isEmpty)
                     }
+                    .padding(.horizontal)
+
+                    Spacer()
                 }
-                .presentationDetents([.medium])
+                .presentationDetents([.height(200)])
+                .presentationDragIndicator(.visible)
             }
             .alert("Delete Habit?", isPresented: $showingDeleteAlert) {
                 Button("Cancel", role: .cancel) {
@@ -119,11 +175,19 @@ struct HabitsView: View {
         let newHabit = Subtype(
             name: newHabitName,
             type: .habit,
+            showInCalendar: newHabitShowInCalendar,
+            notificationEnabled: newHabitRemindersEnabled,
             sortOrder: habits.count
         )
         modelContext.insert(newHabit)
+        resetAddHabitForm()
+    }
+
+    private func resetAddHabitForm() {
         showingAddHabit = false
         newHabitName = ""
+        newHabitShowInCalendar = false
+        newHabitRemindersEnabled = false
     }
 
     private func deleteHabits(at offsets: IndexSet) {

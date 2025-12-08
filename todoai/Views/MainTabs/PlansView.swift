@@ -18,9 +18,12 @@ struct PlansView: View {
 
     @State private var showingAddPlan = false
     @State private var newPlanName = ""
+    @State private var newPlanShowInCalendar = false
+    @State private var newPlanRemindersEnabled = false
     @State private var selectedPlan: Subtype?
     @State private var planToDelete: Subtype?
     @State private var showingDeleteAlert = false
+    @FocusState private var isPlanNameFocused: Bool
 
     var body: some View {
         NavigationStack {
@@ -58,6 +61,9 @@ struct PlansView: View {
             .overlay(alignment: .bottomTrailing) {
                 Button {
                     showingAddPlan = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                        isPlanNameFocused = true
+                    }
                 } label: {
                     Image(systemName: "plus")
                         .font(.title2)
@@ -74,28 +80,78 @@ struct PlansView: View {
                 .padding(.bottom, 20)
             }
             .sheet(isPresented: $showingAddPlan) {
-                NavigationStack {
-                    Form {
-                        TextField("Plan Name", text: $newPlanName)
-                    }
-                    .navigationTitle("New Plan")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Cancel") {
-                                showingAddPlan = false
-                                newPlanName = ""
+                VStack(spacing: 20) {
+                    // Name field
+                    TextField("Plan Name", text: $newPlanName)
+                        .font(.title3)
+                        .focused($isPlanNameFocused)
+                        .padding()
+                        .padding(.horizontal)
+                        .padding(.top, 20)
+
+                    // Toggle buttons and Add button
+                    HStack(spacing: 12) {
+                        // Calendar toggle button
+                        Button {
+                            newPlanShowInCalendar.toggle()
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: newPlanShowInCalendar ? "calendar.badge.checkmark" : "calendar")
+                                    .font(.subheadline)
+                                Text("Calendar")
+                                    .font(.subheadline)
                             }
+                            .foregroundStyle(newPlanShowInCalendar ? .white : .green)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(newPlanShowInCalendar ? Color.green : Color.green.opacity(0.1))
+                            )
                         }
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button("Add") {
-                                addPlan()
+
+                        // Reminder toggle button
+                        Button {
+                            newPlanRemindersEnabled.toggle()
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: newPlanRemindersEnabled ? "bell.badge.fill" : "bell")
+                                    .font(.subheadline)
+                                Text("Reminder")
+                                    .font(.subheadline)
                             }
-                            .disabled(newPlanName.isEmpty)
+                            .foregroundStyle(newPlanRemindersEnabled ? .white : .green)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(newPlanRemindersEnabled ? Color.green : Color.green.opacity(0.1))
+                            )
                         }
+
+                        Spacer()
+
+                        // Add button
+                        Button {
+                            addPlan()
+                        } label: {
+                            Image(systemName: "checkmark")
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .frame(width: 44, height: 44)
+                                .background(
+                                    Circle()
+                                        .fill(newPlanName.isEmpty ? Color.gray : Color.green)
+                                )
+                        }
+                        .disabled(newPlanName.isEmpty)
                     }
+                    .padding(.horizontal)
+
+                    Spacer()
                 }
-                .presentationDetents([.medium])
+                .presentationDetents([.height(200)])
+                .presentationDragIndicator(.visible)
             }
             .alert("Delete Plan?", isPresented: $showingDeleteAlert) {
                 Button("Cancel", role: .cancel) {
@@ -119,11 +175,19 @@ struct PlansView: View {
         let newPlan = Subtype(
             name: newPlanName,
             type: .plan,
+            showInCalendar: newPlanShowInCalendar,
+            notificationEnabled: newPlanRemindersEnabled,
             sortOrder: plans.count
         )
         modelContext.insert(newPlan)
+        resetAddPlanForm()
+    }
+
+    private func resetAddPlanForm() {
         showingAddPlan = false
         newPlanName = ""
+        newPlanShowInCalendar = false
+        newPlanRemindersEnabled = false
     }
 
     private func deletePlans(at offsets: IndexSet) {

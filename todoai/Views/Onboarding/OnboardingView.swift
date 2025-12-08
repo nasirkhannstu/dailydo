@@ -10,44 +10,69 @@ import SwiftUI
 struct OnboardingView: View {
     @Binding var isOnboardingComplete: Bool
     @State private var currentPage = 0
+    @State private var selectedPurposes: Set<String> = []
 
     let pages: [OnboardingPage] = [
         OnboardingPage(
-            icon: "calendar.badge.checkmark",
-            title: "Plan Future, Focus Today",
-            description: "Organize your life with powerful planning tools while staying focused on what matters today.",
+            icon: "repeat.circle.fill",
+            title: "Build Lasting Habits",
+            benefits: [
+                "Track daily routines with ease",
+                "Set recurring tasks that repeat automatically",
+                "Get timely reminders to stay consistent",
+                "Visualize your progress over time",
+                "Build streaks and maintain momentum"
+            ],
             color: .blue
         ),
         OnboardingPage(
-            icon: "repeat.circle.fill",
-            title: "Build Better Habits",
-            description: "Create daily routines with recurring tasks and track your progress over time.",
+            icon: "calendar.badge.checkmark",
+            title: "Plan Future, Focus Today",
+            benefits: [
+                "Break down big goals into actionable tasks",
+                "Set deadlines with smart recurring options",
+                "Track progress with completion percentages",
+                "Organize tasks by projects or themes",
+                "Stay focused with calendar integration"
+            ],
             color: .green
         ),
         OnboardingPage(
             icon: "list.clipboard.fill",
-            title: "Smart Task Management",
-            description: "Break down big goals into actionable steps with subtasks and detailed planning.",
+            title: "Stay Organized",
+            benefits: [
+                "Create custom lists for anything",
+                "Quick capture for todos and ideas",
+                "Add subtasks to break work down",
+                "Flexible organization with drag-and-drop",
+                "Never forget important tasks"
+            ],
             color: .orange
         ),
         OnboardingPage(
-            icon: "bell.badge.fill",
-            title: "Never Miss a Beat",
-            description: "Set reminders and get notified for important tasks. Stay on track with smart notifications.",
-            color: .purple
-        ),
-        OnboardingPage(
             icon: "calendar",
-            title: "Calendar View",
-            description: "Visualize your schedule and see all your tasks in a beautiful calendar interface.",
-            color: .red
-        ),
-        OnboardingPage(
-            icon: "checkmark.circle.fill",
-            title: "Track Your Progress",
-            description: "Complete tasks, build streaks, and celebrate your achievements as you grow.",
-            color: .indigo
+            title: "See Your Day at a Glance",
+            benefits: [
+                "Visualize all tasks in one place",
+                "See habits, plans, and lists together",
+                "Quick add tasks from any date",
+                "Track what's due and what's overdue",
+                "Plan your week ahead"
+            ],
+            color: .purple
         )
+    ]
+
+    let purposeOptions = [
+        "Build better daily habits",
+        "Manage work/study projects",
+        "Track fitness goals",
+        "Learn new skills",
+        "Improve productivity",
+        "Personal goal setting",
+        "Team/family task management",
+        "Exam or test preparation",
+        "Other"
     ]
 
     var body: some View {
@@ -55,8 +80,8 @@ struct OnboardingView: View {
             // Background gradient
             LinearGradient(
                 gradient: Gradient(colors: [
-                    pages[currentPage].color.opacity(0.3),
-                    pages[currentPage].color.opacity(0.1)
+                    currentPageColor.opacity(0.3),
+                    currentPageColor.opacity(0.1)
                 ]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -66,18 +91,25 @@ struct OnboardingView: View {
             VStack(spacing: 0) {
                 // Page content
                 TabView(selection: $currentPage) {
+                    // Informative pages
                     ForEach(0..<pages.count, id: \.self) { index in
                         OnboardingPageView(page: pages[index])
                             .tag(index)
                     }
+
+                    // Purpose selection page
+                    PurposeSelectionView(
+                        selectedPurposes: $selectedPurposes,
+                        purposeOptions: purposeOptions
+                    )
+                    .tag(pages.count)
                 }
-                .tabViewStyle(.page(indexDisplayMode: .always))
-                .indexViewStyle(.page(backgroundDisplayMode: .always))
+                .tabViewStyle(.page(indexDisplayMode: .never))
 
                 // Bottom button
                 VStack(spacing: 20) {
-                    if currentPage == pages.count - 1 {
-                        // Get Started button on last page
+                    if currentPage == pages.count {
+                        // Get Started button on purpose selection page
                         Button {
                             completeOnboarding()
                         } label: {
@@ -86,39 +118,27 @@ struct OnboardingView: View {
                                 .foregroundStyle(.white)
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(pages[currentPage].color)
+                                .background(Color.indigo)
                                 .cornerRadius(16)
                         }
                         .padding(.horizontal, 32)
                     } else {
-                        // Next and Skip buttons
-                        HStack {
-                            Button {
-                                completeOnboarding()
-                            } label: {
-                                Text("Skip")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                        // Next button
+                        Button {
+                            withAnimation {
+                                currentPage += 1
                             }
-
-                            Spacer()
-
-                            Button {
-                                withAnimation {
-                                    currentPage += 1
-                                }
-                            } label: {
-                                HStack(spacing: 8) {
-                                    Text("Next")
-                                        .font(.headline)
-                                    Image(systemName: "arrow.right")
-                                }
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 24)
-                                .padding(.vertical, 12)
-                                .background(pages[currentPage].color)
-                                .cornerRadius(12)
+                        } label: {
+                            HStack(spacing: 8) {
+                                Text("Next")
+                                    .font(.headline)
+                                Image(systemName: "arrow.right")
                             }
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(pages[currentPage].color)
+                            .cornerRadius(16)
                         }
                         .padding(.horizontal, 32)
                     }
@@ -127,6 +147,13 @@ struct OnboardingView: View {
             }
         }
         .animation(.easeInOut, value: currentPage)
+    }
+
+    private var currentPageColor: Color {
+        if currentPage < pages.count {
+            return pages[currentPage].color
+        }
+        return .indigo
     }
 
     private func completeOnboarding() {
@@ -146,25 +173,101 @@ struct OnboardingPageView: View {
 
             // Icon
             Image(systemName: page.icon)
-                .font(.system(size: 100))
+                .font(.system(size: 80))
                 .foregroundStyle(page.color)
-                .padding(.bottom, 20)
+                .padding(.bottom, 10)
 
             // Title
             Text(page.title)
-                .font(.system(size: 32, weight: .bold))
+                .font(.system(size: 28, weight: .bold))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
+                .padding(.bottom, 10)
 
-            // Description
-            Text(page.description)
-                .font(.system(size: 18))
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-                .fixedSize(horizontal: false, vertical: true)
+            // Benefits list
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(page.benefits, id: \.self) { benefit in
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(page.color)
+                            .font(.system(size: 20))
+                        Text(benefit)
+                            .font(.system(size: 16))
+                            .foregroundStyle(.primary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
+            .padding(.horizontal, 40)
 
             Spacer()
+        }
+    }
+}
+
+struct PurposeSelectionView: View {
+    @Binding var selectedPurposes: Set<String>
+    let purposeOptions: [String]
+
+    var body: some View {
+        VStack(spacing: 32) {
+            Spacer()
+
+            // Icon
+            Image(systemName: "sparkles")
+                .font(.system(size: 80))
+                .foregroundStyle(.indigo)
+                .padding(.bottom, 10)
+
+            // Title
+            Text("What brings you to DailyDo?")
+                .font(.system(size: 28, weight: .bold))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+                .padding(.bottom, 10)
+
+            // Purpose options
+            ScrollView {
+                VStack(spacing: 12) {
+                    ForEach(purposeOptions, id: \.self) { option in
+                        Button {
+                            togglePurpose(option)
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: selectedPurposes.contains(option) ? "checkmark.square.fill" : "square")
+                                    .foregroundStyle(selectedPurposes.contains(option) ? .indigo : .gray)
+                                    .font(.system(size: 24))
+
+                                Text(option)
+                                    .font(.system(size: 16))
+                                    .foregroundStyle(.primary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(selectedPurposes.contains(option) ? Color.indigo.opacity(0.1) : Color.gray.opacity(0.05))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(selectedPurposes.contains(option) ? Color.indigo : Color.clear, lineWidth: 2)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 32)
+            }
+
+            Spacer()
+        }
+    }
+
+    private func togglePurpose(_ purpose: String) {
+        if selectedPurposes.contains(purpose) {
+            selectedPurposes.remove(purpose)
+        } else {
+            selectedPurposes.insert(purpose)
         }
     }
 }
@@ -172,7 +275,7 @@ struct OnboardingPageView: View {
 struct OnboardingPage {
     let icon: String
     let title: String
-    let description: String
+    let benefits: [String]
     let color: Color
 }
 

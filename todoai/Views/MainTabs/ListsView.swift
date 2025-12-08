@@ -18,6 +18,9 @@ struct ListsView: View {
 
     @State private var showingAddList = false
     @State private var newListName = ""
+    @State private var newListShowInCalendar = false
+    @State private var newListRemindersEnabled = false
+    @FocusState private var isListNameFocused: Bool
 
     let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -53,6 +56,9 @@ struct ListsView: View {
             .overlay(alignment: .bottomTrailing) {
                 Button {
                     showingAddList = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                        isListNameFocused = true
+                    }
                 } label: {
                     Image(systemName: "plus")
                         .font(.title2)
@@ -69,28 +75,78 @@ struct ListsView: View {
                 .padding(.bottom, 20)
             }
             .sheet(isPresented: $showingAddList) {
-                NavigationStack {
-                    Form {
-                        TextField("List Name", text: $newListName)
-                    }
-                    .navigationTitle("New List")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Cancel") {
-                                showingAddList = false
-                                newListName = ""
+                VStack(spacing: 20) {
+                    // Name field
+                    TextField("List Name", text: $newListName)
+                        .font(.title3)
+                        .focused($isListNameFocused)
+                        .padding()
+                        .padding(.horizontal)
+                        .padding(.top, 20)
+
+                    // Toggle buttons and Add button
+                    HStack(spacing: 12) {
+                        // Calendar toggle button
+                        Button {
+                            newListShowInCalendar.toggle()
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: newListShowInCalendar ? "calendar.badge.checkmark" : "calendar")
+                                    .font(.subheadline)
+                                Text("Calendar")
+                                    .font(.subheadline)
                             }
+                            .foregroundStyle(newListShowInCalendar ? .white : .orange)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(newListShowInCalendar ? Color.orange : Color.orange.opacity(0.1))
+                            )
                         }
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button("Add") {
-                                addList()
+
+                        // Reminder toggle button
+                        Button {
+                            newListRemindersEnabled.toggle()
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: newListRemindersEnabled ? "bell.badge.fill" : "bell")
+                                    .font(.subheadline)
+                                Text("Reminder")
+                                    .font(.subheadline)
                             }
-                            .disabled(newListName.isEmpty)
+                            .foregroundStyle(newListRemindersEnabled ? .white : .orange)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(newListRemindersEnabled ? Color.orange : Color.orange.opacity(0.1))
+                            )
                         }
+
+                        Spacer()
+
+                        // Add button
+                        Button {
+                            addList()
+                        } label: {
+                            Image(systemName: "checkmark")
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .frame(width: 44, height: 44)
+                                .background(
+                                    Circle()
+                                        .fill(newListName.isEmpty ? Color.gray : Color.orange)
+                                )
+                        }
+                        .disabled(newListName.isEmpty)
                     }
+                    .padding(.horizontal)
+
+                    Spacer()
                 }
-                .presentationDetents([.medium])
+                .presentationDetents([.height(200)])
+                .presentationDragIndicator(.visible)
             }
         }
     }
@@ -99,11 +155,19 @@ struct ListsView: View {
         let newList = Subtype(
             name: newListName,
             type: .list,
+            showInCalendar: newListShowInCalendar,
+            notificationEnabled: newListRemindersEnabled,
             sortOrder: lists.count
         )
         modelContext.insert(newList)
+        resetAddListForm()
+    }
+
+    private func resetAddListForm() {
         showingAddList = false
         newListName = ""
+        newListShowInCalendar = false
+        newListRemindersEnabled = false
     }
 
     private func deleteLists(at offsets: IndexSet) {
