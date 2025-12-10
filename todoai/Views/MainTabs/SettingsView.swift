@@ -35,6 +35,7 @@ struct SettingsView: View {
                 }
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
 
                 // AI Credits Section
                 Section("AI Credits") {
@@ -166,17 +167,14 @@ struct ProfileHeroBanner: View {
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
+        ZStack {
             // Gradient background
             LinearGradient(
-                gradient: Gradient(colors: [
-                    Color.blue,
-                    Color.purple
-                ]),
+                gradient: Gradient(colors: [Color.blue, Color.purple]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
-            .frame(height: 200)
+            .frame(height: 140)
 
             // Content
             HStack(alignment: .center, spacing: 16) {
@@ -184,11 +182,11 @@ struct ProfileHeroBanner: View {
                 ZStack {
                     Circle()
                         .fill(Color.white)
-                        .frame(width: 80, height: 80)
-                        .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
+                        .frame(width: 70, height: 70)
+                        .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
 
                     Text(userInitials.uppercased())
-                        .font(.system(size: 32, weight: .bold))
+                        .font(.system(size: 28, weight: .bold))
                         .foregroundStyle(
                             LinearGradient(
                                 gradient: Gradient(colors: [Color.blue, Color.purple]),
@@ -199,31 +197,31 @@ struct ProfileHeroBanner: View {
                 }
 
                 // User info
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text(user.name)
-                        .font(.title2)
+                        .font(.title3)
                         .fontWeight(.bold)
                         .foregroundStyle(.white)
 
-                    if let age = user.age {
+                    HStack(spacing: 12) {
+                        if let age = user.age {
+                            HStack(spacing: 4) {
+                                Image(systemName: "person.fill")
+                                    .font(.caption)
+                                Text("\(age) yrs")
+                                    .font(.subheadline)
+                            }
+                            .foregroundStyle(.white.opacity(0.9))
+                        }
+
                         HStack(spacing: 4) {
-                            Image(systemName: "person.fill")
+                            Image(systemName: user.hasPremiumAccess ? "crown.fill" : "sparkles")
                                 .font(.caption)
-                            Text("\(age) years old")
+                            Text(user.hasPremiumAccess ? "Premium" : "Free")
                                 .font(.subheadline)
                         }
                         .foregroundStyle(.white.opacity(0.9))
                     }
-
-                    Text(user.hasPremiumAccess ? "Premium Member" : "Free Plan")
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.8))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
-                        .background(
-                            Capsule()
-                                .fill(Color.white.opacity(0.2))
-                        )
                 }
 
                 Spacer()
@@ -232,22 +230,15 @@ struct ProfileHeroBanner: View {
                 Button {
                     onEditTap()
                 } label: {
-                    Image(systemName: "pencil.circle.fill")
-                        .font(.title2)
+                    Image(systemName: "square.and.pencil")
+                        .font(.title3)
                         .foregroundStyle(.white)
-                        .background(
-                            Circle()
-                                .fill(Color.white.opacity(0.2))
-                                .frame(width: 40, height: 40)
-                        )
                 }
             }
             .padding(.horizontal, 20)
-            .padding(.bottom, 20)
+            .padding(.vertical, 20)
         }
-        .cornerRadius(16)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity)
     }
 }
 
