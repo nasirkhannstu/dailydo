@@ -16,7 +16,6 @@ struct OnboardingView: View {
     @State private var dragOffset: CGFloat = 0
     @State private var userName = ""
     @State private var userAge: Int = 25
-    @State private var userBedtime = Calendar.current.date(from: DateComponents(hour: 22, minute: 0)) ?? Date()
     @State private var selectedPurposes: Set<String> = []
     @State private var showSkipButton = false
     @FocusState private var isNameFieldFocused: Bool
@@ -85,7 +84,7 @@ struct OnboardingView: View {
     ]
 
     var totalPages: Int {
-        pages.count + 3 // 4 info pages + name + age/bedtime + purpose
+        pages.count + 3 // 4 info pages + name + age + purpose
     }
 
     var body: some View {
@@ -135,7 +134,7 @@ struct OnboardingView: View {
                                 } else if index == pages.count {
                                     NameInputView(userName: $userName, isNameFieldFocused: $isNameFieldFocused)
                                 } else if index == pages.count + 1 {
-                                    AgeAndBedtimeView(userAge: $userAge, userBedtime: $userBedtime)
+                                    AgeInputView(userAge: $userAge)
                                 } else {
                                     PurposeSelectionView(
                                         selectedPurposes: $selectedPurposes,
@@ -234,7 +233,7 @@ struct OnboardingView: View {
         } else if currentPage == pages.count {
             return .blue
         } else if currentPage == pages.count + 1 {
-            return .purple
+            return .orange
         }
         return .indigo
     }
@@ -258,13 +257,11 @@ struct OnboardingView: View {
             user = existingUser
             user.name = userName.isEmpty ? "User" : userName
             user.age = userAge
-            user.bedtime = userBedtime
             user.hasCompletedOnboarding = true
         } else {
             user = User(
                 name: userName.isEmpty ? "User" : userName,
                 age: userAge,
-                bedtime: userBedtime,
                 hasCompletedOnboarding: true
             )
             modelContext.insert(user)
@@ -302,7 +299,7 @@ struct AnimatedBackgroundGradient: View {
         } else if currentPage == pages.count {
             return .blue
         } else if currentPage == pages.count + 1 {
-            return .purple
+            return .orange
         }
         return .indigo
     }
@@ -408,79 +405,49 @@ struct NameInputView: View {
     }
 }
 
-// MARK: - Age and Bedtime View
+// MARK: - Age Input View
 
-struct AgeAndBedtimeView: View {
+struct AgeInputView: View {
     @Binding var userAge: Int
-    @Binding var userBedtime: Date
 
     var body: some View {
         VStack(spacing: 32) {
             Spacer()
 
             // Icon
-            Image(systemName: "moon.stars.fill")
+            Image(systemName: "person.circle.fill")
                 .font(.system(size: 80))
-                .foregroundStyle(.purple)
+                .foregroundStyle(.orange)
                 .padding(.bottom, 10)
 
             // Title
-            Text("Help us personalize")
+            Text("How old are you?")
                 .font(.system(size: 28, weight: .bold))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
 
             // Subtitle
-            Text("This helps us show the right content at the right time")
+            Text("This helps us personalize your experience")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
 
-            // Age and Bedtime pickers
-            VStack(spacing: 24) {
-                // Age picker
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Image(systemName: "person.fill")
-                            .foregroundStyle(.purple)
-                        Text("Age")
-                            .font(.headline)
+            // Age picker
+            VStack(alignment: .center, spacing: 8) {
+                Picker("Age", selection: $userAge) {
+                    ForEach(13..<100, id: \.self) { age in
+                        Text("\(age) years").tag(age)
                     }
-                    .padding(.horizontal, 16)
-
-                    Picker("Age", selection: $userAge) {
-                        ForEach(13..<100, id: \.self) { age in
-                            Text("\(age) years").tag(age)
-                        }
-                    }
-                    .pickerStyle(.wheel)
-                    .frame(height: 120)
-                    .background(Color.white)
-                    .cornerRadius(16)
-                    .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
                 }
-
-                // Bedtime picker
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Image(systemName: "bed.double.fill")
-                            .foregroundStyle(.purple)
-                        Text("Usual Bedtime")
-                            .font(.headline)
-                    }
-                    .padding(.horizontal, 16)
-
-                    DatePicker("Bedtime", selection: $userBedtime, displayedComponents: [.hourAndMinute])
-                        .datePickerStyle(.wheel)
-                        .labelsHidden()
-                        .frame(height: 120)
-                        .background(Color.white)
-                        .cornerRadius(16)
-                        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
-                }
+                .pickerStyle(.wheel)
+                .frame(height: 150)
+                .background(Color.white)
+                .cornerRadius(16)
+                .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
             }
             .padding(.horizontal, 32)
+            .padding(.top, 20)
 
             Spacer()
         }

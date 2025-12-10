@@ -165,13 +165,6 @@ struct ProfileHeroBanner: View {
         return "U"
     }
 
-    var bedtimeString: String {
-        guard let bedtime = user.bedtime else { return "Not set" }
-        let formatter = DateFormatter()
-        formatter.timeStyle = .short
-        return formatter.string(from: bedtime)
-    }
-
     var body: some View {
         ZStack(alignment: .bottom) {
             // Gradient background
@@ -212,21 +205,11 @@ struct ProfileHeroBanner: View {
                         .fontWeight(.bold)
                         .foregroundStyle(.white)
 
-                    HStack(spacing: 16) {
-                        if let age = user.age {
-                            HStack(spacing: 4) {
-                                Image(systemName: "person.fill")
-                                    .font(.caption)
-                                Text("\(age) yrs")
-                                    .font(.subheadline)
-                            }
-                            .foregroundStyle(.white.opacity(0.9))
-                        }
-
+                    if let age = user.age {
                         HStack(spacing: 4) {
-                            Image(systemName: "moon.stars.fill")
+                            Image(systemName: "person.fill")
                                 .font(.caption)
-                            Text(bedtimeString)
+                            Text("\(age) years old")
                                 .font(.subheadline)
                         }
                         .foregroundStyle(.white.opacity(0.9))
@@ -295,7 +278,7 @@ struct ProfileReminderCard: View {
                         .font(.headline)
                         .foregroundStyle(.primary)
 
-                    Text("Add your name, age, and bedtime")
+                    Text("Add your name and age")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -326,13 +309,11 @@ struct ProfileEditorSheet: View {
 
     @State private var userName: String
     @State private var userAge: Int
-    @State private var userBedtime: Date
 
     init(user: User?) {
         self.user = user
         _userName = State(initialValue: user?.name ?? "")
         _userAge = State(initialValue: user?.age ?? 25)
-        _userBedtime = State(initialValue: user?.bedtime ?? Calendar.current.date(from: DateComponents(hour: 22, minute: 0))!)
     }
 
     var body: some View {
@@ -347,20 +328,12 @@ struct ProfileEditorSheet: View {
 
                     HStack {
                         Image(systemName: "person.fill")
-                            .foregroundStyle(.purple)
+                            .foregroundStyle(.orange)
                         Picker("Age", selection: $userAge) {
                             ForEach(13..<100, id: \.self) { age in
                                 Text("\(age) years").tag(age)
                             }
                         }
-                    }
-                }
-
-                Section("Sleep Schedule") {
-                    HStack {
-                        Image(systemName: "moon.stars.fill")
-                            .foregroundStyle(.purple)
-                        DatePicker("Bedtime", selection: $userBedtime, displayedComponents: [.hourAndMinute])
                     }
                 }
             }
@@ -387,13 +360,11 @@ struct ProfileEditorSheet: View {
         if let user = user {
             user.name = userName
             user.age = userAge
-            user.bedtime = userBedtime
             user.hasCompletedOnboarding = true
         } else {
             let newUser = User(
                 name: userName,
                 age: userAge,
-                bedtime: userBedtime,
                 hasCompletedOnboarding: true
             )
             modelContext.insert(newUser)
