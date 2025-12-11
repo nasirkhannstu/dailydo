@@ -22,6 +22,15 @@ struct ListsView: View {
     @State private var newListRemindersEnabled = false
     @FocusState private var isListNameFocused: Bool
 
+    // Search states
+    @State private var searchText = ""
+    @State private var isSearching = false
+
+    var filteredLists: [Subtype] {
+        guard !searchText.isEmpty else { return lists }
+        return lists.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+    }
+
     let columns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12)
@@ -37,22 +46,83 @@ struct ListsView: View {
                         description: Text("Create your first list to get started")
                     )
                 } else {
-                    ScrollView {
-                        LazyVGrid(columns: columns, spacing: 12) {
-                            ForEach(lists) { list in
+                    VStack(spacing: 0) {
+                        // Title and Search in one row
+                        HStack {
+                            Text("Lists")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+
+                            Spacer()
+
+                            Button {
+                                withAnimation {
+                                    isSearching.toggle()
+                                    if !isSearching {
+                                        searchText = ""
+                                    }
+                                }
+                            } label: {
+                                Image(systemName: isSearching ? "xmark.circle.fill" : "magnifyingglass")
+                                    .font(.title2)
+                                    .foregroundStyle(isSearching ? .red : .orange)
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+                        .padding(.bottom, 8)
+                        .background(Color(.systemGray6))
+
+                        // Search Bar (when searching)
+                        if isSearching {
+                            HStack {
+                                Image(systemName: "magnifyingglass")
+                                    .foregroundStyle(.secondary)
+                                TextField("Search lists...", text: $searchText)
+                                    .textFieldStyle(.plain)
+                                if !searchText.isEmpty {
+                                    Button {
+                                        searchText = ""
+                                    } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                            }
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(12)
+                            .padding(.horizontal)
+                            .padding(.bottom, 8)
+                            .background(Color(.systemGray6))
+                        }
+
+                        if filteredLists.isEmpty && !searchText.isEmpty {
+                            ContentUnavailableView(
+                                "No Results",
+                                systemImage: "magnifyingglass",
+                                description: Text("No lists match '\(searchText)'")
+                            )
+                            .padding(.top, 60)
+                        } else {
+                            ScrollView {
+                                LazyVGrid(columns: columns, spacing: 12) {
+                                    ForEach(filteredLists) { list in
                                 NavigationLink(destination: SubtypeDetailView(subtype: list)) {
                                     ListCardView(list: list)
                                 }
                                 .buttonStyle(.plain)
                             }
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                            }
+                            .background(Color(.systemGray6))
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
                     }
-                    .background(Color(.systemGray6))
                 }
             }
-            .navigationTitle("Lists")
+            .navigationBarHidden(true)
             .overlay(alignment: .bottomTrailing) {
                 Button {
                     showingAddList = true

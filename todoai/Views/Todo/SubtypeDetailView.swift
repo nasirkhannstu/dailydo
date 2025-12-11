@@ -19,7 +19,7 @@ struct SubtypeDetailView: View {
     @State private var newTodoDueDate: Date = Date()
     @State private var enableReminder = false
     @State private var showInCalendar = true
-    @State private var recurringType: RecurringType = .none
+    @State private var recurringType: RecurringType = .dueDate
     @State private var notificationService = NotificationService.shared
     @State private var showDatePicker = false
     @State private var showRecurringOptions = false
@@ -29,6 +29,7 @@ struct SubtypeDetailView: View {
     @State private var showingEditSubtype = false
     @State private var showingIconPicker = false
     @State private var editName = ""
+    @State private var editDescription = ""
     @State private var editIcon = ""
     @State private var editShowInCalendar = false
     @State private var editRemindersEnabled = false
@@ -37,6 +38,7 @@ struct SubtypeDetailView: View {
     @State private var pendingCalendarValue = false
     @State private var showingRemindersToggleAlert = false
     @State private var pendingRemindersValue = false
+    @State private var isDescriptionExpanded = false
 
     var incompleteTodos: [TodoItem] {
         subtype.todos.filter {
@@ -63,6 +65,51 @@ struct SubtypeDetailView: View {
 
     var body: some View {
         List {
+            // Description section (only for Habits and Plans)
+            if subtype.type != .list, let description = subtype.itemDescription, !description.isEmpty {
+                Section {
+                    VStack(alignment: .leading, spacing: 12) {
+                        // Description icon and label
+                        HStack(spacing: 8) {
+                            Image(systemName: "text.alignleft")
+                                .font(.caption)
+                                .foregroundStyle(fabColor)
+                            Text("About")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(fabColor)
+                        }
+
+                        // Description text with expand/collapse
+                        Text(description)
+                            .font(.subheadline)
+                            .foregroundStyle(.primary)
+                            .lineLimit(isDescriptionExpanded ? nil : 2)
+                            .animation(.easeInOut(duration: 0.2), value: isDescriptionExpanded)
+
+                        // Show more/less button (only if description is long enough)
+                        if description.count > 100 {
+                            Button {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    isDescriptionExpanded.toggle()
+                                }
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Text(isDescriptionExpanded ? "Show Less" : "Show More")
+                                        .font(.caption)
+                                        .fontWeight(.medium)
+                                    Image(systemName: isDescriptionExpanded ? "chevron.up.circle.fill" : "chevron.down.circle.fill")
+                                        .font(.caption)
+                                }
+                                .foregroundStyle(fabColor)
+                            }
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+                .listRowBackground(fabColor.opacity(0.05))
+            }
+
             // Active Todos
             if !incompleteTodos.isEmpty {
                 Section("Active") {
@@ -208,13 +255,13 @@ struct SubtypeDetailView: View {
                             }
                         }
                     } label: {
-                        Image(systemName: recurringType != .none ? "repeat.circle.fill" : "repeat")
+                        Image(systemName: (recurringType != .dueDate && recurringType != .oneTime) ? "repeat.circle.fill" : "repeat")
                             .font(.body)
-                            .foregroundStyle(recurringType != .none ? .white : fabColor)
+                            .foregroundStyle((recurringType != .dueDate && recurringType != .oneTime) ? .white : fabColor)
                             .frame(width: 44, height: 44)
                             .background(
                                 Circle()
-                                    .fill(recurringType != .none ? fabColor : fabColor.opacity(0.1))
+                                    .fill((recurringType != .dueDate && recurringType != .oneTime) ? fabColor : fabColor.opacity(0.1))
                             )
                     }
 
@@ -268,7 +315,7 @@ struct SubtypeDetailView: View {
                 // Expandable recurring options section
                 if showRecurringOptions {
                     VStack(spacing: 8) {
-                        ForEach([RecurringType.none, .daily, .weekly, .monthly, .yearly], id: \.self) { type in
+                        ForEach([RecurringType.dueDate, .oneTime, .daily, .weekly, .monthly, .yearly], id: \.self) { type in
                             Button {
                                 recurringType = type
                                 withAnimation {
@@ -304,6 +351,12 @@ struct SubtypeDetailView: View {
                 Form {
                     Section("Details") {
                         TextField("Name", text: $editName)
+
+                        // Show description field only for Habits and Plans
+                        if subtype.type != .list {
+                            TextField("Description (optional)", text: $editDescription, axis: .vertical)
+                                .lineLimit(2...4)
+                        }
 
                         Button {
                             showingIconPicker = true
@@ -410,6 +463,9 @@ struct SubtypeDetailView: View {
         )
         modelContext.insert(newTodo)
 
+        // Save immediately to persist changes
+        try? modelContext.save()
+
         // Schedule notification if enabled
         if enableReminder {
             Task {
@@ -418,6 +474,7 @@ struct SubtypeDetailView: View {
                     await notificationService.scheduleNotification(for: newTodo)
                 } else {
                     newTodo.reminderEnabled = false
+                    try? modelContext.save()
                 }
             }
         }
@@ -432,7 +489,7 @@ struct SubtypeDetailView: View {
         newTodoDueDate = Date()
         enableReminder = false
         showInCalendar = true
-        recurringType = .none
+        recurringType = .dueDate
         showDatePicker = false
         showRecurringOptions = false
         isTodoTitleFocused = false
@@ -446,6 +503,7 @@ struct SubtypeDetailView: View {
 
     private func prepareEditForm() {
         editName = subtype.name
+        editDescription = subtype.itemDescription ?? ""
         editIcon = subtype.icon
         editShowInCalendar = subtype.showInCalendar
         editRemindersEnabled = false
@@ -453,6 +511,7 @@ struct SubtypeDetailView: View {
 
     private func saveEditedSubtype() {
         subtype.name = editName
+        subtype.itemDescription = editDescription.isEmpty ? nil : editDescription
         if !editIcon.isEmpty {
             subtype.icon = editIcon
         }
@@ -577,7 +636,7 @@ struct TodoRowView: View {
                 }
 
                 // Recurring indicator
-                if todo.recurringType != .none {
+                if todo.recurringType != .dueDate && todo.recurringType != .oneTime {
                     HStack(spacing: 4) {
                         Image(systemName: "repeat")
                         Text(todo.recurringType.displayName)
@@ -645,7 +704,7 @@ struct TodoRowView: View {
                     starred: todo.starred,
                     reminderEnabled: false,
                     showInCalendar: todo.showInCalendar,
-                    recurringType: .none,
+                    recurringType: .dueDate,
                     aiGenerated: todo.aiGenerated,
                     colorID: todo.colorID,
                     textureID: todo.textureID,

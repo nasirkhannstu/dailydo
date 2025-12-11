@@ -18,12 +18,22 @@ struct HabitsView: View {
 
     @State private var showingAddHabit = false
     @State private var newHabitName = ""
+    @State private var newHabitDescription = ""
     @State private var newHabitShowInCalendar = false
     @State private var newHabitRemindersEnabled = false
     @State private var selectedHabit: Subtype?
     @State private var habitToDelete: Subtype?
     @State private var showingDeleteAlert = false
     @FocusState private var isHabitNameFocused: Bool
+
+    // Search states
+    @State private var searchText = ""
+    @State private var isSearching = false
+
+    var filteredHabits: [Subtype] {
+        guard !searchText.isEmpty else { return habits }
+        return habits.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+    }
 
     var body: some View {
         NavigationStack {
@@ -35,8 +45,66 @@ struct HabitsView: View {
                         description: Text("Create your first habit to get started")
                     )
                 } else {
-                    List {
-                        ForEach(habits) { habit in
+                    VStack(spacing: 0) {
+                        // Title and Search in one row
+                        HStack {
+                            Text("Habits")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+
+                            Spacer()
+
+                            Button {
+                                withAnimation {
+                                    isSearching.toggle()
+                                    if !isSearching {
+                                        searchText = ""
+                                    }
+                                }
+                            } label: {
+                                Image(systemName: isSearching ? "xmark.circle.fill" : "magnifyingglass")
+                                    .font(.title2)
+                                    .foregroundStyle(isSearching ? .red : .green)
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+                        .padding(.bottom, 8)
+                        .background(Color(.systemGray6))
+
+                        // Search Bar (when searching)
+                        if isSearching {
+                            HStack {
+                                Image(systemName: "magnifyingglass")
+                                    .foregroundStyle(.secondary)
+                                TextField("Search habits...", text: $searchText)
+                                    .textFieldStyle(.plain)
+                                if !searchText.isEmpty {
+                                    Button {
+                                        searchText = ""
+                                    } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                            }
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(12)
+                            .padding(.horizontal)
+                            .padding(.bottom, 8)
+                            .background(Color(.systemGray6))
+                        }
+
+                        if filteredHabits.isEmpty && !searchText.isEmpty {
+                            ContentUnavailableView(
+                                "No Results",
+                                systemImage: "magnifyingglass",
+                                description: Text("No habits match '\(searchText)'")
+                            )
+                        } else {
+                            List {
+                                ForEach(filteredHabits) { habit in
                             Button {
                                 selectedHabit = habit
                             } label: {
@@ -48,16 +116,18 @@ struct HabitsView: View {
                             .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                         }
                         .onDelete(perform: deleteHabits)
+                            }
+                            .listStyle(.plain)
+                            .background(Color(.systemGray6))
+                            .scrollContentBackground(.hidden)
+                        }
                     }
-                    .listStyle(.plain)
-                    .background(Color(.systemGray6))
-                    .scrollContentBackground(.hidden)
                 }
             }
             .navigationDestination(item: $selectedHabit) { habit in
                 SubtypeDetailView(subtype: habit)
             }
-            .navigationTitle("Habits")
+            .navigationBarHidden(true)
             .overlay(alignment: .bottomTrailing) {
                 Button {
                     showingAddHabit = true
@@ -80,7 +150,7 @@ struct HabitsView: View {
                 .padding(.bottom, 20)
             }
             .sheet(isPresented: $showingAddHabit) {
-                VStack(spacing: 20) {
+                VStack(spacing: 16) {
                     // Name field
                     TextField("Habit Name", text: $newHabitName)
                         .font(.title3)
@@ -88,6 +158,12 @@ struct HabitsView: View {
                         .padding()
                         .padding(.horizontal)
                         .padding(.top, 20)
+
+                    // Description field
+                    TextField("Description (optional)", text: $newHabitDescription)
+                        .font(.body)
+                        .padding()
+                        .padding(.horizontal)
 
                     // Toggle buttons and Add button
                     HStack(spacing: 12) {
@@ -150,7 +226,7 @@ struct HabitsView: View {
 
                     Spacer()
                 }
-                .presentationDetents([.height(200)])
+                .presentationDetents([.height(280)])
                 .presentationDragIndicator(.visible)
             }
             .alert("Delete Habit?", isPresented: $showingDeleteAlert) {
@@ -174,6 +250,7 @@ struct HabitsView: View {
     private func addHabit() {
         let newHabit = Subtype(
             name: newHabitName,
+            itemDescription: newHabitDescription.isEmpty ? nil : newHabitDescription,
             type: .habit,
             showInCalendar: newHabitShowInCalendar,
             notificationEnabled: newHabitRemindersEnabled,
@@ -186,6 +263,7 @@ struct HabitsView: View {
     private func resetAddHabitForm() {
         showingAddHabit = false
         newHabitName = ""
+        newHabitDescription = ""
         newHabitShowInCalendar = false
         newHabitRemindersEnabled = false
     }
@@ -219,6 +297,13 @@ struct HabitCardRow: View {
                     .font(.body)
                     .fontWeight(.medium)
                     .foregroundStyle(.primary)
+
+                if let description = habit.itemDescription, !description.isEmpty {
+                    Text(description)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
 
                 Text("\(habit.incompleteTodosCount) active")
                     .font(.caption)

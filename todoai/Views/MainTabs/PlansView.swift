@@ -18,12 +18,22 @@ struct PlansView: View {
 
     @State private var showingAddPlan = false
     @State private var newPlanName = ""
+    @State private var newPlanDescription = ""
     @State private var newPlanShowInCalendar = false
     @State private var newPlanRemindersEnabled = false
     @State private var selectedPlan: Subtype?
     @State private var planToDelete: Subtype?
     @State private var showingDeleteAlert = false
     @FocusState private var isPlanNameFocused: Bool
+
+    // Search states
+    @State private var searchText = ""
+    @State private var isSearching = false
+
+    var filteredPlans: [Subtype] {
+        guard !searchText.isEmpty else { return plans }
+        return plans.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+    }
 
     var body: some View {
         NavigationStack {
@@ -35,8 +45,66 @@ struct PlansView: View {
                         description: Text("Create your first plan to get started")
                     )
                 } else {
-                    List {
-                        ForEach(plans) { plan in
+                    VStack(spacing: 0) {
+                        // Title and Search in one row
+                        HStack {
+                            Text("Plans")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+
+                            Spacer()
+
+                            Button {
+                                withAnimation {
+                                    isSearching.toggle()
+                                    if !isSearching {
+                                        searchText = ""
+                                    }
+                                }
+                            } label: {
+                                Image(systemName: isSearching ? "xmark.circle.fill" : "magnifyingglass")
+                                    .font(.title2)
+                                    .foregroundStyle(isSearching ? .red : .blue)
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+                        .padding(.bottom, 8)
+                        .background(Color(.systemGray6))
+
+                        // Search Bar (when searching)
+                        if isSearching {
+                            HStack {
+                                Image(systemName: "magnifyingglass")
+                                    .foregroundStyle(.secondary)
+                                TextField("Search plans...", text: $searchText)
+                                    .textFieldStyle(.plain)
+                                if !searchText.isEmpty {
+                                    Button {
+                                        searchText = ""
+                                    } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                            }
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(12)
+                            .padding(.horizontal)
+                            .padding(.bottom, 8)
+                            .background(Color(.systemGray6))
+                        }
+
+                        if filteredPlans.isEmpty && !searchText.isEmpty {
+                            ContentUnavailableView(
+                                "No Results",
+                                systemImage: "magnifyingglass",
+                                description: Text("No plans match '\(searchText)'")
+                            )
+                        } else {
+                            List {
+                                ForEach(filteredPlans) { plan in
                             Button {
                                 selectedPlan = plan
                             } label: {
@@ -48,16 +116,18 @@ struct PlansView: View {
                             .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                         }
                         .onDelete(perform: deletePlans)
+                            }
+                            .listStyle(.plain)
+                            .background(Color(.systemGray6))
+                            .scrollContentBackground(.hidden)
+                        }
                     }
-                    .listStyle(.plain)
-                    .background(Color(.systemGray6))
-                    .scrollContentBackground(.hidden)
                 }
             }
             .navigationDestination(item: $selectedPlan) { plan in
                 SubtypeDetailView(subtype: plan)
             }
-            .navigationTitle("Plans")
+            .navigationBarHidden(true)
             .overlay(alignment: .bottomTrailing) {
                 Button {
                     showingAddPlan = true
@@ -80,7 +150,7 @@ struct PlansView: View {
                 .padding(.bottom, 20)
             }
             .sheet(isPresented: $showingAddPlan) {
-                VStack(spacing: 20) {
+                VStack(spacing: 16) {
                     // Name field
                     TextField("Plan Name", text: $newPlanName)
                         .font(.title3)
@@ -88,6 +158,12 @@ struct PlansView: View {
                         .padding()
                         .padding(.horizontal)
                         .padding(.top, 20)
+
+                    // Description field
+                    TextField("Description (optional)", text: $newPlanDescription)
+                        .font(.body)
+                        .padding()
+                        .padding(.horizontal)
 
                     // Toggle buttons and Add button
                     HStack(spacing: 12) {
@@ -150,7 +226,7 @@ struct PlansView: View {
 
                     Spacer()
                 }
-                .presentationDetents([.height(200)])
+                .presentationDetents([.height(280)])
                 .presentationDragIndicator(.visible)
             }
             .alert("Delete Plan?", isPresented: $showingDeleteAlert) {
@@ -174,6 +250,7 @@ struct PlansView: View {
     private func addPlan() {
         let newPlan = Subtype(
             name: newPlanName,
+            itemDescription: newPlanDescription.isEmpty ? nil : newPlanDescription,
             type: .plan,
             showInCalendar: newPlanShowInCalendar,
             notificationEnabled: newPlanRemindersEnabled,
@@ -186,6 +263,7 @@ struct PlansView: View {
     private func resetAddPlanForm() {
         showingAddPlan = false
         newPlanName = ""
+        newPlanDescription = ""
         newPlanShowInCalendar = false
         newPlanRemindersEnabled = false
     }
@@ -216,10 +294,19 @@ struct PlanCardRow: View {
                             .fill(Color.blue.opacity(0.1))
                     )
 
-                Text(plan.name)
-                    .font(.body)
-                    .fontWeight(.medium)
-                    .foregroundStyle(.primary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(plan.name)
+                        .font(.body)
+                        .fontWeight(.medium)
+                        .foregroundStyle(.primary)
+
+                    if let description = plan.itemDescription, !description.isEmpty {
+                        Text(description)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                }
 
                 Spacer()
 

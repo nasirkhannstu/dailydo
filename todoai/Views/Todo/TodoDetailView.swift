@@ -49,8 +49,8 @@ struct TodoDetailView: View {
                 }
                 .padding(.vertical, 4)
 
-                // Subtasks
-                if !todo.subtasks.isEmpty || todo.subtasks.isEmpty {
+                // Subtasks (Only show for Plans)
+                if todo.subtype?.type == .plan {
                     VStack(alignment: .leading, spacing: 8) {
                         // Subtasks Header
                         HStack {
@@ -162,7 +162,8 @@ struct TodoDetailView: View {
 
                 // Recurring
                 Picker(selection: $todo.recurringType) {
-                    Text("Never").tag(RecurringType.none)
+                    Text("Due Date").tag(RecurringType.dueDate)
+                    Text("One Time").tag(RecurringType.oneTime)
                     Text("Daily").tag(RecurringType.daily)
                     Text("Weekly").tag(RecurringType.weekly)
                     Text("Monthly").tag(RecurringType.monthly)
@@ -173,8 +174,8 @@ struct TodoDetailView: View {
                 }
                 .pickerStyle(.menu)
 
-                // End Date (only show if recurring)
-                if todo.recurringType != .none {
+                // End Date (only show if recurring - not for dueDate/oneTime)
+                if todo.recurringType != .dueDate && todo.recurringType != .oneTime {
                     Toggle(isOn: Binding(
                         get: { todo.recurringEndDate != nil },
                         set: { enabled in
@@ -222,6 +223,19 @@ struct TodoDetailView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+
+                // MARK: - Created Date Section
+                Section {
+                    HStack {
+                        Label("Created", systemImage: "clock")
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text(todo.createdDate, style: .date)
+                            .foregroundStyle(.secondary)
+                        Text(todo.createdDate, style: .time)
+                            .foregroundStyle(.secondary)
+                    }
+                }
 
                 // MARK: - Actions Section
                 Section {
@@ -370,6 +384,41 @@ struct TodoDetailView: View {
     }
 
     private func handleCompletion() {
+        // Special handling for oneTime type
+        if todo.recurringType == .oneTime && !todo.completed {
+            let now = Date()
+
+            // Create a new completed todo with today's date
+            let completedTodo = TodoItem(
+                title: todo.title,
+                itemDescription: todo.itemDescription,
+                dueDate: now,
+                dueTime: now,
+                completed: true,
+                starred: todo.starred,
+                reminderEnabled: false,
+                showInCalendar: todo.showInCalendar,
+                recurringType: .oneTime,
+                aiGenerated: todo.aiGenerated,
+                colorID: todo.colorID,
+                textureID: todo.textureID,
+                flagColor: todo.flagColor,
+                sortOrder: todo.sortOrder,
+                completedDate: now,
+                subtype: todo.subtype
+            )
+
+            // Insert new completed todo
+            modelContext.insert(completedTodo)
+
+            // Delete the original todo
+            modelContext.delete(todo)
+
+            // Dismiss the view since we deleted the todo
+            dismiss()
+            return
+        }
+
         // Check if this is a recurring template being marked as complete
         if !todo.completed && todo.isRecurringTemplate {
             // Use completion context date if provided, otherwise use today
@@ -385,7 +434,7 @@ struct TodoDetailView: View {
                 starred: todo.starred,
                 reminderEnabled: false, // Completion instances don't need reminders
                 showInCalendar: todo.showInCalendar,
-                recurringType: .none, // Completion instances are not recurring
+                recurringType: .dueDate, // Completion instances are dueDate type
                 aiGenerated: todo.aiGenerated,
                 colorID: todo.colorID,
                 textureID: todo.textureID,
@@ -401,7 +450,7 @@ struct TodoDetailView: View {
             // The recurring template stays in the list
             dismiss()
         } else {
-            // For non-recurring or completion instances, toggle normally
+            // For dueDate type or completion instances, toggle normally
             todo.toggleCompletion()
         }
     }

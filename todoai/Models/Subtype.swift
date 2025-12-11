@@ -12,6 +12,7 @@ import SwiftData
 class Subtype {
     @Attribute(.unique) var id: UUID
     var name: String
+    var itemDescription: String?
     var type: SubtypeType
     var colorID: String?
     var textureID: String?
@@ -31,6 +32,7 @@ class Subtype {
     init(
         id: UUID = UUID(),
         name: String,
+        itemDescription: String? = nil,
         type: SubtypeType,
         colorID: String? = nil,
         textureID: String? = nil,
@@ -48,6 +50,7 @@ class Subtype {
     ) {
         self.id = id
         self.name = name
+        self.itemDescription = itemDescription
         self.type = type
         self.colorID = colorID
         self.textureID = textureID

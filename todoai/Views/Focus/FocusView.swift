@@ -249,7 +249,7 @@ struct FocusView: View {
         stopTimer()
 
         // Handle recurring todos
-        if todo.recurringType != .none {
+        if todo.recurringType != .dueDate && todo.recurringType != .oneTime {
             if let nextDate = todo.nextRecurringDate() {
                 let nextTodoInstance = TodoItem(
                     title: todo.title,

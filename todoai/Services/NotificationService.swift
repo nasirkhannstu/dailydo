@@ -123,7 +123,7 @@ class NotificationService: ObservableObject {
         let calendar = Calendar.current
 
         switch todo.recurringType {
-        case .none:
+        case .dueDate, .oneTime:
             // One-time notification
             let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: notificationDate)
             return UNCalendarNotificationTrigger(dateMatching: components, repeats: false)

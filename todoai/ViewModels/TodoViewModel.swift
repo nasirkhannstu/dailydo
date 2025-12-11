@@ -53,7 +53,7 @@ class TodoViewModel {
         dueDate: Date? = nil,
         dueTime: Date? = nil,
         reminderEnabled: Bool = false,
-        recurringType: RecurringType = .none,
+        recurringType: RecurringType = .dueDate,
         subtype: Subtype
     ) {
         let newTodo = TodoItem(

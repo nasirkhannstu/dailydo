@@ -43,7 +43,7 @@ class TodoItem {
         starred: Bool = false,
         reminderEnabled: Bool = false,
         showInCalendar: Bool = true,
-        recurringType: RecurringType = .none,
+        recurringType: RecurringType = .dueDate,
         aiGenerated: Bool = false,
         colorID: String? = nil,
         textureID: String? = nil,
@@ -96,7 +96,7 @@ class TodoItem {
 
     // Check if this is a recurring template (not a completion instance)
     var isRecurringTemplate: Bool {
-        return recurringType != .none && parentRecurringTodoId == nil
+        return recurringType != .dueDate && recurringType != .oneTime && parentRecurringTodoId == nil
     }
 
     // Check if this is a completion instance of a recurring todo
@@ -159,12 +159,12 @@ class TodoItem {
 
     // Calculate next recurring date
     func nextRecurringDate() -> Date? {
-        guard recurringType != .none, let currentDueDate = dueDate else { return nil }
+        guard recurringType != .dueDate && recurringType != .oneTime, let currentDueDate = dueDate else { return nil }
 
         let calendar = Calendar.current
 
         switch recurringType {
-        case .none:
+        case .dueDate, .oneTime:
             return nil
 
         case .daily:

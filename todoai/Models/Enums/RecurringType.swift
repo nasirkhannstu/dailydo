@@ -8,7 +8,8 @@
 import Foundation
 
 enum RecurringType: String, Codable, CaseIterable {
-    case none
+    case dueDate
+    case oneTime
     case daily
     case weekly
     case monthly
@@ -16,8 +17,10 @@ enum RecurringType: String, Codable, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .none:
-            return "None"
+        case .dueDate:
+            return "Due Date"
+        case .oneTime:
+            return "One Time"
         case .daily:
             return "Daily"
         case .weekly:
@@ -31,8 +34,10 @@ enum RecurringType: String, Codable, CaseIterable {
 
     var icon: String {
         switch self {
-        case .none:
-            return "circle"
+        case .dueDate:
+            return "calendar.badge.clock"
+        case .oneTime:
+            return "clock.badge.checkmark"
         case .daily:
             return "sun.max.fill"
         case .weekly:

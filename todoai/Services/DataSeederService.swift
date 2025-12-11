@@ -230,7 +230,7 @@ class DataSeederService {
         let eveningStudyTime = createTime(hour: 19, minute: 0)
 
         let studyTodos = [
-            // Initial tasks
+            // Initial tasks - using oneTime type
             TodoItem(
                 title: "Take diagnostic test",
                 itemDescription: "Assess current level in all sections",
@@ -238,6 +238,7 @@ class DataSeederService {
                 dueTime: today,
                 starred: true,
                 showInCalendar: false,
+                recurringType: .oneTime,
                 subtype: studyPlan
             ),
             TodoItem(
@@ -246,6 +247,7 @@ class DataSeederService {
                 dueDate: today,
                 dueTime: today,
                 showInCalendar: false,
+                recurringType: .oneTime,
                 subtype: studyPlan
             ),
 
@@ -316,7 +318,7 @@ class DataSeederService {
                 subtype: studyPlan
             ),
 
-            // Final exam day
+            // Final exam day - using dueDate type
             TodoItem(
                 title: "IELTS Exam Day",
                 itemDescription: "Good luck! You've prepared well.",
@@ -324,6 +326,7 @@ class DataSeederService {
                 dueTime: examDate,
                 starred: true,
                 showInCalendar: false,
+                recurringType: .dueDate,
                 subtype: studyPlan
             )
         ]
@@ -384,7 +387,7 @@ class DataSeederService {
                 subtype: fitnessPlan
             ),
 
-            // Weekly milestones
+            // Weekly milestones - using dueDate type for specific dates
             TodoItem(
                 title: "Week 1: Establish baseline",
                 itemDescription: "Record weight, measurements, and fitness level",
@@ -392,6 +395,7 @@ class DataSeederService {
                 dueTime: today,
                 starred: true,
                 showInCalendar: false,
+                recurringType: .dueDate,
                 subtype: fitnessPlan
             ),
             TodoItem(
@@ -400,6 +404,7 @@ class DataSeederService {
                 dueDate: addDays(to: today, days: 7),
                 dueTime: addDays(to: today, days: 7),
                 showInCalendar: false,
+                recurringType: .dueDate,
                 subtype: fitnessPlan
             ),
             TodoItem(
@@ -408,6 +413,7 @@ class DataSeederService {
                 dueDate: addDays(to: today, days: 14),
                 dueTime: addDays(to: today, days: 14),
                 showInCalendar: false,
+                recurringType: .dueDate,
                 subtype: fitnessPlan
             ),
             TodoItem(
@@ -417,6 +423,7 @@ class DataSeederService {
                 dueTime: fitnessEndDate,
                 starred: true,
                 showInCalendar: false,
+                recurringType: .dueDate,
                 subtype: fitnessPlan
             )
         ]
@@ -438,14 +445,14 @@ class DataSeederService {
         modelContext.insert(travelPlan)
 
         let travelTodos = [
-            TodoItem(title: "Research destinations", itemDescription: "Paris, Rome, Barcelona, Amsterdam", showInCalendar: false, subtype: travelPlan),
-            TodoItem(title: "Book flights", itemDescription: "Compare prices on different booking sites", starred: true, showInCalendar: false, subtype: travelPlan),
-            TodoItem(title: "Reserve accommodations", itemDescription: "Book hotels or Airbnb for each city", starred: true, showInCalendar: false, subtype: travelPlan),
-            TodoItem(title: "Plan daily itinerary", itemDescription: "Research attractions and create day-by-day plan", showInCalendar: false, subtype: travelPlan),
-            TodoItem(title: "Get travel insurance", starred: true, showInCalendar: false, subtype: travelPlan),
-            TodoItem(title: "Pack luggage", itemDescription: "Create packing checklist", showInCalendar: false, subtype: travelPlan),
-            TodoItem(title: "Print important documents", itemDescription: "Tickets, hotel confirmations, insurance", showInCalendar: false, subtype: travelPlan),
-            TodoItem(title: "Check passport validity", itemDescription: "Ensure 6+ months validity", starred: true, showInCalendar: false, subtype: travelPlan)
+            TodoItem(title: "Research destinations", itemDescription: "Paris, Rome, Barcelona, Amsterdam", showInCalendar: false, recurringType: .oneTime, subtype: travelPlan),
+            TodoItem(title: "Book flights", itemDescription: "Compare prices on different booking sites", starred: true, showInCalendar: false, recurringType: .oneTime, subtype: travelPlan),
+            TodoItem(title: "Reserve accommodations", itemDescription: "Book hotels or Airbnb for each city", starred: true, showInCalendar: false, recurringType: .oneTime, subtype: travelPlan),
+            TodoItem(title: "Plan daily itinerary", itemDescription: "Research attractions and create day-by-day plan", showInCalendar: false, recurringType: .oneTime, subtype: travelPlan),
+            TodoItem(title: "Get travel insurance", starred: true, showInCalendar: false, recurringType: .oneTime, subtype: travelPlan),
+            TodoItem(title: "Pack luggage", itemDescription: "Create packing checklist", showInCalendar: false, recurringType: .oneTime, subtype: travelPlan),
+            TodoItem(title: "Print important documents", itemDescription: "Tickets, hotel confirmations, insurance", showInCalendar: false, recurringType: .oneTime, subtype: travelPlan),
+            TodoItem(title: "Check passport validity", itemDescription: "Ensure 6+ months validity", starred: true, showInCalendar: false, recurringType: .oneTime, subtype: travelPlan)
         ]
 
         travelTodos.enumerated().forEach { index, todo in
@@ -471,16 +478,16 @@ class DataSeederService {
         let shopDate = Date()
 
         let shoppingTodos = [
-            TodoItem(title: "🥦 Broccoli", dueDate: shopDate, dueTime: shopDate, completed: true, showInCalendar: false, subtype: shoppingList),
-            TodoItem(title: "🥕 Carrots", dueDate: shopDate, dueTime: shopDate, showInCalendar: false, subtype: shoppingList),
-            TodoItem(title: "🍅 Tomatoes", dueDate: shopDate, dueTime: shopDate, showInCalendar: false, subtype: shoppingList),
-            TodoItem(title: "🥛 Milk", dueDate: shopDate, dueTime: shopDate, showInCalendar: false, subtype: shoppingList),
-            TodoItem(title: "🧀 Cheese", dueDate: shopDate, dueTime: shopDate, showInCalendar: false, subtype: shoppingList),
-            TodoItem(title: "🥩 Chicken breast", dueDate: shopDate, dueTime: shopDate, showInCalendar: false, subtype: shoppingList),
-            TodoItem(title: "🍞 Whole wheat bread", dueDate: shopDate, dueTime: shopDate, completed: true, showInCalendar: false, subtype: shoppingList),
-            TodoItem(title: "🥚 Eggs", dueDate: shopDate, dueTime: shopDate, showInCalendar: false, subtype: shoppingList),
-            TodoItem(title: "🧻 Paper towels", dueDate: shopDate, dueTime: shopDate, showInCalendar: false, subtype: shoppingList),
-            TodoItem(title: "🧼 Dish soap", dueDate: shopDate, dueTime: shopDate, showInCalendar: false, subtype: shoppingList)
+            TodoItem(title: "🥦 Broccoli", dueDate: shopDate, dueTime: shopDate, completed: true, showInCalendar: false, recurringType: .oneTime, subtype: shoppingList),
+            TodoItem(title: "🥕 Carrots", dueDate: shopDate, dueTime: shopDate, showInCalendar: false, recurringType: .oneTime, subtype: shoppingList),
+            TodoItem(title: "🍅 Tomatoes", dueDate: shopDate, dueTime: shopDate, showInCalendar: false, recurringType: .oneTime, subtype: shoppingList),
+            TodoItem(title: "🥛 Milk", dueDate: shopDate, dueTime: shopDate, showInCalendar: false, recurringType: .oneTime, subtype: shoppingList),
+            TodoItem(title: "🧀 Cheese", dueDate: shopDate, dueTime: shopDate, showInCalendar: false, recurringType: .oneTime, subtype: shoppingList),
+            TodoItem(title: "🥩 Chicken breast", dueDate: shopDate, dueTime: shopDate, showInCalendar: false, recurringType: .oneTime, subtype: shoppingList),
+            TodoItem(title: "🍞 Whole wheat bread", dueDate: shopDate, dueTime: shopDate, completed: true, showInCalendar: false, recurringType: .oneTime, subtype: shoppingList),
+            TodoItem(title: "🥚 Eggs", dueDate: shopDate, dueTime: shopDate, showInCalendar: false, recurringType: .oneTime, subtype: shoppingList),
+            TodoItem(title: "🧻 Paper towels", dueDate: shopDate, dueTime: shopDate, showInCalendar: false, recurringType: .oneTime, subtype: shoppingList),
+            TodoItem(title: "🧼 Dish soap", dueDate: shopDate, dueTime: shopDate, showInCalendar: false, recurringType: .oneTime, subtype: shoppingList)
         ]
 
         shoppingTodos.enumerated().forEach { index, todo in
@@ -502,12 +509,12 @@ class DataSeederService {
         let movieDate = Date()
 
         let movieTodos = [
-            TodoItem(title: "Interstellar (2014)", itemDescription: "Sci-Fi • Christopher Nolan", dueDate: movieDate, dueTime: movieDate, starred: true, showInCalendar: false, subtype: moviesList),
-            TodoItem(title: "The Martian (2015)", itemDescription: "Sci-Fi • Matt Damon", dueDate: movieDate, dueTime: movieDate, showInCalendar: false, subtype: moviesList),
-            TodoItem(title: "Arrival (2016)", itemDescription: "Sci-Fi • Amy Adams", dueDate: movieDate, dueTime: movieDate, showInCalendar: false, subtype: moviesList),
-            TodoItem(title: "Blade Runner 2049 (2017)", itemDescription: "Sci-Fi • Ryan Gosling", dueDate: movieDate, dueTime: movieDate, completed: true, showInCalendar: false, subtype: moviesList),
-            TodoItem(title: "Dune (2021)", itemDescription: "Sci-Fi • Timothée Chalamet", dueDate: movieDate, dueTime: movieDate, starred: true, showInCalendar: false, subtype: moviesList),
-            TodoItem(title: "Everything Everywhere All at Once (2022)", itemDescription: "Sci-Fi • Michelle Yeoh", dueDate: movieDate, dueTime: movieDate, completed: true, showInCalendar: false, subtype: moviesList)
+            TodoItem(title: "Interstellar (2014)", itemDescription: "Sci-Fi • Christopher Nolan", dueDate: movieDate, dueTime: movieDate, starred: true, showInCalendar: false, recurringType: .oneTime, subtype: moviesList),
+            TodoItem(title: "The Martian (2015)", itemDescription: "Sci-Fi • Matt Damon", dueDate: movieDate, dueTime: movieDate, showInCalendar: false, recurringType: .oneTime, subtype: moviesList),
+            TodoItem(title: "Arrival (2016)", itemDescription: "Sci-Fi • Amy Adams", dueDate: movieDate, dueTime: movieDate, showInCalendar: false, recurringType: .oneTime, subtype: moviesList),
+            TodoItem(title: "Blade Runner 2049 (2017)", itemDescription: "Sci-Fi • Ryan Gosling", dueDate: movieDate, dueTime: movieDate, completed: true, showInCalendar: false, recurringType: .oneTime, subtype: moviesList),
+            TodoItem(title: "Dune (2021)", itemDescription: "Sci-Fi • Timothée Chalamet", dueDate: movieDate, dueTime: movieDate, starred: true, showInCalendar: false, recurringType: .oneTime, subtype: moviesList),
+            TodoItem(title: "Everything Everywhere All at Once (2022)", itemDescription: "Sci-Fi • Michelle Yeoh", dueDate: movieDate, dueTime: movieDate, completed: true, showInCalendar: false, recurringType: .oneTime, subtype: moviesList)
         ]
 
         movieTodos.enumerated().forEach { index, todo in
@@ -529,12 +536,12 @@ class DataSeederService {
         let bookDate = Date()
 
         let bookTodos = [
-            TodoItem(title: "Atomic Habits", itemDescription: "James Clear - Self-improvement", dueDate: bookDate, dueTime: bookDate, starred: true, showInCalendar: false, subtype: booksList),
-            TodoItem(title: "The 7 Habits of Highly Effective People", itemDescription: "Stephen Covey", dueDate: bookDate, dueTime: bookDate, showInCalendar: false, subtype: booksList),
-            TodoItem(title: "Deep Work", itemDescription: "Cal Newport - Productivity", dueDate: bookDate, dueTime: bookDate, showInCalendar: false, subtype: booksList),
-            TodoItem(title: "Thinking, Fast and Slow", itemDescription: "Daniel Kahneman", dueDate: bookDate, dueTime: bookDate, completed: true, showInCalendar: false, subtype: booksList),
-            TodoItem(title: "The Power of Now", itemDescription: "Eckhart Tolle - Mindfulness", dueDate: bookDate, dueTime: bookDate, showInCalendar: false, subtype: booksList),
-            TodoItem(title: "Man's Search for Meaning", itemDescription: "Viktor Frankl", dueDate: bookDate, dueTime: bookDate, completed: true, showInCalendar: false, subtype: booksList)
+            TodoItem(title: "Atomic Habits", itemDescription: "James Clear - Self-improvement", dueDate: bookDate, dueTime: bookDate, starred: true, showInCalendar: false, recurringType: .oneTime, subtype: booksList),
+            TodoItem(title: "The 7 Habits of Highly Effective People", itemDescription: "Stephen Covey", dueDate: bookDate, dueTime: bookDate, showInCalendar: false, recurringType: .oneTime, subtype: booksList),
+            TodoItem(title: "Deep Work", itemDescription: "Cal Newport - Productivity", dueDate: bookDate, dueTime: bookDate, showInCalendar: false, recurringType: .oneTime, subtype: booksList),
+            TodoItem(title: "Thinking, Fast and Slow", itemDescription: "Daniel Kahneman", dueDate: bookDate, dueTime: bookDate, completed: true, showInCalendar: false, recurringType: .oneTime, subtype: booksList),
+            TodoItem(title: "The Power of Now", itemDescription: "Eckhart Tolle - Mindfulness", dueDate: bookDate, dueTime: bookDate, showInCalendar: false, recurringType: .oneTime, subtype: booksList),
+            TodoItem(title: "Man's Search for Meaning", itemDescription: "Viktor Frankl", dueDate: bookDate, dueTime: bookDate, completed: true, showInCalendar: false, recurringType: .oneTime, subtype: booksList)
         ]
 
         bookTodos.enumerated().forEach { index, todo in
@@ -556,12 +563,12 @@ class DataSeederService {
         let foodDate = Date()
 
         let foodTodos = [
-            TodoItem(title: "🍕 Authentic Italian pizza", itemDescription: "Neapolitan style from Italy", dueDate: foodDate, dueTime: foodDate, showInCalendar: false, subtype: foodList),
-            TodoItem(title: "🍜 Japanese ramen", itemDescription: "Traditional tonkotsu or miso", dueDate: foodDate, dueTime: foodDate, completed: true, showInCalendar: false, subtype: foodList),
-            TodoItem(title: "🌮 Mexican street tacos", itemDescription: "Al pastor or carnitas", dueDate: foodDate, dueTime: foodDate, showInCalendar: false, subtype: foodList),
-            TodoItem(title: "🍛 Indian biryani", itemDescription: "Hyderabadi or Lucknowi style", dueDate: foodDate, dueTime: foodDate, showInCalendar: false, subtype: foodList),
-            TodoItem(title: "🥐 French croissants", itemDescription: "Fresh from a Parisian bakery", dueDate: foodDate, dueTime: foodDate, showInCalendar: false, subtype: foodList),
-            TodoItem(title: "🍝 Thai pad thai", itemDescription: "Authentic street food version", dueDate: foodDate, dueTime: foodDate, completed: true, showInCalendar: false, subtype: foodList)
+            TodoItem(title: "🍕 Authentic Italian pizza", itemDescription: "Neapolitan style from Italy", dueDate: foodDate, dueTime: foodDate, showInCalendar: false, recurringType: .oneTime, subtype: foodList),
+            TodoItem(title: "🍜 Japanese ramen", itemDescription: "Traditional tonkotsu or miso", dueDate: foodDate, dueTime: foodDate, completed: true, showInCalendar: false, recurringType: .oneTime, subtype: foodList),
+            TodoItem(title: "🌮 Mexican street tacos", itemDescription: "Al pastor or carnitas", dueDate: foodDate, dueTime: foodDate, showInCalendar: false, recurringType: .oneTime, subtype: foodList),
+            TodoItem(title: "🍛 Indian biryani", itemDescription: "Hyderabadi or Lucknowi style", dueDate: foodDate, dueTime: foodDate, showInCalendar: false, recurringType: .oneTime, subtype: foodList),
+            TodoItem(title: "🥐 French croissants", itemDescription: "Fresh from a Parisian bakery", dueDate: foodDate, dueTime: foodDate, showInCalendar: false, recurringType: .oneTime, subtype: foodList),
+            TodoItem(title: "🍝 Thai pad thai", itemDescription: "Authentic street food version", dueDate: foodDate, dueTime: foodDate, completed: true, showInCalendar: false, recurringType: .oneTime, subtype: foodList)
         ]
 
         foodTodos.enumerated().forEach { index, todo in
