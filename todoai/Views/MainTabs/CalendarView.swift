@@ -12,6 +12,7 @@ struct CalendarView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allTodos: [TodoItem]
     @Query private var allSubtypes: [Subtype]
+    @Query private var dailyNotes: [DailyNote]
 
     @State private var selectedDate = Date()
     @State private var currentWeekOffset = 0
@@ -23,6 +24,7 @@ struct CalendarView: View {
     @State private var focusedTodo: TodoItem? = nil
     @State private var selectedTodo: TodoItem? = nil
     @State private var showingAddTodo = false
+    @State private var showingDailyNote = false
     @State private var newTodoTitle = ""
     @State private var newTodoDescription = ""
     @State private var newTodoDueDate: Date = Date()
@@ -178,6 +180,53 @@ struct CalendarView: View {
         }
 
         return true
+    }
+
+    // MARK: - Daily Note Helpers
+
+    var noteForSelectedDate: DailyNote? {
+        let startOfDay = calendar.startOfDay(for: selectedDate)
+        return dailyNotes.first { calendar.isDate($0.date, inSameDayAs: startOfDay) }
+    }
+
+    var hasNoteForDate: Bool {
+        noteForSelectedDate != nil && !(noteForSelectedDate?.content.isEmpty ?? true)
+    }
+
+    func getOrCreateNote(for date: Date) -> DailyNote {
+        let startOfDay = calendar.startOfDay(for: date)
+
+        // Check if note exists
+        if let existingNote = dailyNotes.first(where: {
+            calendar.isDate($0.date, inSameDayAs: startOfDay)
+        }) {
+            return existingNote
+        }
+
+        // Create new note
+        let newNote = DailyNote(date: startOfDay)
+        modelContext.insert(newNote)
+        return newNote
+    }
+
+    func hasNote(for date: Date) -> Bool {
+        let startOfDay = calendar.startOfDay(for: date)
+        if let note = dailyNotes.first(where: { calendar.isDate($0.date, inSameDayAs: startOfDay) }) {
+            return !note.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+        return false
+    }
+
+    func moodColor(for date: Date) -> Color {
+        let startOfDay = calendar.startOfDay(for: date)
+        if let note = dailyNotes.first(where: { calendar.isDate($0.date, inSameDayAs: startOfDay) }) {
+            return note.noteMood.color
+        }
+        return NoteMood.meh.color
+    }
+
+    var selectedDateMoodColor: Color {
+        noteForSelectedDate?.noteMood.color ?? NoteMood.meh.color
     }
 
     // Check if a recurring todo should appear on a given date
@@ -371,7 +420,9 @@ struct CalendarView: View {
                                 date: date,
                                 isSelected: calendar.isDate(date, inSameDayAs: selectedDate),
                                 isToday: calendar.isDateInToday(date),
-                                taskCount: taskCount(for: date)
+                                taskCount: taskCount(for: date),
+                                hasNote: hasNote(for: date),
+                                noteMoodColor: moodColor(for: date)
                             ) {
                                 withAnimation {
                                     selectedDate = date
@@ -489,6 +540,39 @@ struct CalendarView: View {
                             .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                         }
                     }
+
+                    // Daily Note Button (always shown at bottom)
+                    HStack {
+                        Spacer()
+
+                        Button {
+                            showingDailyNote = true
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "note.text")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.white)
+
+                                Text("Daily Note")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(.white)
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(hasNoteForDate ? selectedDateMoodColor.gradient : Color.blue.gradient)
+                            )
+                            .shadow(color: (hasNoteForDate ? selectedDateMoodColor : Color.blue).opacity(0.3), radius: 4, x: 0, y: 2)
+                        }
+                        .buttonStyle(.plain)
+
+                        Spacer()
+                    }
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16))
                 }
                 .listStyle(.plain)
                 .background(
@@ -505,6 +589,7 @@ struct CalendarView: View {
             }
             .navigationBarHidden(true)
             .overlay(alignment: .bottomTrailing) {
+                // Add Todo Button
                 Button {
                     showingAddTodo = true
                 } label: {
@@ -540,6 +625,13 @@ struct CalendarView: View {
                     selectedStatusFilter: $selectedStatusFilter,
                     selectedTypeFilter: $selectedTypeFilter
                 )
+            }
+            .sheet(isPresented: $showingDailyNote) {
+                let note = getOrCreateNote(for: selectedDate)
+                DailyNoteView(note: note)
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
+                    .presentationCornerRadius(12)
             }
             .fullScreenCover(item: $focusedTodo) { todo in
                 let activeTodos = todos.filter { !$0.completed }
@@ -797,6 +889,8 @@ struct DayButton: View {
     let isSelected: Bool
     let isToday: Bool
     let taskCount: Int
+    let hasNote: Bool
+    let noteMoodColor: Color
     let action: () -> Void
 
     private let calendar = Calendar.current
@@ -809,18 +903,34 @@ struct DayButton: View {
                     .fontWeight(.medium)
                     .foregroundStyle(isSelected ? .white : .white.opacity(0.7))
 
-                Text("\(calendar.component(.day, from: date))")
-                    .font(.system(size: 15, weight: isSelected ? .bold : .semibold))
-                    .foregroundStyle(isSelected ? Color(red: 0.5, green: 0.4, blue: 0.85) : .white)
-                    .frame(width: 36, height: 36)
-                    .background(
+                ZStack(alignment: .topTrailing) {
+                    Text("\(calendar.component(.day, from: date))")
+                        .font(.system(size: 15, weight: isSelected ? .bold : .semibold))
+                        .foregroundStyle(isSelected ? Color(red: 0.5, green: 0.4, blue: 0.85) : .white)
+                        .frame(width: 36, height: 36)
+                        .background(
+                            Circle()
+                                .fill(isSelected ? Color.white : (isToday ? Color.white.opacity(0.2) : Color.clear))
+                        )
+                        .overlay(
+                            Circle()
+                                .stroke(isToday && !isSelected ? Color.white.opacity(0.5) : Color.clear, lineWidth: 1.5)
+                        )
+                        .overlay(
+                            // Mood color ring for notes
+                            Circle()
+                                .stroke(hasNote ? noteMoodColor : Color.clear, lineWidth: 2)
+                                .frame(width: 40, height: 40)
+                        )
+
+                    // Note indicator badge (smaller, subtle)
+                    if hasNote {
                         Circle()
-                            .fill(isSelected ? Color.white : (isToday ? Color.white.opacity(0.2) : Color.clear))
-                    )
-                    .overlay(
-                        Circle()
-                            .stroke(isToday && !isSelected ? Color.white.opacity(0.5) : Color.clear, lineWidth: 1.5)
-                    )
+                            .fill(noteMoodColor)
+                            .frame(width: 6, height: 6)
+                            .offset(x: 2, y: -2)
+                    }
+                }
 
                 if taskCount > 0 {
                     Circle()

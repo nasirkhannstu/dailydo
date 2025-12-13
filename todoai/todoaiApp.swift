@@ -14,15 +14,20 @@ struct DailyDoApp: App {
     @State private var hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
 
     init() {
-        // Initialize model container
+        // Initialize model container with migration configuration
         do {
-            modelContainer = try ModelContainer(
-                for: User.self,
+            let schema = Schema([
+                User.self,
                 Subtype.self,
                 TodoItem.self,
                 Subtask.self,
-                PurchasedProduct.self
-            )
+                PurchasedProduct.self,
+                DailyNote.self
+            ])
+
+            let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+
+            modelContainer = try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
             fatalError("Failed to initialize ModelContainer: \(error)")
         }
