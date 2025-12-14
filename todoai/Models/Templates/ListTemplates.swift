@@ -94,27 +94,50 @@ extension SubtypeTemplate {
             ]
         ),
 
-        // 5. Packing List
+        // 5. Travel Checklist
         SubtypeTemplate(
-            name: "Packing List",
-            icon: "suitcase.fill",
+            name: "Travel Checklist",
+            icon: "airplane",
             color: "purple",
             type: .list,
-            shortDescription: "Travel prepared",
+            shortDescription: "Plan the perfect trip",
             todos: [
-                TodoTemplate(title: "Phone charger", description: "Don't forget!", recurring: .oneTime),
-                TodoTemplate(title: "Toiletries", description: "Toothbrush, shampoo, etc", recurring: .oneTime),
-                TodoTemplate(title: "Medications", description: "Prescriptions & vitamins", recurring: .oneTime),
-                TodoTemplate(title: "ID/Passport", description: "Essential documents", recurring: .oneTime),
-                TodoTemplate(title: "Underwear", description: "Enough for trip + extra", recurring: .oneTime),
-                TodoTemplate(title: "Socks", description: "Multiple pairs", recurring: .oneTime),
-                TodoTemplate(title: "Shirts", description: "Mix & match", recurring: .oneTime),
-                TodoTemplate(title: "Pants/Shorts", description: "Weather appropriate", recurring: .oneTime),
-                TodoTemplate(title: "Shoes", description: "Comfortable walking shoes", recurring: .oneTime),
-                TodoTemplate(title: "Jacket/Sweater", description: "Layer for weather", recurring: .oneTime),
-                TodoTemplate(title: "Books/Entertainment", description: "For travel time", recurring: .oneTime),
-                TodoTemplate(title: "Headphones", description: "For flights/trains", recurring: .oneTime),
-                TodoTemplate(title: "Snacks", description: "Travel snacks", recurring: .oneTime)
+                TodoTemplate(title: "Book flights & hotels", description: "Reserve accommodations", recurring: .oneTime),
+                TodoTemplate(title: "Check passport validity", description: "6+ months remaining", recurring: .oneTime),
+                TodoTemplate(title: "Apply for visa if needed", description: "Check requirements", recurring: .oneTime),
+                TodoTemplate(title: "Travel insurance", description: "Get coverage", recurring: .oneTime),
+                TodoTemplate(title: "Notify bank of travel", description: "Avoid card blocks", recurring: .oneTime),
+                TodoTemplate(title: "Pack essentials", description: "Clothes, toiletries, meds", recurring: .oneTime),
+                TodoTemplate(title: "Phone charger & adapters", description: "International plugs", recurring: .oneTime),
+                TodoTemplate(title: "Download offline maps", description: "For navigation", recurring: .oneTime),
+                TodoTemplate(title: "Check-in online", description: "24 hours before", recurring: .oneTime),
+                TodoTemplate(title: "Arrange airport transfer", description: "To/from airport", recurring: .oneTime),
+                TodoTemplate(title: "Stop mail & deliveries", description: "While away", recurring: .oneTime),
+                TodoTemplate(title: "Lock windows & doors", description: "Secure home", recurring: .oneTime),
+                TodoTemplate(title: "Turn off utilities", description: "Save energy", recurring: .oneTime)
+            ]
+        ),
+
+        // 6. Moving Checklist
+        SubtypeTemplate(
+            name: "Moving Checklist",
+            icon: "shippingbox.fill",
+            color: "cyan",
+            type: .list,
+            shortDescription: "Stress-free relocation",
+            todos: [
+                TodoTemplate(title: "Create moving timeline", description: "Plan ahead", recurring: .oneTime),
+                TodoTemplate(title: "Notify landlord/realtor", description: "Give proper notice", recurring: .oneTime),
+                TodoTemplate(title: "Hire movers or rent truck", description: "Book in advance", recurring: .oneTime),
+                TodoTemplate(title: "Change address", description: "Post office, banks, etc", recurring: .oneTime),
+                TodoTemplate(title: "Transfer utilities", description: "Electric, gas, internet", recurring: .oneTime),
+                TodoTemplate(title: "Pack essentials box", description: "First day items", recurring: .oneTime),
+                TodoTemplate(title: "Label all boxes", description: "Room & contents", recurring: .oneTime),
+                TodoTemplate(title: "Take meter readings", description: "Document utilities", recurring: .oneTime),
+                TodoTemplate(title: "Clean old place", description: "Get deposit back", recurring: .oneTime),
+                TodoTemplate(title: "Update subscriptions", description: "Deliveries & services", recurring: .oneTime),
+                TodoTemplate(title: "Unpack & organize", description: "Settle into new home", recurring: .oneTime),
+                TodoTemplate(title: "Meet the neighbors", description: "Build community", recurring: .oneTime)
             ]
         )
     ]

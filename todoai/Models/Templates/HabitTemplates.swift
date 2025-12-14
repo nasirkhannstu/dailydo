@@ -130,24 +130,7 @@ extension SubtypeTemplate {
             ]
         ),
 
-        // 8. Prayer Time
-        SubtypeTemplate(
-            name: "Prayer Time",
-            icon: "hands.sparkles.fill",
-            color: "teal",
-            type: .habit,
-            shortDescription: "Daily spiritual practice",
-            todos: [
-                TodoTemplate(title: "Fajr (Dawn prayer)", description: "Before sunrise", recurring: .daily),
-                TodoTemplate(title: "Dhuhr (Noon prayer)", description: "Afternoon", recurring: .daily),
-                TodoTemplate(title: "Asr (Afternoon prayer)", description: "Late afternoon", recurring: .daily),
-                TodoTemplate(title: "Maghrib (Sunset prayer)", description: "After sunset", recurring: .daily),
-                TodoTemplate(title: "Isha (Night prayer)", description: "Evening", recurring: .daily),
-                TodoTemplate(title: "Quran reading", description: "Daily recitation", recurring: .daily)
-            ]
-        ),
-
-        // 9. Daily Reading
+        // 8. Daily Reading
         SubtypeTemplate(
             name: "Daily Reading",
             icon: "book.fill",

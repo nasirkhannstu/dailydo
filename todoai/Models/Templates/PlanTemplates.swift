@@ -102,6 +102,27 @@ extension SubtypeTemplate {
                 TodoTemplate(title: "Job applications", description: "Apply to positions", recurring: .weekly),
                 TodoTemplate(title: "Follow-ups", description: "Stay on their radar", recurring: .weekly)
             ]
+        ),
+
+        // 6. Fitness Transformation
+        SubtypeTemplate(
+            name: "Fitness Transformation",
+            icon: "figure.strengthtraining.traditional",
+            color: "red",
+            type: .plan,
+            shortDescription: "Transform your body & health",
+            todos: [
+                TodoTemplate(title: "Set fitness goals", description: "Weight, strength, endurance", recurring: .oneTime),
+                TodoTemplate(title: "Take before photos", description: "Track visual progress", recurring: .oneTime),
+                TodoTemplate(title: "Create workout plan", description: "Weekly schedule", recurring: .oneTime),
+                TodoTemplate(title: "Plan meal prep", description: "Healthy eating strategy", recurring: .oneTime),
+                TodoTemplate(title: "Daily workouts", description: "Follow the plan", recurring: .daily),
+                TodoTemplate(title: "Track macros", description: "Monitor nutrition", recurring: .daily),
+                TodoTemplate(title: "Weekly weigh-in", description: "Measure progress", recurring: .weekly),
+                TodoTemplate(title: "Rest & recovery", description: "Essential for growth", recurring: .weekly),
+                TodoTemplate(title: "Progress photos", description: "Monthly check-in", recurring: .monthly),
+                TodoTemplate(title: "Celebrate milestones", description: "Reward achievements", recurring: .oneTime)
+            ]
         )
     ]
 }

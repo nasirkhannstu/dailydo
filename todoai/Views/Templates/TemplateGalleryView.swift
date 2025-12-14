@@ -35,6 +35,28 @@ struct TemplateGalleryView: View {
         }
     }
 
+    var galleryTitle: String {
+        switch type {
+        case .habit:
+            return "Healthy Habits to Build"
+        case .plan:
+            return "Goals & Plans to Achieve"
+        case .list:
+            return "Lists to Stay Organized"
+        }
+    }
+
+    var gallerySubtitle: String {
+        switch type {
+        case .habit:
+            return "Start building better daily routines"
+        case .plan:
+            return "Achieve your goals step by step"
+        case .list:
+            return "Keep everything organized & on track"
+        }
+    }
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -44,42 +66,67 @@ struct TemplateGalleryView: View {
 
                 ScrollView {
                     VStack(spacing: 12) {
-                        // Compact colorful header
-                        HStack(spacing: 12) {
-                            ZStack {
-                                Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [.orange, .pink],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
+                        // ASO-optimized header with descriptive text
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 12) {
+                                ZStack {
+                                    Circle()
+                                        .fill(
+                                            LinearGradient(
+                                                colors: [.orange, .pink],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
                                         )
-                                    )
-                                    .frame(width: 50, height: 50)
+                                        .frame(width: 50, height: 50)
 
-                                Image(systemName: "sparkles")
-                                    .font(.system(size: 24, weight: .bold))
-                                    .foregroundStyle(.white)
+                                    Image(systemName: "sparkles")
+                                        .font(.system(size: 24, weight: .bold))
+                                        .foregroundStyle(.white)
+                                }
+
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(galleryTitle)
+                                        .font(.system(size: 20, weight: .bold))
+                                        .foregroundStyle(.primary)
+
+                                    Text(gallerySubtitle)
+                                        .font(.system(size: 13, weight: .medium))
+                                        .foregroundStyle(.secondary)
+                                }
+
+                                Spacer()
                             }
 
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Template Gallery")
-                                    .font(.system(size: 22, weight: .bold))
-                                    .foregroundStyle(.primary)
+                            // Template count badge
+                            HStack(spacing: 6) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.green)
 
-                                Text("\(templates.count) ready-made templates")
-                                    .font(.system(size: 13, weight: .medium))
+                                Text("\(templates.count) templates ready to use")
+                                    .font(.system(size: 12, weight: .semibold))
                                     .foregroundStyle(.secondary)
                             }
-
-                            Spacer()
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(Color.green.opacity(0.1))
+                            )
                         }
                         .padding(.horizontal, 16)
                         .padding(.top, 8)
-                        .padding(.bottom, 4)
+                        .padding(.bottom, 12)
 
-                        // Template cards - compact spacing
-                        LazyVStack(spacing: 12) {
+                        // Template cards - 2-column grid
+                        LazyVGrid(
+                            columns: [
+                                GridItem(.flexible(), spacing: 12),
+                                GridItem(.flexible(), spacing: 12)
+                            ],
+                            spacing: 12
+                        ) {
                             ForEach(templates) { template in
                                 NavigationLink(destination: TemplateDetailView(template: template)) {
                                     TemplateCard(

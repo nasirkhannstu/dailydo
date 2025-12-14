@@ -51,137 +51,120 @@ struct TemplateCard: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Colorful header with icon and gradient
-            ZStack {
-                // VIBRANT COLORFUL gradient background
-                LinearGradient(
-                    colors: [
-                        vibrantHeaderColor,
-                        vibrantHeaderColor.opacity(0.8)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-
-                // Decorative elements
-                Circle()
-                    .fill(.white.opacity(0.12))
-                    .frame(width: 120, height: 120)
-                    .offset(x: -70, y: -25)
-
-                Circle()
-                    .fill(.white.opacity(0.1))
-                    .frame(width: 90, height: 90)
-                    .offset(x: 80, y: 15)
-
-                // Content
-                HStack(spacing: 14) {
-                    // Large icon
-                    Image(systemName: template.icon)
-                        .font(.system(size: 40, weight: .bold))
-                        .foregroundStyle(.white)
-                        .frame(width: 70, height: 70)
-                        .background(
-                            Circle()
-                                .fill(.white.opacity(0.2))
-                        )
-                        .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
-
-                    // Title and description
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text(template.name)
-                            .font(.system(size: 22, weight: .bold))
-                            .foregroundStyle(.white)
-                            .lineLimit(1)
-
-                        Text(template.shortDescription)
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.95))
-                            .lineLimit(2)
-                    }
-
-                    Spacer()
-
-                    // Add button - stops event propagation to NavigationLink
-                    Button(action: {
-                        onAdd()
-                    }) {
+        ZStack(alignment: .topTrailing) {
+            VStack(spacing: 0) {
+                // Compact colorful header - vertical layout
+                VStack(spacing: 12) {
+                    // Icon only
+                    HStack {
                         ZStack {
                             Circle()
-                                .fill(.white.opacity(0.3))
+                                .fill(.white.opacity(0.25))
                                 .frame(width: 50, height: 50)
 
-                            Image(systemName: "plus")
-                                .font(.system(size: 22, weight: .bold))
+                            Image(systemName: template.icon)
+                                .font(.system(size: 24, weight: .bold))
                                 .foregroundStyle(.white)
                         }
+
+                        Spacer()
                     }
-                    .buttonStyle(PlainButtonStyle())
-                    .simultaneousGesture(TapGesture().onEnded {
-                        // Prevents NavigationLink from triggering
-                    })
+
+                    // Title
+                    Text(template.name)
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.white)
+                        .lineLimit(2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .multilineTextAlignment(.leading)
                 }
-                .padding(18)
-            }
-            .frame(height: 120)
+                .padding(14)
+                .background(
+                    LinearGradient(
+                        colors: [
+                            vibrantHeaderColor,
+                            vibrantHeaderColor.opacity(0.85)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
 
-                // Soft pastel content area with dark text
-                VStack(alignment: .leading, spacing: 14) {
-                    // Task preview list
-                    VStack(alignment: .leading, spacing: 10) {
-                        ForEach(template.todos.prefix(3), id: \.title) { todo in
-                            HStack(spacing: 12) {
-                                // Colored checkmark circle
-                                ZStack {
-                                    Circle()
-                                        .fill(vibrantHeaderColor.opacity(0.3))
-                                        .frame(width: 28, height: 28)
+                // Soft pastel content area with task previews
+                VStack(alignment: .leading, spacing: 8) {
+                    // Show 2-3 tasks
+                    ForEach(template.todos.prefix(2), id: \.title) { todo in
+                        HStack(spacing: 8) {
+                            // Colored checkmark circle
+                            ZStack {
+                                Circle()
+                                    .fill(vibrantHeaderColor.opacity(0.3))
+                                    .frame(width: 20, height: 20)
 
-                                    Image(systemName: "checkmark")
-                                        .font(.system(size: 11, weight: .bold))
-                                        .foregroundStyle(vibrantHeaderColor)
-                                }
-
-                                // Task title
-                                Text(todo.title)
-                                    .font(.system(size: 15, weight: .medium))
-                                    .foregroundStyle(.primary)
-                                    .lineLimit(1)
-
-                                Spacer()
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 9, weight: .bold))
+                                    .foregroundStyle(vibrantHeaderColor)
                             }
-                        }
 
-                        // More tasks indicator
-                        if template.todos.count > 3 {
-                            HStack(spacing: 12) {
-                                ZStack {
-                                    Circle()
-                                        .fill(vibrantHeaderColor.opacity(0.2))
-                                        .frame(width: 28, height: 28)
-
-                                    Image(systemName: "ellipsis")
-                                        .font(.system(size: 11, weight: .bold))
-                                        .foregroundStyle(vibrantHeaderColor.opacity(0.7))
-                                }
-
-                                Text("+\(template.todos.count - 3) more tasks")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundStyle(.secondary)
-                            }
+                            // Task title
+                            Text(todo.title)
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundStyle(.primary)
+                                .lineLimit(1)
                         }
                     }
+
+                    // More tasks indicator
+                    if template.todos.count > 2 {
+                        HStack(spacing: 8) {
+                            ZStack {
+                                Circle()
+                                    .fill(vibrantHeaderColor.opacity(0.2))
+                                    .frame(width: 20, height: 20)
+
+                                Image(systemName: "ellipsis")
+                                    .font(.system(size: 8, weight: .bold))
+                                    .foregroundStyle(vibrantHeaderColor.opacity(0.7))
+                            }
+
+                            Text("+\(template.todos.count - 2) more")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
-                .padding(18)
+                .padding(14)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .background(softBodyColor)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .shadow(color: templateColor.opacity(0.3), radius: 8, x: 0, y: 4)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .strokeBorder(.white.opacity(0.2), lineWidth: 1.5)
+            )
+
+            // Floating add button at the border between header and body - right edge
+            Button(action: {
+                onAdd()
+            }) {
+                ZStack {
+                    Circle()
+                        .fill(.white)
+                        .frame(width: 32, height: 32)
+                        .shadow(color: vibrantHeaderColor.opacity(0.4), radius: 6, x: 0, y: 3)
+
+                    Image(systemName: "plus")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(vibrantHeaderColor)
+                }
+            }
+            .buttonStyle(PlainButtonStyle())
+            .simultaneousGesture(TapGesture().onEnded {
+                // Prevents NavigationLink from triggering
+            })
+            .offset(x: 0, y: 90) // No margin, centered at header/body border
         }
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .shadow(color: templateColor.opacity(0.4), radius: 15, x: 0, y: 6)
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .strokeBorder(.white.opacity(0.2), lineWidth: 1.5)
-        )
     }
 }
 
