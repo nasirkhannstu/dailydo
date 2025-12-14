@@ -658,11 +658,11 @@ struct TodoRowView: View {
 
             Spacer()
 
-            // Starred
-            if todo.starred {
-                Image(systemName: "star.fill")
-                    .foregroundStyle(.yellow)
-                    .font(.caption)
+            // Priority indicator
+            if todo.priority != .none {
+                Circle()
+                    .fill(todo.priority.color)
+                    .frame(width: 8, height: 8)
             }
         }
         .padding(.vertical, 4)
@@ -672,13 +672,6 @@ struct TodoRowView: View {
             } label: {
                 Label("Delete", systemImage: "trash")
             }
-
-            Button {
-                todo.toggleStarred()
-            } label: {
-                Label(todo.starred ? "Unstar" : "Star", systemImage: "star")
-            }
-            .tint(.yellow)
         }
     }
 
@@ -701,7 +694,7 @@ struct TodoRowView: View {
                     dueDate: Date(), // Use today's date
                     dueTime: todo.dueTime,
                     completed: true,
-                    starred: todo.starred,
+                    priority: todo.priority,
                     reminderEnabled: false,
                     showInCalendar: todo.showInCalendar,
                     recurringType: .dueDate,

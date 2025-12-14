@@ -23,7 +23,7 @@ class DailyNote {
         content: String = "",
         createdDate: Date = Date(),
         lastModifiedDate: Date = Date(),
-        mood: String = NoteMood.meh.rawValue
+        mood: String = NoteMood.neutral.rawValue
     ) {
         self.id = id
         self.date = Calendar.current.startOfDay(for: date)
@@ -36,7 +36,7 @@ class DailyNote {
     // Computed property for easy mood access
     var noteMood: NoteMood {
         get {
-            NoteMood(rawValue: mood) ?? .meh
+            NoteMood(rawValue: mood) ?? .neutral
         }
         set {
             mood = newValue.rawValue

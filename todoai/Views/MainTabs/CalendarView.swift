@@ -18,6 +18,7 @@ struct CalendarView: View {
     @State private var currentWeekOffset = 0
     @State private var selectedStatusFilter: StatusFilter = .all
     @State private var selectedTypeFilter: TypeFilter = .all
+    @State private var selectedPriorityFilter: PriorityFilter = .all
     @State private var showingMonthYearPicker = false
     @State private var pickerDate = Date()
     @State private var showingFilterSheet = false
@@ -179,6 +180,20 @@ struct CalendarView: View {
             if todo.subtype?.type != .list { return false }
         }
 
+        // Priority filter
+        switch selectedPriorityFilter {
+        case .all:
+            break
+        case .high:
+            if todo.priority != .high { return false }
+        case .medium:
+            if todo.priority != .medium { return false }
+        case .low:
+            if todo.priority != .low { return false }
+        case .none:
+            if todo.priority != .none { return false }
+        }
+
         return true
     }
 
@@ -192,7 +207,7 @@ struct CalendarView: View {
     var hasNoteForDate: Bool {
         guard let note = noteForSelectedDate else { return false }
         let hasText = !note.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        return note.noteMood != .meh || hasText
+        return note.noteMood != .neutral || hasText
     }
 
     func getOrCreateNote(for date: Date) -> DailyNote {
@@ -215,7 +230,7 @@ struct CalendarView: View {
         let startOfDay = calendar.startOfDay(for: date)
         if let note = dailyNotes.first(where: { calendar.isDate($0.date, inSameDayAs: startOfDay) }) {
             let hasText = !note.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            return note.noteMood != .meh || hasText
+            return note.noteMood != .neutral || hasText
         }
         return false
     }
@@ -225,11 +240,11 @@ struct CalendarView: View {
         if let note = dailyNotes.first(where: { calendar.isDate($0.date, inSameDayAs: startOfDay) }) {
             return note.noteMood.color
         }
-        return NoteMood.meh.color
+        return NoteMood.neutral.color
     }
 
     var selectedDateMoodColor: Color {
-        noteForSelectedDate?.noteMood.color ?? NoteMood.meh.color
+        noteForSelectedDate?.noteMood.color ?? NoteMood.neutral.color
     }
 
     // Check if a recurring todo should appear on a given date
@@ -485,15 +500,91 @@ struct CalendarView: View {
                     Spacer()
 
                     HStack(spacing: 8) {
-                        Text("\(todos.filter { !$0.completed }.count) active")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        // Priority quick filters
+                        // All button
+                        Button {
+                            withAnimation {
+                                selectedPriorityFilter = .all
+                            }
+                        } label: {
+                            Text("All")
+                                .font(.caption)
+                                .fontWeight(selectedPriorityFilter == .all ? .semibold : .regular)
+                                .foregroundStyle(selectedPriorityFilter == .all ? .white : .gray)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(
+                                    Capsule()
+                                        .fill(selectedPriorityFilter == .all ? Color.blue : Color.gray.opacity(0.2))
+                                )
+                        }
+
+                        Button {
+                            withAnimation {
+                                selectedPriorityFilter = selectedPriorityFilter == .high ? .all : .high
+                            }
+                        } label: {
+                            Circle()
+                                .fill(selectedPriorityFilter == .high ? Color.red : Color.red.opacity(0.3))
+                                .frame(width: 24, height: 24)
+                                .overlay(
+                                    Circle()
+                                        .stroke(selectedPriorityFilter == .high ? Color.red : Color.clear, lineWidth: 2)
+                                        .padding(-2)
+                                )
+                        }
+
+                        Button {
+                            withAnimation {
+                                selectedPriorityFilter = selectedPriorityFilter == .medium ? .all : .medium
+                            }
+                        } label: {
+                            Circle()
+                                .fill(selectedPriorityFilter == .medium ? Color.orange : Color.orange.opacity(0.3))
+                                .frame(width: 24, height: 24)
+                                .overlay(
+                                    Circle()
+                                        .stroke(selectedPriorityFilter == .medium ? Color.orange : Color.clear, lineWidth: 2)
+                                        .padding(-2)
+                                )
+                        }
+
+                        Button {
+                            withAnimation {
+                                selectedPriorityFilter = selectedPriorityFilter == .low ? .all : .low
+                            }
+                        } label: {
+                            Circle()
+                                .fill(selectedPriorityFilter == .low ? Color.green : Color.green.opacity(0.3))
+                                .frame(width: 24, height: 24)
+                                .overlay(
+                                    Circle()
+                                        .stroke(selectedPriorityFilter == .low ? Color.green : Color.clear, lineWidth: 2)
+                                        .padding(-2)
+                                )
+                        }
+
+                        // None button
+                        Button {
+                            withAnimation {
+                                selectedPriorityFilter = selectedPriorityFilter == .none ? .all : .none
+                            }
+                        } label: {
+                            Circle()
+                                .fill(selectedPriorityFilter == .none ? Color.gray : Color.gray.opacity(0.3))
+                                .frame(width: 24, height: 24)
+                                .overlay(
+                                    Circle()
+                                        .stroke(selectedPriorityFilter == .none ? Color.gray : Color.clear, lineWidth: 2)
+                                        .padding(-2)
+                                )
+                        }
 
                         Button {
                             showingFilterSheet = true
                         } label: {
-                            Text("Filter")
-                                .font(.subheadline)
+                            Image(systemName: "line.3.horizontal.decrease.circle")
+                                .font(.title3)
                                 .foregroundStyle(.blue)
                         }
                     }
@@ -626,7 +717,8 @@ struct CalendarView: View {
             .sheet(isPresented: $showingFilterSheet) {
                 FilterSheetView(
                     selectedStatusFilter: $selectedStatusFilter,
-                    selectedTypeFilter: $selectedTypeFilter
+                    selectedTypeFilter: $selectedTypeFilter,
+                    selectedPriorityFilter: $selectedPriorityFilter
                 )
             }
             .sheet(isPresented: $showingDailyNote) {
@@ -1025,7 +1117,7 @@ struct TodoCalendarRow: View {
                             .foregroundStyle(todo.completed ? .secondary : .primary)
                             .lineLimit(1)
 
-                        // Metadata: subtype, recurring, starred
+                        // Metadata: subtype, recurring, priority
                         HStack(spacing: 6) {
                             if let subtype = todo.subtype {
                                 HStack(spacing: 3) {
@@ -1047,27 +1139,38 @@ struct TodoCalendarRow: View {
                                     .font(.system(size: 9))
                             }
                             .foregroundStyle(.purple)
-
-                            if todo.starred {
-                                Image(systemName: "star.fill")
-                                    .foregroundStyle(.yellow)
-                                    .font(.system(size: 9))
-                            }
                         }
                     }
                     .padding(.leading, 6)
 
                     Spacer()
 
-                    // Circle checkbox with margin
+                    // Circle checkbox with priority color fill
                     Button {
                         withAnimation {
                             handleCompletion()
                         }
                     } label: {
-                        Image(systemName: todo.completed ? "checkmark.circle.fill" : "circle")
-                            .font(.system(size: 18))
-                            .foregroundStyle(todo.completed ? .green : .gray)
+                        ZStack {
+                            if todo.completed {
+                                // Completed: checkmark in priority completion color
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 18))
+                                    .foregroundStyle(todo.priority.completionColor)
+                            } else {
+                                // Not completed: gray circle outline
+                                Image(systemName: "circle")
+                                    .font(.system(size: 18))
+                                    .foregroundStyle(.gray)
+
+                                // Inner fill circle for priority
+                                if todo.priority != .none {
+                                    Circle()
+                                        .fill(todo.priority.color)
+                                        .frame(width: 12, height: 12)
+                                }
+                            }
+                        }
                     }
                     .buttonStyle(.plain)
                     .padding(.trailing, 8)
@@ -1151,12 +1254,6 @@ struct TodoCalendarRow: View {
                         .font(.caption2)
                         .foregroundStyle(.purple)
 
-                        if todo.starred {
-                            Image(systemName: "star.fill")
-                                .foregroundStyle(.yellow)
-                                .font(.caption2)
-                        }
-
                         // Show Focus button only for Plans and Lists (not Habits)
                         if !todo.completed {
                             Button {
@@ -1182,15 +1279,32 @@ struct TodoCalendarRow: View {
 
                 Spacer()
 
-                // Circle checkbox on the right
+                // Circle checkbox with priority color fill
                 Button {
                     withAnimation {
                         handleCompletion()
                     }
                 } label: {
-                    Image(systemName: todo.completed ? "checkmark.circle.fill" : "circle")
-                        .font(.title3)
-                        .foregroundStyle(todo.completed ? .green : .gray)
+                    ZStack {
+                        if todo.completed {
+                            // Completed: checkmark in priority completion color
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.title3)
+                                .foregroundStyle(todo.priority.completionColor)
+                        } else {
+                            // Not completed: gray circle outline
+                            Image(systemName: "circle")
+                                .font(.title3)
+                                .foregroundStyle(.gray)
+
+                            // Inner fill circle for priority
+                            if todo.priority != .none {
+                                Circle()
+                                    .fill(todo.priority.color)
+                                    .frame(width: 16, height: 16)
+                            }
+                        }
+                    }
                 }
                 .buttonStyle(.plain)
                 .padding(.trailing, 16)
@@ -1219,7 +1333,7 @@ struct TodoCalendarRow: View {
                 dueDate: now,
                 dueTime: now,
                 completed: true,
-                starred: todo.starred,
+                priority: todo.priority,
                 reminderEnabled: false,
                 showInCalendar: todo.showInCalendar,
                 recurringType: .oneTime,
@@ -1252,7 +1366,7 @@ struct TodoCalendarRow: View {
                 dueDate: completionDate, // Use the date being viewed/completed for
                 dueTime: todo.dueTime,
                 completed: true,
-                starred: todo.starred,
+                priority: todo.priority,
                 reminderEnabled: false,
                 showInCalendar: todo.showInCalendar,
                 recurringType: .dueDate,
@@ -1295,6 +1409,10 @@ enum TypeFilter {
     case all, habits, plans, lists
 }
 
+enum PriorityFilter {
+    case all, high, medium, low, none
+}
+
 struct FilterChip: View {
     let title: String
     var icon: String? = nil
@@ -1328,10 +1446,11 @@ struct FilterChip: View {
 struct FilterSheetView: View {
     @Binding var selectedStatusFilter: StatusFilter
     @Binding var selectedTypeFilter: TypeFilter
+    @Binding var selectedPriorityFilter: PriorityFilter
     @Environment(\.dismiss) private var dismiss
 
     var hasActiveFilters: Bool {
-        selectedStatusFilter != .all || selectedTypeFilter != .all
+        selectedStatusFilter != .all || selectedTypeFilter != .all || selectedPriorityFilter != .all
     }
 
     var body: some View {
@@ -1418,12 +1537,73 @@ struct FilterSheetView: View {
                     }
                 }
 
+                Section("Priority") {
+                    FilterRow(
+                        title: "All Priorities",
+                        icon: "flag.fill",
+                        isSelected: selectedPriorityFilter == .all
+                    ) {
+                        withAnimation {
+                            selectedPriorityFilter = .all
+                            dismiss()
+                        }
+                    }
+
+                    FilterRow(
+                        title: "High",
+                        icon: "flag.fill",
+                        iconColor: .red,
+                        isSelected: selectedPriorityFilter == .high
+                    ) {
+                        withAnimation {
+                            selectedPriorityFilter = .high
+                            dismiss()
+                        }
+                    }
+
+                    FilterRow(
+                        title: "Medium",
+                        icon: "flag.fill",
+                        iconColor: .orange,
+                        isSelected: selectedPriorityFilter == .medium
+                    ) {
+                        withAnimation {
+                            selectedPriorityFilter = .medium
+                            dismiss()
+                        }
+                    }
+
+                    FilterRow(
+                        title: "Low",
+                        icon: "flag.fill",
+                        iconColor: .green,
+                        isSelected: selectedPriorityFilter == .low
+                    ) {
+                        withAnimation {
+                            selectedPriorityFilter = .low
+                            dismiss()
+                        }
+                    }
+
+                    FilterRow(
+                        title: "None",
+                        icon: "flag.slash.fill",
+                        isSelected: selectedPriorityFilter == .none
+                    ) {
+                        withAnimation {
+                            selectedPriorityFilter = .none
+                            dismiss()
+                        }
+                    }
+                }
+
                 if hasActiveFilters {
                     Section {
                         Button {
                             withAnimation {
                                 selectedStatusFilter = .all
                                 selectedTypeFilter = .all
+                                selectedPriorityFilter = .all
                             }
                         } label: {
                             HStack {
@@ -1453,6 +1633,7 @@ struct FilterSheetView: View {
 struct FilterRow: View {
     let title: String
     let icon: String
+    var iconColor: Color? = nil
     let isSelected: Bool
     let action: () -> Void
 
@@ -1461,7 +1642,7 @@ struct FilterRow: View {
             HStack {
                 Image(systemName: icon)
                     .font(.title3)
-                    .foregroundStyle(isSelected ? .blue : .gray)
+                    .foregroundStyle(iconColor ?? (isSelected ? .blue : .gray))
                     .frame(width: 28)
 
                 Text(title)

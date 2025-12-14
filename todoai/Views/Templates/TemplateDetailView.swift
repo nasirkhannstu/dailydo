@@ -267,10 +267,28 @@ struct TemplateDetailView: View {
 
         // Create all TodoItems from template - calendar disabled by default
         for todoTemplate in template.todos {
+            let now = Date()
+
+            // Create date with specific time if provided, otherwise use current time
+            let todoDate: Date
+            let todoTime: Date
+
+            if let hour = todoTemplate.hour, let minute = todoTemplate.minute {
+                var components = Calendar.current.dateComponents([.year, .month, .day], from: now)
+                components.hour = hour
+                components.minute = minute
+                todoDate = Calendar.current.date(from: components) ?? now
+                todoTime = todoDate
+            } else {
+                todoDate = now
+                todoTime = now
+            }
+
             let todo = TodoItem(
                 title: todoTemplate.title,
                 itemDescription: todoTemplate.description,
-                dueDate: Date(),
+                dueDate: todoDate,
+                dueTime: todoTime,
                 showInCalendar: false,
                 recurringType: todoTemplate.recurring,
                 subtype: subtype

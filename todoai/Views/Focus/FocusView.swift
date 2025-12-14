@@ -256,7 +256,7 @@ struct FocusView: View {
                     itemDescription: todo.itemDescription,
                     dueDate: nextDate,
                     dueTime: todo.dueTime,
-                    starred: todo.starred,
+                    priority: todo.priority,
                     reminderEnabled: todo.reminderEnabled,
                     recurringType: todo.recurringType,
                     aiGenerated: todo.aiGenerated,

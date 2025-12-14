@@ -12,6 +12,17 @@ struct TodoTemplate {
     let title: String
     let description: String
     let recurring: RecurringType
+    let hour: Int?
+    let minute: Int?
+
+    // Convenience initializer without time (defaults to current time)
+    init(title: String, description: String, recurring: RecurringType, hour: Int? = nil, minute: Int? = nil) {
+        self.title = title
+        self.description = description
+        self.recurring = recurring
+        self.hour = hour
+        self.minute = minute
+    }
 }
 
 /// Template for creating pre-configured subtypes with todos

@@ -16,7 +16,7 @@ struct DailyNoteView: View {
 
     @State private var saveWorkItem: DispatchWorkItem?
     @State private var showingDeleteConfirmation = false
-    @State private var initialMood: NoteMood = .meh // Track original mood
+    @State private var initialMood: NoteMood = .neutral // Track original mood
     @State private var userSelectedMood = false // Track if user clicked a mood button
     @FocusState private var isEditorFocused: Bool
 
@@ -216,7 +216,7 @@ struct DailyNoteView: View {
                 // Initialize: if note already has a mood other than default OR has text content
                 initialMood = note.noteMood
                 let hasText = !note.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                userSelectedMood = (note.noteMood != .meh) || hasText
+                userSelectedMood = (note.noteMood != .neutral) || hasText
             }
             .onDisappear {
                 finalSave()
@@ -272,16 +272,15 @@ struct MoodButton: View {
             VStack(spacing: 4) {
                 ZStack {
                     Circle()
-                        .fill(mood.color)
-                        .frame(width: 40, height: 40)
+                        .fill(Color.white.opacity(0.2))
+                        .frame(width: 44, height: 44)
 
-                    Image(systemName: mood.icon)
-                        .font(.subheadline)
-                        .foregroundStyle(.white)
+                    Text(mood.emoji)
+                        .font(.system(size: 28))
                 }
                 .overlay(
                     Circle()
-                        .stroke(.white, lineWidth: isSelected ? 2 : 1)
+                        .stroke(.white, lineWidth: isSelected ? 3 : 0)
                         .frame(width: 44, height: 44)
                 )
 
@@ -289,6 +288,7 @@ struct MoodButton: View {
                     .font(.system(size: 10))
                     .fontWeight(isSelected ? .semibold : .regular)
                     .foregroundStyle(.white)
+                    .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 1)
             }
         }
         .buttonStyle(.plain)

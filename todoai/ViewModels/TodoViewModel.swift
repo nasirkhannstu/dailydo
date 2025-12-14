@@ -90,9 +90,9 @@ class TodoViewModel {
         saveContext()
     }
 
-    // Toggle starred
-    func toggleStarred(_ todo: TodoItem) {
-        todo.toggleStarred()
+    // Set priority
+    func setPriority(_ todo: TodoItem, _ newPriority: TodoPriority) {
+        todo.setPriority(newPriority)
         saveContext()
     }
 

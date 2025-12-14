@@ -236,7 +236,7 @@ class DataSeederService {
                 itemDescription: "Assess current level in all sections",
                 dueDate: today,
                 dueTime: today,
-                starred: true,
+                priority: .high,
                 showInCalendar: false,
                 recurringType: .oneTime,
                 subtype: studyPlan
@@ -290,7 +290,7 @@ class DataSeederService {
                 itemDescription: "Complete full writing test under timed conditions",
                 dueDate: addDays(to: today, days: 5),
                 dueTime: addDays(to: today, days: 5),
-                starred: true,
+                priority: .high,
                 showInCalendar: false,
                 recurringType: .weekly,
                 recurringEndDate: examDate,
@@ -311,7 +311,7 @@ class DataSeederService {
                 itemDescription: "Complete all 4 sections under exam conditions",
                 dueDate: addDays(to: today, days: 7),
                 dueTime: addDays(to: today, days: 7),
-                starred: true,
+                priority: .high,
                 showInCalendar: false,
                 recurringType: .weekly,
                 recurringEndDate: examDate,
@@ -324,7 +324,7 @@ class DataSeederService {
                 itemDescription: "Good luck! You've prepared well.",
                 dueDate: examDate,
                 dueTime: examDate,
-                starred: true,
+                priority: .high,
                 showInCalendar: false,
                 recurringType: .dueDate,
                 subtype: studyPlan
@@ -359,7 +359,7 @@ class DataSeederService {
                 itemDescription: "Running, cycling, or brisk walking",
                 dueDate: fitnessMorningTime,
                 dueTime: fitnessMorningTime,
-                starred: true,
+                priority: .high,
                 reminderEnabled: true,
                 showInCalendar: false,
                 recurringType: .daily,
@@ -393,7 +393,7 @@ class DataSeederService {
                 itemDescription: "Record weight, measurements, and fitness level",
                 dueDate: today,
                 dueTime: today,
-                starred: true,
+                priority: .high,
                 showInCalendar: false,
                 recurringType: .dueDate,
                 subtype: fitnessPlan
@@ -421,7 +421,7 @@ class DataSeederService {
                 itemDescription: "Record final weight, measurements, and celebrate success!",
                 dueDate: fitnessEndDate,
                 dueTime: fitnessEndDate,
-                starred: true,
+                priority: .high,
                 showInCalendar: false,
                 recurringType: .dueDate,
                 subtype: fitnessPlan
@@ -446,13 +446,13 @@ class DataSeederService {
 
         let travelTodos = [
             TodoItem(title: "Research destinations", itemDescription: "Paris, Rome, Barcelona, Amsterdam", showInCalendar: false, recurringType: .oneTime, subtype: travelPlan),
-            TodoItem(title: "Book flights", itemDescription: "Compare prices on different booking sites", starred: true, showInCalendar: false, recurringType: .oneTime, subtype: travelPlan),
-            TodoItem(title: "Reserve accommodations", itemDescription: "Book hotels or Airbnb for each city", starred: true, showInCalendar: false, recurringType: .oneTime, subtype: travelPlan),
+            TodoItem(title: "Book flights", itemDescription: "Compare prices on different booking sites", priority: .high, showInCalendar: false, recurringType: .oneTime, subtype: travelPlan),
+            TodoItem(title: "Reserve accommodations", itemDescription: "Book hotels or Airbnb for each city", priority: .high, showInCalendar: false, recurringType: .oneTime, subtype: travelPlan),
             TodoItem(title: "Plan daily itinerary", itemDescription: "Research attractions and create day-by-day plan", showInCalendar: false, recurringType: .oneTime, subtype: travelPlan),
-            TodoItem(title: "Get travel insurance", starred: true, showInCalendar: false, recurringType: .oneTime, subtype: travelPlan),
+            TodoItem(title: "Get travel insurance", priority: .high, showInCalendar: false, recurringType: .oneTime, subtype: travelPlan),
             TodoItem(title: "Pack luggage", itemDescription: "Create packing checklist", showInCalendar: false, recurringType: .oneTime, subtype: travelPlan),
             TodoItem(title: "Print important documents", itemDescription: "Tickets, hotel confirmations, insurance", showInCalendar: false, recurringType: .oneTime, subtype: travelPlan),
-            TodoItem(title: "Check passport validity", itemDescription: "Ensure 6+ months validity", starred: true, showInCalendar: false, recurringType: .oneTime, subtype: travelPlan)
+            TodoItem(title: "Check passport validity", itemDescription: "Ensure 6+ months validity", priority: .high, showInCalendar: false, recurringType: .oneTime, subtype: travelPlan)
         ]
 
         travelTodos.enumerated().forEach { index, todo in
@@ -509,11 +509,11 @@ class DataSeederService {
         let movieDate = Date()
 
         let movieTodos = [
-            TodoItem(title: "Interstellar (2014)", itemDescription: "Sci-Fi • Christopher Nolan", dueDate: movieDate, dueTime: movieDate, starred: true, showInCalendar: false, recurringType: .oneTime, subtype: moviesList),
+            TodoItem(title: "Interstellar (2014)", itemDescription: "Sci-Fi • Christopher Nolan", dueDate: movieDate, dueTime: movieDate, priority: .high, showInCalendar: false, recurringType: .oneTime, subtype: moviesList),
             TodoItem(title: "The Martian (2015)", itemDescription: "Sci-Fi • Matt Damon", dueDate: movieDate, dueTime: movieDate, showInCalendar: false, recurringType: .oneTime, subtype: moviesList),
             TodoItem(title: "Arrival (2016)", itemDescription: "Sci-Fi • Amy Adams", dueDate: movieDate, dueTime: movieDate, showInCalendar: false, recurringType: .oneTime, subtype: moviesList),
             TodoItem(title: "Blade Runner 2049 (2017)", itemDescription: "Sci-Fi • Ryan Gosling", dueDate: movieDate, dueTime: movieDate, completed: true, showInCalendar: false, recurringType: .oneTime, subtype: moviesList),
-            TodoItem(title: "Dune (2021)", itemDescription: "Sci-Fi • Timothée Chalamet", dueDate: movieDate, dueTime: movieDate, starred: true, showInCalendar: false, recurringType: .oneTime, subtype: moviesList),
+            TodoItem(title: "Dune (2021)", itemDescription: "Sci-Fi • Timothée Chalamet", dueDate: movieDate, dueTime: movieDate, priority: .high, showInCalendar: false, recurringType: .oneTime, subtype: moviesList),
             TodoItem(title: "Everything Everywhere All at Once (2022)", itemDescription: "Sci-Fi • Michelle Yeoh", dueDate: movieDate, dueTime: movieDate, completed: true, showInCalendar: false, recurringType: .oneTime, subtype: moviesList)
         ]
 
@@ -536,7 +536,7 @@ class DataSeederService {
         let bookDate = Date()
 
         let bookTodos = [
-            TodoItem(title: "Atomic Habits", itemDescription: "James Clear - Self-improvement", dueDate: bookDate, dueTime: bookDate, starred: true, showInCalendar: false, recurringType: .oneTime, subtype: booksList),
+            TodoItem(title: "Atomic Habits", itemDescription: "James Clear - Self-improvement", dueDate: bookDate, dueTime: bookDate, priority: .high, showInCalendar: false, recurringType: .oneTime, subtype: booksList),
             TodoItem(title: "The 7 Habits of Highly Effective People", itemDescription: "Stephen Covey", dueDate: bookDate, dueTime: bookDate, showInCalendar: false, recurringType: .oneTime, subtype: booksList),
             TodoItem(title: "Deep Work", itemDescription: "Cal Newport - Productivity", dueDate: bookDate, dueTime: bookDate, showInCalendar: false, recurringType: .oneTime, subtype: booksList),
             TodoItem(title: "Thinking, Fast and Slow", itemDescription: "Daniel Kahneman", dueDate: bookDate, dueTime: bookDate, completed: true, showInCalendar: false, recurringType: .oneTime, subtype: booksList),

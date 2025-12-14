@@ -160,6 +160,26 @@ struct TodoDetailView: View {
                 }
                 .buttonStyle(.plain)
 
+                // Priority
+                Picker(selection: $todo.priority) {
+                    Text("None").tag(TodoPriority.none)
+                    Text("Low").tag(TodoPriority.low)
+                    Text("Medium").tag(TodoPriority.medium)
+                    Text("High").tag(TodoPriority.high)
+                } label: {
+                    HStack {
+                        Label("Priority", systemImage: "flag")
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        if todo.priority != .none {
+                            Circle()
+                                .fill(todo.priority.color)
+                                .frame(width: 8, height: 8)
+                        }
+                    }
+                }
+                .pickerStyle(.menu)
+
                 // Recurring
                 Picker(selection: $todo.recurringType) {
                     Text("Due Date").tag(RecurringType.dueDate)
@@ -239,19 +259,6 @@ struct TodoDetailView: View {
 
                 // MARK: - Actions Section
                 Section {
-                // Toggle Star
-                Button {
-                    withAnimation {
-                        todo.toggleStarred()
-                    }
-                } label: {
-                    Label(
-                        todo.starred ? "Unstar" : "Star",
-                        systemImage: todo.starred ? "star.slash" : "star.fill"
-                    )
-                    .foregroundStyle(.yellow)
-                }
-
                 // Delete Todo
                 Button(role: .destructive) {
                     deleteTodo()
@@ -395,7 +402,7 @@ struct TodoDetailView: View {
                 dueDate: now,
                 dueTime: now,
                 completed: true,
-                starred: todo.starred,
+                priority: todo.priority,
                 reminderEnabled: false,
                 showInCalendar: todo.showInCalendar,
                 recurringType: .oneTime,
@@ -431,7 +438,7 @@ struct TodoDetailView: View {
                 dueDate: effectiveDate, // Use the date being completed for
                 dueTime: todo.dueTime,
                 completed: true,
-                starred: todo.starred,
+                priority: todo.priority,
                 reminderEnabled: false, // Completion instances don't need reminders
                 showInCalendar: todo.showInCalendar,
                 recurringType: .dueDate, // Completion instances are dueDate type
@@ -529,7 +536,7 @@ struct CompactSubtaskRow: View {
         title: "Complete Project",
         itemDescription: "Finish the DailyDo app implementation",
         dueDate: Date(),
-        starred: true
+        priority: .high
     )
     container.mainContext.insert(todo)
 

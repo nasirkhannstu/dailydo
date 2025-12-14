@@ -16,7 +16,7 @@ class TodoItem {
     var dueDate: Date?
     var dueTime: Date?
     var completed: Bool
-    var starred: Bool
+    var priority: TodoPriority
     var reminderEnabled: Bool
     var showInCalendar: Bool
     var recurringType: RecurringType
@@ -40,7 +40,7 @@ class TodoItem {
         dueDate: Date? = nil,
         dueTime: Date? = nil,
         completed: Bool = false,
-        starred: Bool = false,
+        priority: TodoPriority = .none,
         reminderEnabled: Bool = false,
         showInCalendar: Bool = true,
         recurringType: RecurringType = .dueDate,
@@ -62,7 +62,7 @@ class TodoItem {
         self.dueDate = dueDate
         self.dueTime = dueTime
         self.completed = completed
-        self.starred = starred
+        self.priority = priority
         self.reminderEnabled = reminderEnabled
         self.showInCalendar = showInCalendar
         self.recurringType = recurringType
@@ -89,9 +89,9 @@ class TodoItem {
         }
     }
 
-    // Toggle starred status
-    func toggleStarred() {
-        starred.toggle()
+    // Set priority
+    func setPriority(_ newPriority: TodoPriority) {
+        priority = newPriority
     }
 
     // Check if this is a recurring template (not a completion instance)

@@ -18,13 +18,13 @@ extension SubtypeTemplate {
             type: .habit,
             shortDescription: "Stay hydrated with 8 glasses daily",
             todos: [
-                TodoTemplate(title: "Morning water (7 AM)", description: "First glass when you wake up", recurring: .daily),
-                TodoTemplate(title: "Mid-morning (10 AM)", description: "Second glass", recurring: .daily),
-                TodoTemplate(title: "Before lunch (12 PM)", description: "Third glass", recurring: .daily),
-                TodoTemplate(title: "Afternoon (3 PM)", description: "Fourth glass", recurring: .daily),
-                TodoTemplate(title: "Before dinner (6 PM)", description: "Fifth glass", recurring: .daily),
-                TodoTemplate(title: "Evening (8 PM)", description: "Sixth glass", recurring: .daily),
-                TodoTemplate(title: "Track total intake", description: "Aim for 8 glasses", recurring: .daily)
+                TodoTemplate(title: "Morning water (7 AM)", description: "First glass when you wake up", recurring: .daily, hour: 7, minute: 0),
+                TodoTemplate(title: "Mid-morning (10 AM)", description: "Second glass", recurring: .daily, hour: 10, minute: 0),
+                TodoTemplate(title: "Before lunch (12 PM)", description: "Third glass", recurring: .daily, hour: 12, minute: 0),
+                TodoTemplate(title: "Afternoon (3 PM)", description: "Fourth glass", recurring: .daily, hour: 15, minute: 0),
+                TodoTemplate(title: "Before dinner (6 PM)", description: "Fifth glass", recurring: .daily, hour: 18, minute: 0),
+                TodoTemplate(title: "Evening (8 PM)", description: "Sixth glass", recurring: .daily, hour: 20, minute: 0),
+                TodoTemplate(title: "Track total intake", description: "Aim for 8 glasses", recurring: .daily, hour: 21, minute: 0)
             ]
         ),
 
@@ -36,12 +36,12 @@ extension SubtypeTemplate {
             type: .habit,
             shortDescription: "Daily workout routine",
             todos: [
-                TodoTemplate(title: "Warm up", description: "5 minutes stretching", recurring: .daily),
-                TodoTemplate(title: "Cardio workout", description: "20 minutes running/cycling", recurring: .daily),
-                TodoTemplate(title: "Strength training", description: "15 minutes weights", recurring: .daily),
-                TodoTemplate(title: "Core exercises", description: "10 minutes abs", recurring: .daily),
-                TodoTemplate(title: "Cool down", description: "5 minutes stretching", recurring: .daily),
-                TodoTemplate(title: "Track workout", description: "Log in fitness app", recurring: .daily)
+                TodoTemplate(title: "Warm up", description: "5 minutes stretching", recurring: .daily, hour: 6, minute: 0),
+                TodoTemplate(title: "Cardio workout", description: "20 minutes running/cycling", recurring: .daily, hour: 6, minute: 10),
+                TodoTemplate(title: "Strength training", description: "15 minutes weights", recurring: .daily, hour: 6, minute: 35),
+                TodoTemplate(title: "Core exercises", description: "10 minutes abs", recurring: .daily, hour: 6, minute: 50),
+                TodoTemplate(title: "Cool down", description: "5 minutes stretching", recurring: .daily, hour: 7, minute: 0),
+                TodoTemplate(title: "Track workout", description: "Log in fitness app", recurring: .daily, hour: 7, minute: 10)
             ]
         ),
 
@@ -53,11 +53,11 @@ extension SubtypeTemplate {
             type: .habit,
             shortDescription: "Never miss your medication",
             todos: [
-                TodoTemplate(title: "Morning medication", description: "Take with breakfast", recurring: .daily),
-                TodoTemplate(title: "Afternoon medication", description: "Take with lunch", recurring: .daily),
-                TodoTemplate(title: "Evening medication", description: "Take with dinner", recurring: .daily),
-                TodoTemplate(title: "Check medication stock", description: "Refill if needed", recurring: .weekly),
-                TodoTemplate(title: "Track symptoms", description: "Note any changes", recurring: .daily)
+                TodoTemplate(title: "Morning medication", description: "Take with breakfast", recurring: .daily, hour: 8, minute: 0),
+                TodoTemplate(title: "Afternoon medication", description: "Take with lunch", recurring: .daily, hour: 13, minute: 0),
+                TodoTemplate(title: "Evening medication", description: "Take with dinner", recurring: .daily, hour: 19, minute: 0),
+                TodoTemplate(title: "Check medication stock", description: "Refill if needed", recurring: .weekly, hour: 10, minute: 0),
+                TodoTemplate(title: "Track symptoms", description: "Note any changes", recurring: .daily, hour: 21, minute: 0)
             ]
         ),
 
@@ -69,12 +69,12 @@ extension SubtypeTemplate {
             type: .habit,
             shortDescription: "Start your day with nutrition",
             todos: [
-                TodoTemplate(title: "Monday: Oatmeal & berries", description: "Fiber-rich breakfast", recurring: .weekly),
-                TodoTemplate(title: "Tuesday: Eggs & toast", description: "Protein-packed", recurring: .weekly),
-                TodoTemplate(title: "Wednesday: Smoothie bowl", description: "Fruits & greens", recurring: .weekly),
-                TodoTemplate(title: "Thursday: Greek yogurt", description: "With granola & honey", recurring: .weekly),
-                TodoTemplate(title: "Friday: Avocado toast", description: "Healthy fats", recurring: .weekly),
-                TodoTemplate(title: "Weekend: Special breakfast", description: "Try new recipes", recurring: .weekly)
+                TodoTemplate(title: "Monday: Oatmeal & berries", description: "Fiber-rich breakfast", recurring: .weekly, hour: 8, minute: 0),
+                TodoTemplate(title: "Tuesday: Eggs & toast", description: "Protein-packed", recurring: .weekly, hour: 8, minute: 0),
+                TodoTemplate(title: "Wednesday: Smoothie bowl", description: "Fruits & greens", recurring: .weekly, hour: 8, minute: 0),
+                TodoTemplate(title: "Thursday: Greek yogurt", description: "With granola & honey", recurring: .weekly, hour: 8, minute: 0),
+                TodoTemplate(title: "Friday: Avocado toast", description: "Healthy fats", recurring: .weekly, hour: 8, minute: 0),
+                TodoTemplate(title: "Weekend: Special breakfast", description: "Try new recipes", recurring: .weekly, hour: 9, minute: 0)
             ]
         ),
 
@@ -86,13 +86,13 @@ extension SubtypeTemplate {
             type: .habit,
             shortDescription: "Morning & evening skin care",
             todos: [
-                TodoTemplate(title: "Morning: Cleanser", description: "Gentle face wash", recurring: .daily),
-                TodoTemplate(title: "Morning: Toner", description: "Balance pH", recurring: .daily),
-                TodoTemplate(title: "Morning: Moisturizer", description: "Hydrate skin", recurring: .daily),
-                TodoTemplate(title: "Morning: Sunscreen", description: "SPF 30+", recurring: .daily),
-                TodoTemplate(title: "Evening: Remove makeup", description: "Cleanse thoroughly", recurring: .daily),
-                TodoTemplate(title: "Evening: Night cream", description: "Repair overnight", recurring: .daily),
-                TodoTemplate(title: "Weekly: Face mask", description: "Deep treatment", recurring: .weekly)
+                TodoTemplate(title: "Morning: Cleanser", description: "Gentle face wash", recurring: .daily, hour: 7, minute: 0),
+                TodoTemplate(title: "Morning: Toner", description: "Balance pH", recurring: .daily, hour: 7, minute: 5),
+                TodoTemplate(title: "Morning: Moisturizer", description: "Hydrate skin", recurring: .daily, hour: 7, minute: 10),
+                TodoTemplate(title: "Morning: Sunscreen", description: "SPF 30+", recurring: .daily, hour: 7, minute: 15),
+                TodoTemplate(title: "Evening: Remove makeup", description: "Cleanse thoroughly", recurring: .daily, hour: 21, minute: 0),
+                TodoTemplate(title: "Evening: Night cream", description: "Repair overnight", recurring: .daily, hour: 21, minute: 10),
+                TodoTemplate(title: "Weekly: Face mask", description: "Deep treatment", recurring: .weekly, hour: 20, minute: 0)
             ]
         ),
 
@@ -104,12 +104,12 @@ extension SubtypeTemplate {
             type: .habit,
             shortDescription: "Complete oral hygiene routine",
             todos: [
-                TodoTemplate(title: "Brush teeth (morning)", description: "2 minutes", recurring: .daily),
-                TodoTemplate(title: "Floss (morning)", description: "Between all teeth", recurring: .daily),
-                TodoTemplate(title: "Mouthwash (morning)", description: "30 seconds", recurring: .daily),
-                TodoTemplate(title: "Brush teeth (evening)", description: "2 minutes", recurring: .daily),
-                TodoTemplate(title: "Floss (evening)", description: "Before bed", recurring: .daily),
-                TodoTemplate(title: "Replace toothbrush", description: "Every 3 months", recurring: .monthly)
+                TodoTemplate(title: "Brush teeth (morning)", description: "2 minutes", recurring: .daily, hour: 7, minute: 30),
+                TodoTemplate(title: "Floss (morning)", description: "Between all teeth", recurring: .daily, hour: 7, minute: 35),
+                TodoTemplate(title: "Mouthwash (morning)", description: "30 seconds", recurring: .daily, hour: 7, minute: 40),
+                TodoTemplate(title: "Brush teeth (evening)", description: "2 minutes", recurring: .daily, hour: 22, minute: 0),
+                TodoTemplate(title: "Floss (evening)", description: "Before bed", recurring: .daily, hour: 22, minute: 5),
+                TodoTemplate(title: "Replace toothbrush", description: "Every 3 months", recurring: .monthly, hour: 10, minute: 0)
             ]
         ),
 
@@ -121,12 +121,12 @@ extension SubtypeTemplate {
             type: .habit,
             shortDescription: "Daily pet care routine",
             todos: [
-                TodoTemplate(title: "Morning feeding", description: "Measured portion", recurring: .daily),
-                TodoTemplate(title: "Fresh water (AM)", description: "Clean bowl", recurring: .daily),
-                TodoTemplate(title: "Evening feeding", description: "Measured portion", recurring: .daily),
-                TodoTemplate(title: "Fresh water (PM)", description: "Refill bowl", recurring: .daily),
-                TodoTemplate(title: "Clean food bowls", description: "Wash daily", recurring: .daily),
-                TodoTemplate(title: "Vet checkup reminder", description: "Schedule appointment", recurring: .monthly)
+                TodoTemplate(title: "Morning feeding", description: "Measured portion", recurring: .daily, hour: 7, minute: 0),
+                TodoTemplate(title: "Fresh water (AM)", description: "Clean bowl", recurring: .daily, hour: 7, minute: 10),
+                TodoTemplate(title: "Evening feeding", description: "Measured portion", recurring: .daily, hour: 18, minute: 0),
+                TodoTemplate(title: "Fresh water (PM)", description: "Refill bowl", recurring: .daily, hour: 18, minute: 10),
+                TodoTemplate(title: "Clean food bowls", description: "Wash daily", recurring: .daily, hour: 20, minute: 0),
+                TodoTemplate(title: "Vet checkup reminder", description: "Schedule appointment", recurring: .monthly, hour: 10, minute: 0)
             ]
         ),
 
@@ -138,11 +138,11 @@ extension SubtypeTemplate {
             type: .habit,
             shortDescription: "Build a reading habit",
             todos: [
-                TodoTemplate(title: "Morning reading", description: "15 minutes", recurring: .daily),
-                TodoTemplate(title: "Evening reading", description: "30 minutes before bed", recurring: .daily),
-                TodoTemplate(title: "Track pages read", description: "Log progress", recurring: .daily),
-                TodoTemplate(title: "Choose next book", description: "Plan ahead", recurring: .weekly),
-                TodoTemplate(title: "Reading goal review", description: "Weekly progress check", recurring: .weekly)
+                TodoTemplate(title: "Morning reading", description: "15 minutes", recurring: .daily, hour: 7, minute: 0),
+                TodoTemplate(title: "Evening reading", description: "30 minutes before bed", recurring: .daily, hour: 21, minute: 30),
+                TodoTemplate(title: "Track pages read", description: "Log progress", recurring: .daily, hour: 22, minute: 0),
+                TodoTemplate(title: "Choose next book", description: "Plan ahead", recurring: .weekly, hour: 11, minute: 0),
+                TodoTemplate(title: "Reading goal review", description: "Weekly progress check", recurring: .weekly, hour: 11, minute: 30)
             ]
         ),
 
@@ -154,11 +154,11 @@ extension SubtypeTemplate {
             type: .habit,
             shortDescription: "Track 10,000 steps daily",
             todos: [
-                TodoTemplate(title: "Morning walk", description: "15 minutes", recurring: .daily),
-                TodoTemplate(title: "Lunch break walk", description: "10 minutes", recurring: .daily),
-                TodoTemplate(title: "Evening walk", description: "20 minutes", recurring: .daily),
-                TodoTemplate(title: "Check step count", description: "Monitor progress", recurring: .daily),
-                TodoTemplate(title: "Reach 10,000 steps", description: "Daily goal", recurring: .daily)
+                TodoTemplate(title: "Morning walk", description: "15 minutes", recurring: .daily, hour: 7, minute: 0),
+                TodoTemplate(title: "Lunch break walk", description: "10 minutes", recurring: .daily, hour: 12, minute: 30),
+                TodoTemplate(title: "Evening walk", description: "20 minutes", recurring: .daily, hour: 18, minute: 30),
+                TodoTemplate(title: "Check step count", description: "Monitor progress", recurring: .daily, hour: 20, minute: 0),
+                TodoTemplate(title: "Reach 10,000 steps", description: "Daily goal", recurring: .daily, hour: 21, minute: 0)
             ]
         )
     ]

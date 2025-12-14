@@ -9,59 +9,49 @@ import Foundation
 import SwiftUI
 
 enum NoteMood: String, Codable, CaseIterable {
-    case amazing = "Amazing"
-    case great = "Great"
-    case good = "Good"
-    case okay = "Okay"
-    case meh = "Meh"
-    case challenging = "Tough"
-    case difficult = "Hard"
-    case mixed = "Mixed"
+    case happy = "Happy"
+    case calm = "Calm"
+    case neutral = "Neutral"
+    case sad = "Sad"
+    case stressed = "Stressed"
+    case angry = "Angry"
 
     var color: Color {
         switch self {
-        case .amazing:
-            return Color(red: 0.13, green: 0.59, blue: 0.36) // Darker Green
-        case .great:
-            return Color(red: 0.15, green: 0.38, blue: 0.75) // Darker Blue
-        case .good:
-            return Color(red: 0.42, green: 0.26, blue: 0.75) // Darker Purple
-        case .okay:
-            return Color(red: 0.13, green: 0.56, blue: 0.67) // Darker Teal
-        case .meh:
-            return Color(red: 0.45, green: 0.48, blue: 0.52) // Darker Gray
-        case .challenging:
-            return Color(red: 0.85, green: 0.35, blue: 0.07) // Darker Orange
-        case .difficult:
-            return Color(red: 0.78, green: 0.18, blue: 0.18) // Darker Red
-        case .mixed:
-            return Color(red: 0.85, green: 0.50, blue: 0.07) // Darker Yellow
+        case .happy:
+            return Color(red: 0.2, green: 0.8, blue: 0.4) // Green
+        case .calm:
+            return Color(red: 0.4, green: 0.7, blue: 0.9) // Light blue
+        case .neutral:
+            return Color(red: 0.6, green: 0.6, blue: 0.6) // Gray
+        case .sad:
+            return Color(red: 0.4, green: 0.5, blue: 0.8) // Soft blue
+        case .stressed:
+            return Color(red: 0.9, green: 0.6, blue: 0.3) // Orange
+        case .angry:
+            return Color(red: 0.9, green: 0.3, blue: 0.3) // Red
         }
     }
 
-    var icon: String {
+    var emoji: String {
         switch self {
-        case .amazing: return "star.fill"
-        case .great: return "sun.max.fill"
-        case .good: return "heart.fill"
-        case .okay: return "hand.thumbsup.fill"
-        case .meh: return "minus.circle.fill"
-        case .challenging: return "exclamationmark.triangle.fill"
-        case .difficult: return "cloud.rain.fill"
-        case .mixed: return "arrow.up.arrow.down"
+        case .happy: return "😊"
+        case .calm: return "😌"
+        case .neutral: return "😐"
+        case .sad: return "😔"
+        case .stressed: return "😫"
+        case .angry: return "😤"
         }
     }
 
     var description: String {
         switch self {
-        case .amazing: return "Best day ever!"
-        case .great: return "Really good day"
-        case .good: return "Nice and positive"
-        case .okay: return "Average day"
-        case .meh: return "Nothing special"
-        case .challenging: return "Tough but managed"
-        case .difficult: return "Really hard day"
-        case .mixed: return "Ups and downs"
+        case .happy: return "Feeling good and positive"
+        case .calm: return "Peaceful and relaxed"
+        case .neutral: return "Just an ordinary day"
+        case .sad: return "Feeling down or blue"
+        case .stressed: return "Overwhelmed and tired"
+        case .angry: return "Frustrated or upset"
         }
     }
 }

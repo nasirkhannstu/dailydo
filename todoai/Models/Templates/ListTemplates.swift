@@ -18,18 +18,18 @@ extension SubtypeTemplate {
             type: .list,
             shortDescription: "Never forget an item",
             todos: [
-                TodoTemplate(title: "Fruits", description: "Apples, bananas, berries", recurring: .oneTime),
-                TodoTemplate(title: "Vegetables", description: "Lettuce, tomatoes, carrots", recurring: .oneTime),
-                TodoTemplate(title: "Herbs", description: "Basil, cilantro, parsley", recurring: .oneTime),
-                TodoTemplate(title: "Milk", description: "Dairy or alternative", recurring: .oneTime),
-                TodoTemplate(title: "Eggs", description: "Free-range if possible", recurring: .oneTime),
-                TodoTemplate(title: "Cheese", description: "Various types", recurring: .oneTime),
-                TodoTemplate(title: "Rice/Pasta", description: "Pantry staples", recurring: .oneTime),
-                TodoTemplate(title: "Canned goods", description: "Beans, tomatoes, etc", recurring: .oneTime),
-                TodoTemplate(title: "Snacks", description: "Healthy options", recurring: .oneTime),
-                TodoTemplate(title: "Meat/Protein", description: "Chicken, fish, tofu", recurring: .oneTime),
-                TodoTemplate(title: "Bread", description: "Whole grain preferred", recurring: .oneTime),
-                TodoTemplate(title: "Condiments", description: "Oil, vinegar, sauces", recurring: .oneTime)
+                TodoTemplate(title: "Fruits", description: "Apples, bananas, berries", recurring: .oneTime, hour: 10, minute: 0),
+                TodoTemplate(title: "Vegetables", description: "Lettuce, tomatoes, carrots", recurring: .oneTime, hour: 10, minute: 5),
+                TodoTemplate(title: "Herbs", description: "Basil, cilantro, parsley", recurring: .oneTime, hour: 10, minute: 10),
+                TodoTemplate(title: "Milk", description: "Dairy or alternative", recurring: .oneTime, hour: 10, minute: 15),
+                TodoTemplate(title: "Eggs", description: "Free-range if possible", recurring: .oneTime, hour: 10, minute: 20),
+                TodoTemplate(title: "Cheese", description: "Various types", recurring: .oneTime, hour: 10, minute: 25),
+                TodoTemplate(title: "Rice/Pasta", description: "Pantry staples", recurring: .oneTime, hour: 10, minute: 30),
+                TodoTemplate(title: "Canned goods", description: "Beans, tomatoes, etc", recurring: .oneTime, hour: 10, minute: 35),
+                TodoTemplate(title: "Snacks", description: "Healthy options", recurring: .oneTime, hour: 10, minute: 40),
+                TodoTemplate(title: "Meat/Protein", description: "Chicken, fish, tofu", recurring: .oneTime, hour: 10, minute: 45),
+                TodoTemplate(title: "Bread", description: "Whole grain preferred", recurring: .oneTime, hour: 10, minute: 50),
+                TodoTemplate(title: "Condiments", description: "Oil, vinegar, sauces", recurring: .oneTime, hour: 10, minute: 55)
             ]
         ),
 
@@ -81,16 +81,16 @@ extension SubtypeTemplate {
             type: .list,
             shortDescription: "Keep your space tidy",
             todos: [
-                TodoTemplate(title: "Make bed", description: "Start day fresh", recurring: .daily),
-                TodoTemplate(title: "Wash dishes", description: "Don't let them pile up", recurring: .daily),
-                TodoTemplate(title: "Wipe counters", description: "Kitchen & bathroom", recurring: .daily),
-                TodoTemplate(title: "Vacuum floors", description: "All rooms", recurring: .weekly),
-                TodoTemplate(title: "Laundry", description: "Wash, dry, fold", recurring: .weekly),
-                TodoTemplate(title: "Clean bathrooms", description: "Toilet, sink, shower", recurring: .weekly),
-                TodoTemplate(title: "Dust surfaces", description: "Shelves, tables", recurring: .weekly),
-                TodoTemplate(title: "Mop floors", description: "Kitchen & bathroom", recurring: .weekly),
-                TodoTemplate(title: "Deep clean kitchen", description: "Oven, fridge, pantry", recurring: .monthly),
-                TodoTemplate(title: "Organize closets", description: "Declutter", recurring: .monthly)
+                TodoTemplate(title: "Make bed", description: "Start day fresh", recurring: .daily, hour: 8, minute: 0),
+                TodoTemplate(title: "Wash dishes", description: "Don't let them pile up", recurring: .daily, hour: 20, minute: 0),
+                TodoTemplate(title: "Wipe counters", description: "Kitchen & bathroom", recurring: .daily, hour: 20, minute: 30),
+                TodoTemplate(title: "Vacuum floors", description: "All rooms", recurring: .weekly, hour: 10, minute: 0),
+                TodoTemplate(title: "Laundry", description: "Wash, dry, fold", recurring: .weekly, hour: 9, minute: 0),
+                TodoTemplate(title: "Clean bathrooms", description: "Toilet, sink, shower", recurring: .weekly, hour: 11, minute: 0),
+                TodoTemplate(title: "Dust surfaces", description: "Shelves, tables", recurring: .weekly, hour: 10, minute: 30),
+                TodoTemplate(title: "Mop floors", description: "Kitchen & bathroom", recurring: .weekly, hour: 11, minute: 30),
+                TodoTemplate(title: "Deep clean kitchen", description: "Oven, fridge, pantry", recurring: .monthly, hour: 10, minute: 0),
+                TodoTemplate(title: "Organize closets", description: "Declutter", recurring: .monthly, hour: 14, minute: 0)
             ]
         ),
 
