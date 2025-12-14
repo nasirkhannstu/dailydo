@@ -20,6 +20,7 @@ struct ListsView: View {
     @State private var newListName = ""
     @State private var newListShowInCalendar = false
     @State private var newListRemindersEnabled = false
+    @State private var showingTemplateGallery = false
     @FocusState private var isListNameFocused: Bool
 
     // Search states
@@ -38,15 +39,7 @@ struct ListsView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if lists.isEmpty {
-                    ContentUnavailableView(
-                        "No Lists Yet",
-                        systemImage: "list.bullet.circle",
-                        description: Text("Create your first list to get started")
-                    )
-                } else {
-                    VStack(spacing: 0) {
+            VStack(spacing: 0) {
                         // Title and Search in one row
                         HStack {
                             Text("Lists")
@@ -54,6 +47,14 @@ struct ListsView: View {
                                 .fontWeight(.bold)
 
                             Spacer()
+
+                            Button {
+                                showingTemplateGallery = true
+                            } label: {
+                                Image(systemName: "sparkles")
+                                    .font(.title2)
+                                    .foregroundStyle(.orange)
+                            }
 
                             Button {
                                 withAnimation {
@@ -97,7 +98,34 @@ struct ListsView: View {
                             .background(Color(.systemGray6))
                         }
 
-                        if filteredLists.isEmpty && !searchText.isEmpty {
+                if lists.isEmpty {
+                    EmptyStateView(
+                        icon: "list.bullet.circle",
+                        title: "No Lists Yet",
+                        message: "Organize tasks with custom lists"
+                    ) {
+                        VStack(spacing: 12) {
+                            Button {
+                                showingTemplateGallery = true
+                            } label: {
+                                Label("Browse Templates", systemImage: "sparkles")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.borderedProminent)
+
+                            Button {
+                                showingAddList = true
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                                    isListNameFocused = true
+                                }
+                            } label: {
+                                Label("Create Custom", systemImage: "plus")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
+                        }
+                    }
+                } else if filteredLists.isEmpty && !searchText.isEmpty {
                             ContentUnavailableView(
                                 "No Results",
                                 systemImage: "magnifyingglass",
@@ -119,9 +147,7 @@ struct ListsView: View {
                             }
                             .background(Color(.systemGray6))
                         }
-                    }
                 }
-            }
             .navigationBarHidden(true)
             .overlay(alignment: .bottomTrailing) {
                 Button {
@@ -217,6 +243,9 @@ struct ListsView: View {
                 }
                 .presentationDetents([.height(200)])
                 .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showingTemplateGallery) {
+                TemplateGalleryView(type: .list)
             }
         }
     }

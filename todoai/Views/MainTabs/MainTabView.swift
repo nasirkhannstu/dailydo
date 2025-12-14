@@ -92,10 +92,9 @@ struct MainTabView: View {
     }
 
     private func seedDataIfNeeded() {
-        print("🌱 MainTabView: Attempting to seed data...")
-        let seeder = DataSeederService(modelContext: modelContext)
-        seeder.seedSampleData()
-        print("🌱 MainTabView: Seeding completed")
+        // Template Gallery replaces seed data
+        // Users can now browse and add templates as needed
+        print("🌱 MainTabView: Seed data disabled - using template gallery instead")
     }
 }
 

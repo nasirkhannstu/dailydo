@@ -190,7 +190,9 @@ struct CalendarView: View {
     }
 
     var hasNoteForDate: Bool {
-        noteForSelectedDate != nil && !(noteForSelectedDate?.content.isEmpty ?? true)
+        guard let note = noteForSelectedDate else { return false }
+        let hasText = !note.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        return note.noteMood != .meh || hasText
     }
 
     func getOrCreateNote(for date: Date) -> DailyNote {
@@ -212,7 +214,8 @@ struct CalendarView: View {
     func hasNote(for date: Date) -> Bool {
         let startOfDay = calendar.startOfDay(for: date)
         if let note = dailyNotes.first(where: { calendar.isDate($0.date, inSameDayAs: startOfDay) }) {
-            return !note.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            let hasText = !note.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            return note.noteMood != .meh || hasText
         }
         return false
     }
@@ -903,34 +906,24 @@ struct DayButton: View {
                     .fontWeight(.medium)
                     .foregroundStyle(isSelected ? .white : .white.opacity(0.7))
 
-                ZStack(alignment: .topTrailing) {
-                    Text("\(calendar.component(.day, from: date))")
-                        .font(.system(size: 15, weight: isSelected ? .bold : .semibold))
-                        .foregroundStyle(isSelected ? Color(red: 0.5, green: 0.4, blue: 0.85) : .white)
-                        .frame(width: 36, height: 36)
-                        .background(
-                            Circle()
-                                .fill(isSelected ? Color.white : (isToday ? Color.white.opacity(0.2) : Color.clear))
-                        )
-                        .overlay(
-                            Circle()
-                                .stroke(isToday && !isSelected ? Color.white.opacity(0.5) : Color.clear, lineWidth: 1.5)
-                        )
-                        .overlay(
-                            // Mood color ring for notes
-                            Circle()
-                                .stroke(hasNote ? noteMoodColor : Color.clear, lineWidth: 2)
-                                .frame(width: 40, height: 40)
-                        )
-
-                    // Note indicator badge (smaller, subtle)
-                    if hasNote {
+                Text("\(calendar.component(.day, from: date))")
+                    .font(.system(size: 15, weight: isSelected ? .bold : .semibold))
+                    .foregroundStyle(isSelected ? Color(red: 0.5, green: 0.4, blue: 0.85) : .white)
+                    .frame(width: 36, height: 36)
+                    .background(
                         Circle()
-                            .fill(noteMoodColor)
-                            .frame(width: 6, height: 6)
-                            .offset(x: 2, y: -2)
-                    }
-                }
+                            .fill(isSelected ? Color.white : (isToday ? Color.white.opacity(0.2) : Color.clear))
+                    )
+                    .overlay(
+                        Circle()
+                            .stroke(isToday && !isSelected ? Color.white.opacity(0.5) : Color.clear, lineWidth: 1.5)
+                    )
+                    .overlay(
+                        // Mood color ring for notes
+                        Circle()
+                            .stroke(hasNote ? noteMoodColor : Color.clear, lineWidth: 2)
+                            .frame(width: 40, height: 40)
+                    )
 
                 if taskCount > 0 {
                     Circle()

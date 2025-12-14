@@ -24,6 +24,7 @@ struct HabitsView: View {
     @State private var selectedHabit: Subtype?
     @State private var habitToDelete: Subtype?
     @State private var showingDeleteAlert = false
+    @State private var showingTemplateGallery = false
     @FocusState private var isHabitNameFocused: Bool
 
     // Search states
@@ -37,15 +38,7 @@ struct HabitsView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if habits.isEmpty {
-                    ContentUnavailableView(
-                        "No Habits Yet",
-                        systemImage: "repeat.circle",
-                        description: Text("Create your first habit to get started")
-                    )
-                } else {
-                    VStack(spacing: 0) {
+            VStack(spacing: 0) {
                         // Title and Search in one row
                         HStack {
                             Text("Habits")
@@ -53,6 +46,14 @@ struct HabitsView: View {
                                 .fontWeight(.bold)
 
                             Spacer()
+
+                            Button {
+                                showingTemplateGallery = true
+                            } label: {
+                                Image(systemName: "sparkles")
+                                    .font(.title2)
+                                    .foregroundStyle(.orange)
+                            }
 
                             Button {
                                 withAnimation {
@@ -96,7 +97,34 @@ struct HabitsView: View {
                             .background(Color(.systemGray6))
                         }
 
-                        if filteredHabits.isEmpty && !searchText.isEmpty {
+                if habits.isEmpty {
+                    EmptyStateView(
+                        icon: "repeat.circle",
+                        title: "No Habits Yet",
+                        message: "Start building better habits today"
+                    ) {
+                        VStack(spacing: 12) {
+                            Button {
+                                showingTemplateGallery = true
+                            } label: {
+                                Label("Browse Templates", systemImage: "sparkles")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.borderedProminent)
+
+                            Button {
+                                showingAddHabit = true
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                                    isHabitNameFocused = true
+                                }
+                            } label: {
+                                Label("Create Custom", systemImage: "plus")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
+                        }
+                    }
+                } else if filteredHabits.isEmpty && !searchText.isEmpty {
                             ContentUnavailableView(
                                 "No Results",
                                 systemImage: "magnifyingglass",
@@ -121,9 +149,7 @@ struct HabitsView: View {
                             .background(Color(.systemGray6))
                             .scrollContentBackground(.hidden)
                         }
-                    }
                 }
-            }
             .navigationDestination(item: $selectedHabit) { habit in
                 SubtypeDetailView(subtype: habit)
             }
@@ -243,6 +269,9 @@ struct HabitsView: View {
                 if let habit = habitToDelete {
                     Text("This will permanently delete this habit and all \(habit.todos.count) task\(habit.todos.count == 1 ? "" : "s"). This action cannot be undone.")
                 }
+            }
+            .sheet(isPresented: $showingTemplateGallery) {
+                TemplateGalleryView(type: .habit)
             }
         }
     }

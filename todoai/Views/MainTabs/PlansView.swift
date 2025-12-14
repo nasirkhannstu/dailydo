@@ -24,6 +24,7 @@ struct PlansView: View {
     @State private var selectedPlan: Subtype?
     @State private var planToDelete: Subtype?
     @State private var showingDeleteAlert = false
+    @State private var showingTemplateGallery = false
     @FocusState private var isPlanNameFocused: Bool
 
     // Search states
@@ -37,15 +38,7 @@ struct PlansView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if plans.isEmpty {
-                    ContentUnavailableView(
-                        "No Plans Yet",
-                        systemImage: "calendar.badge.checkmark",
-                        description: Text("Create your first plan to get started")
-                    )
-                } else {
-                    VStack(spacing: 0) {
+            VStack(spacing: 0) {
                         // Title and Search in one row
                         HStack {
                             Text("Plans")
@@ -53,6 +46,14 @@ struct PlansView: View {
                                 .fontWeight(.bold)
 
                             Spacer()
+
+                            Button {
+                                showingTemplateGallery = true
+                            } label: {
+                                Image(systemName: "sparkles")
+                                    .font(.title2)
+                                    .foregroundStyle(.orange)
+                            }
 
                             Button {
                                 withAnimation {
@@ -96,7 +97,34 @@ struct PlansView: View {
                             .background(Color(.systemGray6))
                         }
 
-                        if filteredPlans.isEmpty && !searchText.isEmpty {
+                if plans.isEmpty {
+                    EmptyStateView(
+                        icon: "calendar.badge.checkmark",
+                        title: "No Plans Yet",
+                        message: "Start planning your projects and goals"
+                    ) {
+                        VStack(spacing: 12) {
+                            Button {
+                                showingTemplateGallery = true
+                            } label: {
+                                Label("Browse Templates", systemImage: "sparkles")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.borderedProminent)
+
+                            Button {
+                                showingAddPlan = true
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                                    isPlanNameFocused = true
+                                }
+                            } label: {
+                                Label("Create Custom", systemImage: "plus")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
+                        }
+                    }
+                } else if filteredPlans.isEmpty && !searchText.isEmpty {
                             ContentUnavailableView(
                                 "No Results",
                                 systemImage: "magnifyingglass",
@@ -121,9 +149,7 @@ struct PlansView: View {
                             .background(Color(.systemGray6))
                             .scrollContentBackground(.hidden)
                         }
-                    }
                 }
-            }
             .navigationDestination(item: $selectedPlan) { plan in
                 SubtypeDetailView(subtype: plan)
             }
@@ -243,6 +269,9 @@ struct PlansView: View {
                 if let plan = planToDelete {
                     Text("This will permanently delete this plan and all \(plan.todos.count) task\(plan.todos.count == 1 ? "" : "s"). This action cannot be undone.")
                 }
+            }
+            .sheet(isPresented: $showingTemplateGallery) {
+                TemplateGalleryView(type: .plan)
             }
         }
     }

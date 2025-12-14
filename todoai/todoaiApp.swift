@@ -14,7 +14,7 @@ struct DailyDoApp: App {
     @State private var hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
 
     init() {
-        // Initialize model container with migration configuration
+        // Initialize model container
         do {
             let schema = Schema([
                 User.self,

@@ -16,10 +16,16 @@ struct DailyNoteView: View {
 
     @State private var saveWorkItem: DispatchWorkItem?
     @State private var showingDeleteConfirmation = false
+    @State private var initialMood: NoteMood = .meh // Track original mood
+    @State private var userSelectedMood = false // Track if user clicked a mood button
     @FocusState private var isEditorFocused: Bool
 
     private var hasContent: Bool {
-        !note.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        userSelectedMood || !note.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var checkmarkColor: Color {
+        (userSelectedMood || !note.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) ? note.noteMood.color : .white
     }
 
     private let dateFormatter: DateFormatter = {
@@ -68,13 +74,13 @@ struct DailyNoteView: View {
                         Image(systemName: "checkmark")
                             .font(.subheadline)
                             .fontWeight(.semibold)
-                            .foregroundStyle(note.noteMood.color)
+                            .foregroundStyle(checkmarkColor)
                             .frame(width: 36, height: 36)
                             .background(Color.white)
                             .clipShape(Circle())
                     }
                     .accessibilityLabel("Save and close")
-                    .accessibilityHint("Saves your note and returns to calendar")
+                    .accessibilityHint("Saves your mood and returns to calendar")
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
@@ -115,6 +121,7 @@ struct DailyNoteView: View {
                                 ) {
                                     withAnimation(.spring(response: 0.3)) {
                                         note.noteMood = mood
+                                        userSelectedMood = true // Mark that user clicked a mood
                                         scheduleAutoSave()
                                     }
                                 }
@@ -151,7 +158,7 @@ struct DailyNoteView: View {
                 )
 
                 // Prompt Text
-                Text("Write what's special today")
+                Text("Write what's special today (optional)")
                     .font(.subheadline)
                     .fontWeight(.medium)
                     .foregroundStyle(.white.opacity(0.9))
@@ -206,10 +213,10 @@ struct DailyNoteView: View {
                 Text("This action cannot be undone.")
             }
             .onAppear {
-                // Auto-focus the editor
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    isEditorFocused = true
-                }
+                // Initialize: if note already has a mood other than default OR has text content
+                initialMood = note.noteMood
+                let hasText = !note.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                userSelectedMood = (note.noteMood != .meh) || hasText
             }
             .onDisappear {
                 finalSave()
@@ -238,9 +245,12 @@ struct DailyNoteView: View {
         // Cancel pending auto-save
         saveWorkItem?.cancel()
 
-        // Final save or delete if empty
-        if note.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            // Delete empty notes
+        // Check if user has entered anything (mood or text)
+        let hasText = !note.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+
+        // Final save or delete if no content
+        if !userSelectedMood && !hasText {
+            // Delete notes where user hasn't done anything
             modelContext.delete(note)
         } else {
             // Save note with updated timestamp
