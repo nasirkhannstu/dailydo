@@ -72,9 +72,9 @@
 
 ### Promotional Text (170 characters, updateable anytime)
 ```
-🎯 New: 20+ Ready-Made Templates!
-Water Intake, Exercise, Medication, Meal Plans & more.
-Start tracking instantly or create custom habits. Try it free!
+🎯 20+ Templates with Smart Scheduling!
+💧 Water tracking, 💪 workouts, 📚 study plans & more.
+4-level priorities, emoji mood tracking. Start free!
 ```
 
 **Update Strategy:**
@@ -90,7 +90,7 @@ todo,habit,task,planner,routine,fitness,goals,tracker,productivity
 
 **Extended Keywords (100 chars exactly):**
 ```
-todo,habit,task,planner,routine,fitness,goals,tracker,productivity,daily,checklist,reminder,organize
+todo,habit,task,planner,routine,fitness,goals,tracker,productivity,daily,priority,reminder,organize
 ```
 
 **Alternative Set (Template-focused - RECOMMENDED):**
@@ -306,7 +306,7 @@ This set targets specific, high-intent searches that match our 10 habit template
 │  "Reflect on Your Day"      │
 │                             │
 │  [Daily Note with moods]    │
-│  😊 😌 😐 😕 😢            │
+│  😊 😌 😐 😔 😫 😤         │
 │  How was your day?          │
 │                             │
 │  [Text editor preview]      │
@@ -317,7 +317,7 @@ This set targets specific, high-intent searches that match our 10 habit template
 
 **Text Overlay:**
 - Title: "Daily Journaling"
-- Subtitle: "Track moods & write notes"
+- Subtitle: "Track moods with 6 emoji options"
 
 #### Screenshot 6: Custom Creation (Flexibility)
 **Layout:**
@@ -340,7 +340,27 @@ This set targets specific, high-intent searches that match our 10 habit template
 - Title: "Total Flexibility"
 - Subtitle: "Create anything you need"
 
-#### Screenshot 7: Focus Mode (Power Feature)
+#### Screenshot 7: Priority System (Smart Organization)
+**Layout:**
+```
+┌─────────────────────────────┐
+│  "Prioritize What Matters"  │
+│                             │
+│  [Calendar with priorities] │
+│  🔴 High: Project deadline  │
+│  🟠 Med: Team meeting       │
+│  🟢 Low: Email inbox        │
+│  ⚪ None: Read article      │
+│                             │
+│  Quick filter by priority   │
+└─────────────────────────────┘
+```
+
+**Text Overlay:**
+- Title: "4-Level Priority System"
+- Subtitle: "Focus on what's important"
+
+#### Screenshot 8: Focus Mode (Power Feature)
 **Layout:**
 ```
 ┌─────────────────────────────┐
@@ -358,7 +378,7 @@ This set targets specific, high-intent searches that match our 10 habit template
 - Title: "Focus Mode"
 - Subtitle: "One task at a time"
 
-#### Screenshot 8: Achievements/Stats (Optional)
+#### Screenshot 9: Achievements/Stats (Optional)
 **Layout:**
 ```
 ┌─────────────────────────────┐
@@ -834,7 +854,7 @@ Transform your life with DailyDo – the most flexible and powerful task manager
 
 ✨ START WITH TEMPLATES OR CREATE YOUR OWN
 
-Choose from 15+ ready-made templates:
+Choose from 20+ ready-made templates with pre-scheduled times:
 • 🌅 Morning & Evening Routines
 • 💪 Fitness & Health Tracking
 • 📚 Study & Learning Plans
@@ -845,7 +865,7 @@ Choose from 15+ ready-made templates:
 • ✈️ Travel & Packing Lists
 • 🎯 Goal Setting & Achievement
 
-Or build completely custom workflows tailored to your needs.
+All templates come with realistic, staggered times throughout the day – no more setting times manually! Or build completely custom workflows tailored to your needs.
 
 🎯 POWERFUL FEATURES
 
@@ -858,9 +878,10 @@ HABITS & ROUTINES
 
 TASKS & LISTS
 • Unlimited tasks, subtasks, and checklists
-• Due dates, reminders, and priorities
+• 4-level priority system (High, Medium, Low, None)
+• Quick priority filtering with one-tap access
+• Due dates, reminders, and smart scheduling
 • Organize by projects, contexts, or goals
-• Quick capture with voice input (coming soon)
 • Focus mode for distraction-free work
 
 PLANNING & CALENDAR
@@ -872,8 +893,8 @@ PLANNING & CALENDAR
 
 DAILY NOTES & JOURNALING
 • Write daily reflections
-• Track your mood with 8 emotion options
-• Beautiful gradient themes
+• Track your mood with 6 expressive emoji moods
+• Beautiful gradient themes that match your mood
 • Auto-save as you type
 • Review past entries anytime
 
@@ -995,20 +1016,23 @@ Your goals are waiting. Let's make them happen.
 
 Your all-in-one productivity companion is here:
 
-✨ 15+ Ready-Made Templates
-Start with Morning Routines, Fitness Plans, Meal Tracking & more
+✨ 20+ Smart Templates
+Pre-scheduled times for water intake, exercise, meals & more. No setup needed!
+
+🎯 4-Level Priority System
+High, Medium, Low, None – focus on what matters most with quick filters
 
 📝 Powerful Task Management
 Unlimited tasks, subtasks, and custom lists
 
-🎯 Habit Tracking with Streaks
+🔥 Habit Tracking with Streaks
 Build lasting habits with visual progress
 
 📅 Beautiful Calendar View
-See your week at a glance
+See your week at a glance with color-coded priorities
 
-📖 Daily Notes & Mood Tracking
-Reflect and remember
+😊 Daily Notes with Emoji Moods
+Track your mood with 6 expressive emojis & write reflections
 
 Download now and transform your daily routine!
 ```
@@ -1271,16 +1295,17 @@ Love DailyDo? Please rate us! ⭐⭐⭐⭐⭐
 **Our Unique Position:**
 ```
 "The only productivity app that combines tasks, habits,
-goals, and daily notes with ready-made templates for
-instant setup."
+goals, and daily notes with ready-made templates featuring
+smart time scheduling and 4-level priority system."
 ```
 
 **Market Gaps We Fill:**
-1. **Template Gallery**: No competitor has comprehensive templates
-2. **Daily Notes**: Most lack journaling integration
-3. **Free Habits**: Many charge for habit tracking
-4. **Beginner-Friendly**: Complex apps dominate
-5. **All-in-One**: Most are single-purpose
+1. **Smart Templates with Times**: No competitor has pre-scheduled templates
+2. **4-Level Priority System**: Most have 3 levels or none, we have intuitive High/Medium/Low/None
+3. **Daily Notes with Emoji Moods**: Most lack journaling integration
+4. **Free Habits**: Many charge for habit tracking
+5. **Beginner-Friendly**: Complex apps dominate
+6. **All-in-One**: Most are single-purpose
 
 **Messaging Framework:**
 
@@ -1745,6 +1770,7 @@ Start with **Minimal Budget** approach. Invest in paid promotion only after vali
 
 ---
 
-*Document Version: 1.0*
-*Last Updated: December 2024*
+*Document Version: 1.1*
+*Last Updated: December 15, 2024*
+*Changes: Added priority system, updated mood tracking to 6 emojis, smart template scheduling*
 *Next Review: After App Launch*

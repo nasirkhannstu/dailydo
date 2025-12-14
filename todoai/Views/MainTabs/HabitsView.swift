@@ -286,6 +286,12 @@ struct HabitsView: View {
             sortOrder: habits.count
         )
         modelContext.insert(newHabit)
+
+        // Navigate to the newly created habit after a short delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            selectedHabit = newHabit
+        }
+
         resetAddHabitForm()
     }
 

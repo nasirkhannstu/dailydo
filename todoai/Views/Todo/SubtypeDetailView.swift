@@ -139,11 +139,45 @@ struct SubtypeDetailView: View {
             }
 
             if subtype.todos.isEmpty {
-                ContentUnavailableView(
-                    "No Tasks Yet",
-                    systemImage: "checklist",
-                    description: Text("Add your first task to get started")
-                )
+                Section {
+                    VStack(spacing: 20) {
+                        Image(systemName: "checklist")
+                            .font(.system(size: 60))
+                            .foregroundStyle(.secondary)
+
+                        VStack(spacing: 8) {
+                            Text("No Tasks Yet")
+                                .font(.title3)
+                                .fontWeight(.semibold)
+
+                            Text("Add your first task to get started")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Button {
+                            showingAddTodo = true
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.body)
+                                Text("Create First Todo")
+                                    .fontWeight(.semibold)
+                            }
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 12)
+                            .background(
+                                Capsule()
+                                    .fill(fabColor.gradient)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 60)
+                }
+                .listRowBackground(Color.clear)
             }
         }
         .navigationTitle(subtype.name)

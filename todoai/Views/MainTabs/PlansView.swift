@@ -286,6 +286,12 @@ struct PlansView: View {
             sortOrder: plans.count
         )
         modelContext.insert(newPlan)
+
+        // Navigate to the newly created plan after a short delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            selectedPlan = newPlan
+        }
+
         resetAddPlanForm()
     }
 

@@ -1,9 +1,9 @@
 # DailyDo: App Features & Development
 
-**Version:** 1.1
-**Last Updated:** December 6, 2025
+**Version:** 1.2
+**Last Updated:** December 15, 2024
 **Platform:** iOS 17.0+
-**Status:** Active Development (40% Complete)
+**Status:** Active Development (45% Complete)
 
 ---
 
@@ -17,6 +17,7 @@
 6. [Completed Features](#6-completed-features)
 7. [In Progress](#7-in-progress)
 8. [Roadmap](#8-roadmap)
+9. [Changelog](#9-changelog)
 
 ---
 
@@ -26,11 +27,13 @@ DailyDo is an AI-powered iOS productivity app that helps users organize tasks, b
 
 ### Key Differentiators
 - ✅ **Three-tier organization:** Habits, Plans, and Lists
-- ✅ **Unified calendar view** across all categories
+- ✅ **Template Gallery:** 20+ pre-made templates with smart time scheduling
+- ✅ **4-Level Priority System:** High, Medium, Low, None with quick filtering
+- ✅ **Unified calendar view** across all categories with priority colors
 - ✅ **Focus Mode** for distraction-free task completion
 - ✅ **Recurring todos** with smart completion tracking
+- ✅ **Daily Notes** with 6 expressive emoji moods
 - 🔄 **AI-powered todo generation** (planned)
-- 🔄 **Customizable themes** (planned)
 - 🔄 **CloudKit sync** (planned)
 
 ### Business Model
@@ -54,28 +57,41 @@ DailyDo is an AI-powered iOS productivity app that helps users organize tasks, b
 
 ## 2. Current Status
 
-**Development Phase:** Sprint 10 (Week 10 of 27)
-**Overall Progress:** ~40% Complete
-**App Size:** 5.0 MB (debug), ~2-3 MB (estimated release)
-**Code:** 5,138 lines of Swift
+**Development Phase:** Sprint 11 (Week 11 of 27)
+**Overall Progress:** ~45% Complete
+**App Size:** 5.2 MB (debug), ~2-3 MB (estimated release)
+**Code:** 5,500+ lines of Swift
 
 ### What Works Now ✅
 
 Users can:
 1. ✅ Create and manage Habits, Plans, and Lists
-2. ✅ Add todos with title, description, due date/time
-3. ✅ Create and track subtasks
-4. ✅ Mark todos complete/incomplete
-5. ✅ Set recurring patterns (daily, weekly, monthly, yearly)
-6. ✅ Star important todos
-7. ✅ View todos on calendar by date
-8. ✅ Filter by status and type
-9. ✅ Set reminders and notifications
-10. ✅ Use Focus Mode for task completion
-11. ✅ Navigate with modern card-based UI
-12. ✅ Use in dark mode
+2. ✅ Use 20+ pre-made templates with smart time scheduling
+3. ✅ Add todos with title, description, due date/time
+4. ✅ Set 4-level priorities (High, Medium, Low, None)
+5. ✅ Filter tasks by priority with quick access buttons
+6. ✅ Create and track subtasks
+7. ✅ Mark todos complete/incomplete
+8. ✅ Set recurring patterns (daily, weekly, monthly, yearly)
+9. ✅ View todos on calendar with color-coded priorities
+10. ✅ Filter by status, type, and priority
+11. ✅ Set reminders and notifications
+12. ✅ Use Focus Mode for task completion
+13. ✅ Write daily notes with 6 emoji mood options
+14. ✅ Navigate with modern card-based UI
+15. ✅ Auto-navigate to newly created subtypes
+16. ✅ Use in dark mode
 
-### Recent Updates (Dec 2-6, 2025)
+### Recent Updates (Dec 2024)
+
+**Dec 15:**
+- ✅ Replaced star feature with 4-level priority system (High/Medium/Low/None)
+- ✅ Added priority filtering with quick access buttons (All, High, Med, Low, None)
+- ✅ Updated daily notes to 6 expressive emoji moods (😊😌😐😔😫😤)
+- ✅ Smart template scheduling with realistic, staggered times
+- ✅ Auto-navigation to newly created subtypes
+- ✅ Empty state "Create First Todo" button in subtypes
+- ✅ Updated ASO strategy document with latest features
 
 **Dec 6:**
 - ✅ Fixed recurring todos functionality
@@ -155,7 +171,7 @@ Users can:
 - Recurring Type (none, daily, weekly, monthly, yearly)
 - Recurring End Date (optional) - When recurring should stop (nil = never ends)
 - Subtasks (unlimited)
-- Starred flag
+- Priority (High, Medium, Low, None) - 4-level system with color coding
 - Reminder enabled
 - Show in calendar toggle
 - Completion status
@@ -167,12 +183,48 @@ Users can:
 - Week view with swipe navigation
 - Month/Year picker
 - Task count indicators
+- Color-coded by priority (Red/Orange/Green/Gray)
 - Gradient background design
+- Quick priority filters (All, High, Medium, Low, None)
 - Filter by status and type
 - Shows recurring todos on applicable dates
 - Hides completed recurring instances
 
-### 3.4 Focus Mode
+### 3.4 Template Gallery
+
+**Purpose:** Quick-start with pre-configured subtypes
+
+**Features:**
+- 20+ ready-made templates (10 Habits, 5 Plans, 5 Lists)
+- Pre-scheduled times (realistic, staggered throughout the day)
+- One-tap creation
+- Fully customizable after creation
+
+**Template Categories:**
+- **Habits:** Water Intake, Exercise, Medication, Healthy Breakfast, Skin Care, Dental Care, Feed Pets, Prayer Time, Daily Reading, Steps Goal
+- **Plans:** Work Project, Study & Learning, Home Improvement, Event Planning, Career Development
+- **Lists:** Grocery Shopping, Meal Planning, Reading List, Cleaning Schedule, Packing List
+
+### 3.5 Daily Notes
+
+**Purpose:** Mood tracking and daily journaling
+
+**Features:**
+- 6 expressive emoji moods (😊😌😐😔😫😤)
+- Free-form text editor
+- Gradient themes that match mood
+- Auto-save functionality
+- Historical review
+
+**Moods:**
+- Happy (😊) - Green gradient
+- Calm (😌) - Light blue gradient
+- Neutral (😐) - Gray gradient
+- Sad (😔) - Soft blue gradient
+- Stressed (😫) - Orange gradient
+- Angry (😤) - Red gradient
+
+### 3.6 Focus Mode
 
 **Purpose:** Distraction-free task completion
 
@@ -184,7 +236,7 @@ Users can:
 - Task metadata (due time, category)
 - Only for Plans and Lists (not Habits)
 
-### 3.5 Recurring Todos
+### 3.7 Recurring Todos
 
 **Architecture:**
 Recurring todos use a **template + completion instances** pattern:
@@ -522,14 +574,24 @@ Subtasks: (grayed out)
 - ✅ Modern card-based UI design
 - ✅ Sample data seeding
 
+### ✅ Sprint 11: Priority System & Templates (100%)
+- ✅ 4-level priority system (High, Medium, Low, None)
+- ✅ Priority filtering with quick access buttons
+- ✅ Template Gallery with 20+ templates
+- ✅ Smart template time scheduling
+- ✅ Daily Notes with 6 emoji moods
+- ✅ Auto-navigation to new subtypes
+- ✅ Empty state improvements ("Create First Todo" button)
+- ✅ ASO strategy document update
+
 ---
 
 ## 7. In Progress
 
-### 🔄 Documentation
-- Consolidating project docs
-- Creating changelog
-- Updating README
+### 🔄 Icon Auto-Suggestion (Discussed)
+- Keyword-based icon matching for subtypes
+- Smart suggestions as user types
+- Implementation planned
 
 ---
 
@@ -614,14 +676,74 @@ Tasks:
 
 ---
 
+---
+
+## 9. Changelog
+
+### Version 1.0 (In Development)
+
+#### Sprint 11 - December 15, 2024
+**Priority System & Templates**
+- ✅ Replaced star feature with 4-level priority system (High, Medium, Low, None)
+- ✅ Added priority quick filter buttons in calendar (All, High, Med, Low, None, Filter icon)
+- ✅ Updated daily notes from 8 moods to 6 expressive emojis
+- ✅ Implemented smart template scheduling with realistic times
+- ✅ Added auto-navigation to newly created subtypes
+- ✅ Added "Create First Todo" button in empty subtype state
+- ✅ Updated ASO strategy document with latest features
+
+**Technical Changes:**
+- Added `TodoPriority` enum with 4 levels
+- Added `PriorityFilter` enum for calendar filtering
+- Updated `NoteMood` enum to 6 cases with emoji property
+- Added time parameters to `TodoTemplate` struct
+- Updated all 20 templates with realistic scheduling
+
+#### Sprint 10 - December 6, 2024
+**Recurring Todos & UI Polish**
+- ✅ Fixed recurring todos functionality
+- ✅ Implemented completion instances for recurring tasks
+- ✅ Added calendar visibility controls
+- ✅ Improved UI/UX with card-based design
+- ✅ Added notification system
+- ✅ Implemented Focus Mode
+- ✅ Added sample data seeding
+
+#### Sprint 7-9 - December 2-5, 2024
+**Core Todo Management**
+- ✅ Full CRUD operations for todos
+- ✅ Due dates and times
+- ✅ Star/unstar functionality (later replaced with priorities)
+- ✅ Swipe actions
+- ✅ Calendar integration
+- ✅ Redesigned calendar with gradient background
+- ✅ Different visual styles for Habits vs Plans/Lists
+
+#### Sprint 4-6 - November 2024
+**Core UI Development**
+- ✅ 5-tab navigation (Habits, Plans, Lists, Calendar, Settings)
+- ✅ All main views created
+- ✅ Empty states
+- ✅ Create/edit forms
+- ✅ Dark mode support
+
+#### Sprint 1-3 - November 2024
+**Foundation**
+- ✅ Xcode project setup
+- ✅ SwiftData models (Subtype, TodoItem, Subtask)
+- ✅ MVVM architecture
+- ✅ Enums and relationships
+
+---
+
 ## Questions or Feedback?
 
 This is a living document. For questions about features or development:
-- Review this document
-- Check CHANGELOG.md for recent changes
+- Review this document for current status
+- Check the Changelog section above for version history
 - See README.md for setup instructions
 
 ---
 
-**Last Updated:** December 6, 2025
+**Last Updated:** December 15, 2024
 **Next Review:** After AI Integration (Sprint 12-14)

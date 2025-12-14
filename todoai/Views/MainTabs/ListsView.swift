@@ -21,6 +21,7 @@ struct ListsView: View {
     @State private var newListShowInCalendar = false
     @State private var newListRemindersEnabled = false
     @State private var showingTemplateGallery = false
+    @State private var selectedList: Subtype?
     @FocusState private var isListNameFocused: Bool
 
     // Search states
@@ -136,7 +137,9 @@ struct ListsView: View {
                             ScrollView {
                                 LazyVGrid(columns: columns, spacing: 12) {
                                     ForEach(filteredLists) { list in
-                                NavigationLink(destination: SubtypeDetailView(subtype: list)) {
+                                Button {
+                                    selectedList = list
+                                } label: {
                                     ListCardView(list: list)
                                 }
                                 .buttonStyle(.plain)
@@ -148,6 +151,9 @@ struct ListsView: View {
                             .background(Color(.systemGray6))
                         }
                 }
+            .navigationDestination(item: $selectedList) { list in
+                SubtypeDetailView(subtype: list)
+            }
             .navigationBarHidden(true)
             .overlay(alignment: .bottomTrailing) {
                 Button {
@@ -259,6 +265,12 @@ struct ListsView: View {
             sortOrder: lists.count
         )
         modelContext.insert(newList)
+
+        // Navigate to the newly created list after a short delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            selectedList = newList
+        }
+
         resetAddListForm()
     }
 
