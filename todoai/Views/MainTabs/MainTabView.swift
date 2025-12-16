@@ -57,7 +57,7 @@ struct MainTabView: View {
             // Tab 2: Plans
             PlansView()
                 .tabItem {
-                    Label("Plans", systemImage: selectedTab == 1 ? "calendar.badge.checkmark" : "calendar.badge.clock")
+                    Label("Plans", systemImage: selectedTab == 1 ? "flag.fill" : "flag")
                 }
                 .tag(1)
 

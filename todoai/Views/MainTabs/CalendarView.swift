@@ -480,7 +480,100 @@ struct CalendarView: View {
                 )
 
                 // Quick Actions
-                HStack {
+                HStack(spacing: 12) {
+                    // Priority quick filters in ScrollView
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            // All button
+                            Button {
+                                withAnimation {
+                                    selectedPriorityFilter = .all
+                                }
+                            } label: {
+                                Text("All")
+                                    .font(.caption)
+                                    .fontWeight(selectedPriorityFilter == .all ? .semibold : .regular)
+                                    .foregroundStyle(selectedPriorityFilter == .all ? .white : .gray)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(
+                                        Capsule()
+                                            .fill(selectedPriorityFilter == .all ? Color.blue : Color.gray.opacity(0.2))
+                                    )
+                            }
+
+                            Button {
+                                withAnimation {
+                                    selectedPriorityFilter = selectedPriorityFilter == .high ? .all : .high
+                                }
+                            } label: {
+                                Circle()
+                                    .fill(selectedPriorityFilter == .high ? Color.red : Color.red.opacity(0.3))
+                                    .frame(width: 24, height: 24)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(selectedPriorityFilter == .high ? Color.red : Color.clear, lineWidth: 2)
+                                            .padding(-2)
+                                    )
+                            }
+
+                            Button {
+                                withAnimation {
+                                    selectedPriorityFilter = selectedPriorityFilter == .medium ? .all : .medium
+                                }
+                            } label: {
+                                Circle()
+                                    .fill(selectedPriorityFilter == .medium ? Color.orange : Color.orange.opacity(0.3))
+                                    .frame(width: 24, height: 24)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(selectedPriorityFilter == .medium ? Color.orange : Color.clear, lineWidth: 2)
+                                            .padding(-2)
+                                    )
+                            }
+
+                            Button {
+                                withAnimation {
+                                    selectedPriorityFilter = selectedPriorityFilter == .low ? .all : .low
+                                }
+                            } label: {
+                                Circle()
+                                    .fill(selectedPriorityFilter == .low ? Color.green : Color.green.opacity(0.3))
+                                    .frame(width: 24, height: 24)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(selectedPriorityFilter == .low ? Color.green : Color.clear, lineWidth: 2)
+                                            .padding(-2)
+                                    )
+                            }
+
+                            // None button
+                            Button {
+                                withAnimation {
+                                    selectedPriorityFilter = selectedPriorityFilter == .none ? .all : .none
+                                }
+                            } label: {
+                                Circle()
+                                    .fill(selectedPriorityFilter == .none ? Color.gray : Color.gray.opacity(0.3))
+                                    .frame(width: 24, height: 24)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(selectedPriorityFilter == .none ? Color.gray : Color.clear, lineWidth: 2)
+                                            .padding(-2)
+                                    )
+                            }
+
+                            Button {
+                                showingFilterSheet = true
+                            } label: {
+                                Image(systemName: "line.3.horizontal.decrease.circle")
+                                    .font(.title3)
+                                    .foregroundStyle(.blue)
+                            }
+                        }
+                        .padding(.leading, 8)
+                    }
+
                     if !calendar.isDateInToday(selectedDate) {
                         Button {
                             withAnimation {
@@ -490,102 +583,11 @@ struct CalendarView: View {
                         } label: {
                             HStack(spacing: 4) {
                                 Image(systemName: "arrow.uturn.left")
+                                    .font(.caption)
                                 Text("Today")
+                                    .font(.caption)
                             }
-                            .font(.subheadline)
                             .foregroundStyle(.blue)
-                        }
-                    }
-
-                    Spacer()
-
-                    HStack(spacing: 8) {
-                        // Priority quick filters
-                        // All button
-                        Button {
-                            withAnimation {
-                                selectedPriorityFilter = .all
-                            }
-                        } label: {
-                            Text("All")
-                                .font(.caption)
-                                .fontWeight(selectedPriorityFilter == .all ? .semibold : .regular)
-                                .foregroundStyle(selectedPriorityFilter == .all ? .white : .gray)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(
-                                    Capsule()
-                                        .fill(selectedPriorityFilter == .all ? Color.blue : Color.gray.opacity(0.2))
-                                )
-                        }
-
-                        Button {
-                            withAnimation {
-                                selectedPriorityFilter = selectedPriorityFilter == .high ? .all : .high
-                            }
-                        } label: {
-                            Circle()
-                                .fill(selectedPriorityFilter == .high ? Color.red : Color.red.opacity(0.3))
-                                .frame(width: 24, height: 24)
-                                .overlay(
-                                    Circle()
-                                        .stroke(selectedPriorityFilter == .high ? Color.red : Color.clear, lineWidth: 2)
-                                        .padding(-2)
-                                )
-                        }
-
-                        Button {
-                            withAnimation {
-                                selectedPriorityFilter = selectedPriorityFilter == .medium ? .all : .medium
-                            }
-                        } label: {
-                            Circle()
-                                .fill(selectedPriorityFilter == .medium ? Color.orange : Color.orange.opacity(0.3))
-                                .frame(width: 24, height: 24)
-                                .overlay(
-                                    Circle()
-                                        .stroke(selectedPriorityFilter == .medium ? Color.orange : Color.clear, lineWidth: 2)
-                                        .padding(-2)
-                                )
-                        }
-
-                        Button {
-                            withAnimation {
-                                selectedPriorityFilter = selectedPriorityFilter == .low ? .all : .low
-                            }
-                        } label: {
-                            Circle()
-                                .fill(selectedPriorityFilter == .low ? Color.green : Color.green.opacity(0.3))
-                                .frame(width: 24, height: 24)
-                                .overlay(
-                                    Circle()
-                                        .stroke(selectedPriorityFilter == .low ? Color.green : Color.clear, lineWidth: 2)
-                                        .padding(-2)
-                                )
-                        }
-
-                        // None button
-                        Button {
-                            withAnimation {
-                                selectedPriorityFilter = selectedPriorityFilter == .none ? .all : .none
-                            }
-                        } label: {
-                            Circle()
-                                .fill(selectedPriorityFilter == .none ? Color.gray : Color.gray.opacity(0.3))
-                                .frame(width: 24, height: 24)
-                                .overlay(
-                                    Circle()
-                                        .stroke(selectedPriorityFilter == .none ? Color.gray : Color.clear, lineWidth: 2)
-                                        .padding(-2)
-                                )
-                        }
-
-                        Button {
-                            showingFilterSheet = true
-                        } label: {
-                            Image(systemName: "line.3.horizontal.decrease.circle")
-                                .font(.title3)
-                                .foregroundStyle(.blue)
                         }
                     }
                 }
