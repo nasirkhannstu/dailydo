@@ -80,6 +80,13 @@ struct SettingsView: View {
                     }
                 }
 
+                // Help & Support Section
+                Section("Help & Support") {
+                    NavigationLink(destination: FeatureGuideView()) {
+                        Label("Features Guide", systemImage: "book.fill")
+                    }
+                }
+
                 // App Settings Section
                 Section("App Settings") {
                     NavigationLink(destination: Text("Notifications")) {

@@ -1147,34 +1147,26 @@ struct TodoCalendarRow: View {
 
                     Spacer()
 
-                    // Circle checkbox with priority color fill
-                    Button {
+                    // Circle checkbox with priority color border/fill
+                    ZStack {
+                        if todo.completed {
+                            // Completed: filled checkmark circle in priority color
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.title3)
+                                .foregroundStyle(todo.priority.completionColor)
+                        } else {
+                            // Not completed: circle with priority color border
+                            Circle()
+                                .stroke(todo.priority != .none ? todo.priority.color : Color.gray, lineWidth: 1.5)
+                                .frame(width: 20, height: 20)
+                        }
+                    }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
                         withAnimation {
                             handleCompletion()
                         }
-                    } label: {
-                        ZStack {
-                            if todo.completed {
-                                // Completed: checkmark in priority completion color
-                                Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 18))
-                                    .foregroundStyle(todo.priority.completionColor)
-                            } else {
-                                // Not completed: gray circle outline
-                                Image(systemName: "circle")
-                                    .font(.system(size: 18))
-                                    .foregroundStyle(.gray)
-
-                                // Inner fill circle for priority
-                                if todo.priority != .none {
-                                    Circle()
-                                        .fill(todo.priority.color)
-                                        .frame(width: 12, height: 12)
-                                }
-                            }
-                        }
                     }
-                    .buttonStyle(.plain)
                     .padding(.trailing, 8)
                 }
                 .padding(.vertical, 6)
@@ -1277,39 +1269,31 @@ struct TodoCalendarRow: View {
                     }
                 }
                 .padding(.leading, 12)
-                .padding(.vertical, 12)
+                .padding(.vertical, 8)
 
                 Spacer()
 
-                // Circle checkbox with priority color fill
-                Button {
+                // Circle checkbox with priority color border/fill
+                ZStack {
+                    if todo.completed {
+                        // Completed: filled checkmark circle in priority color
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.title3)
+                            .foregroundStyle(todo.priority.completionColor)
+                    } else {
+                        // Not completed: circle with priority color border
+                        Circle()
+                            .stroke(todo.priority != .none ? todo.priority.color : Color.gray, lineWidth: 1.5)
+                            .frame(width: 20, height: 20)
+                    }
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
                     withAnimation {
                         handleCompletion()
                     }
-                } label: {
-                    ZStack {
-                        if todo.completed {
-                            // Completed: checkmark in priority completion color
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.title3)
-                                .foregroundStyle(todo.priority.completionColor)
-                        } else {
-                            // Not completed: gray circle outline
-                            Image(systemName: "circle")
-                                .font(.title3)
-                                .foregroundStyle(.gray)
-
-                            // Inner fill circle for priority
-                            if todo.priority != .none {
-                                Circle()
-                                    .fill(todo.priority.color)
-                                    .frame(width: 16, height: 16)
-                            }
-                        }
-                    }
                 }
-                .buttonStyle(.plain)
-                .padding(.trailing, 16)
+                .padding(.trailing, 8)
             }
             .background(Color.white)
             .cornerRadius(16)

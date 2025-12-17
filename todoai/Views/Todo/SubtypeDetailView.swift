@@ -38,6 +38,7 @@ struct SubtypeDetailView: View {
     @State private var pendingCalendarValue = false
     @State private var showingRemindersToggleAlert = false
     @State private var pendingRemindersValue = false
+    @State private var selectedTodo: TodoItem?
     @State private var isDescriptionExpanded = false
 
     var incompleteTodos: [TodoItem] {
@@ -114,9 +115,12 @@ struct SubtypeDetailView: View {
             if !incompleteTodos.isEmpty {
                 Section("Active") {
                     ForEach(incompleteTodos) { todo in
-                        NavigationLink(destination: TodoDetailView(todo: todo)) {
+                        Button {
+                            selectedTodo = todo
+                        } label: {
                             TodoRowView(todo: todo)
                         }
+                        .buttonStyle(.plain)
                     }
                     .onDelete { offsets in
                         deleteTodos(from: incompleteTodos, at: offsets)
@@ -128,9 +132,12 @@ struct SubtypeDetailView: View {
             if !completedTodos.isEmpty {
                 Section("Completed") {
                     ForEach(completedTodos) { todo in
-                        NavigationLink(destination: TodoDetailView(todo: todo)) {
+                        Button {
+                            selectedTodo = todo
+                        } label: {
                             TodoRowView(todo: todo)
                         }
+                        .buttonStyle(.plain)
                     }
                     .onDelete { offsets in
                         deleteTodos(from: completedTodos, at: offsets)
@@ -234,6 +241,9 @@ struct SubtypeDetailView: View {
                     isTodoTitleFocused = true
                 }
             }
+        }
+        .navigationDestination(item: $selectedTodo) { todo in
+            TodoDetailView(todo: todo)
         }
         .sheet(isPresented: $showingAddTodo) {
             VStack(spacing: 16) {
@@ -633,16 +643,6 @@ struct TodoRowView: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
-            // Completion Button
-            Button {
-                handleCompletion()
-            } label: {
-                Image(systemName: isCompletedToday ? "checkmark.circle.fill" : "circle")
-                    .font(.title3)
-                    .foregroundStyle(isCompletedToday ? .green : .gray)
-            }
-            .buttonStyle(.plain)
-
             // Todo Content
             VStack(alignment: .leading, spacing: 4) {
                 Text(todo.title)
@@ -660,9 +660,9 @@ struct TodoRowView: View {
                 if let dueDate = todo.dueDate {
                     HStack(spacing: 4) {
                         Image(systemName: "calendar")
-                        Text(dueDate, style: .date)
+                        Text(dueDate.formatted(date: .abbreviated, time: .omitted))
                         if let dueTime = todo.dueTime {
-                            Text(dueTime, style: .time)
+                            Text(dueTime.formatted(date: .omitted, time: .shortened))
                         }
                     }
                     .font(.caption2)
@@ -692,12 +692,28 @@ struct TodoRowView: View {
 
             Spacer()
 
-            // Priority indicator
-            if todo.priority != .none {
-                Circle()
-                    .fill(todo.priority.color)
-                    .frame(width: 8, height: 8)
+            // Completion Button with priority color border
+            Button {
+                handleCompletion()
+            } label: {
+                ZStack {
+                    if isCompletedToday {
+                        // Completed: circle with priority color border and checkmark
+                        Circle()
+                            .stroke(todo.priority != .none ? todo.priority.color : Color.gray, lineWidth: 1.5)
+                            .frame(width: 20, height: 20)
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(todo.priority != .none ? todo.priority.color : Color.gray)
+                    } else {
+                        // Not completed: circle with priority color border
+                        Circle()
+                            .stroke(todo.priority != .none ? todo.priority.color : Color.gray, lineWidth: 1.5)
+                            .frame(width: 20, height: 20)
+                    }
+                }
             }
+            .buttonStyle(.plain)
         }
         .padding(.vertical, 4)
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
