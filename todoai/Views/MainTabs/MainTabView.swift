@@ -28,10 +28,10 @@ struct MainTabView: View {
             .font: UIFont.systemFont(ofSize: 11, weight: .semibold)
         ]
 
-        // Unselected item color - Medium purple
-        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(red: 0.55, green: 0.45, blue: 0.7, alpha: 1.0)
+        // Unselected item color - Black
+        appearance.stackedLayoutAppearance.normal.iconColor = UIColor.black
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
-            .foregroundColor: UIColor(red: 0.55, green: 0.45, blue: 0.7, alpha: 1.0),
+            .foregroundColor: UIColor.black,
             .font: UIFont.systemFont(ofSize: 11, weight: .regular)
         ]
 

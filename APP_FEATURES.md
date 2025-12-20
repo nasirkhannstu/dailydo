@@ -595,6 +595,374 @@ Subtasks: (grayed out)
 
 ---
 
+### 🆕 New Feature Requests (December 2024)
+
+#### Share Subtype Feature 🌐 **[REQUIRES BACKEND]**
+**Purpose:** Allow users to share their Plans/Lists/Habits with others via web link
+
+**Features:**
+- [ ] Share entire subtype (not individual tasks) to web
+- [ ] Generate shareable web link
+- [ ] Web viewer to display shared subtype
+- [ ] Permission levels:
+  - **View Only** - Recipients can only read
+  - **Passcode Protected** - Require passcode to view
+  - **Copy as Template** - Recipients can copy to their own account
+- [ ] Share via multiple channels (Message, Email, Link copy)
+
+**Technical Requirements:**
+- ✅ **Backend Required:** REST API to store/retrieve shared data
+- ✅ **Database:** Store shared subtypes with metadata
+- ✅ **Web App:** React/Next.js viewer for shared links
+- Frontend: iOS share sheet integration
+- API Endpoints: POST /share, GET /share/:id
+
+**Use Cases:**
+- Share workout plan with gym buddy
+- Share grocery list with family
+- Share study schedule with classmates
+- Share travel itinerary with trip companions
+
+---
+
+#### Background Images 🎨 **[REQUIRES BACKEND]**
+**Purpose:** Customizable backgrounds for different views
+
+**Features:**
+- [ ] Free background images (10-15 included)
+- [ ] Premium images (individual purchase at $0.99-$1.99 each)
+- [ ] Apply backgrounds per subtype or globally
+- [ ] Admin dashboard to upload premium images
+- [ ] Browse and preview images in-app
+- [ ] Download and cache purchased images
+
+**Technical Requirements:**
+- ✅ **Backend Required:** Image storage and management
+- ✅ **Database:** Track premium images, individual purchases, user preferences
+- ✅ **CDN/Storage:** S3 or similar for image hosting
+- ✅ **Admin Panel:** Upload/manage premium images and set individual pricing
+- Frontend: Image picker UI, preview, caching
+- StoreKit: Purchase individual premium images
+
+**Categories:**
+- Nature (mountains, beaches, forests)
+- Abstract (gradients, patterns)
+- Minimal (solid colors, textures)
+- Seasonal (spring, summer, fall, winter)
+- Premium exclusive collections
+
+**Pricing:**
+- Standard Premium: $0.99 per image
+- Premium Collection: $1.99 per image (exclusive/high quality)
+- One-time purchase, own forever
+
+---
+
+#### iOS Calendar Sync 📅 **[NO BACKEND]**
+**Purpose:** Two-way sync with Apple Calendar app
+
+**Features:**
+- [ ] Export DailyDo tasks to iOS Calendar
+- [ ] Import iOS Calendar events to DailyDo
+- [ ] Choose which subtypes to sync
+- [ ] Sync settings per subtype
+- [ ] Handle event updates/deletions
+- [ ] Conflict resolution
+
+**Technical Requirements:**
+- ❌ **No Backend Required** - Uses EventKit framework
+- EventKit framework integration
+- Permission handling
+- Sync algorithm
+
+---
+
+#### Speech to Task 🎤 **[OPTIONAL BACKEND]**
+**Purpose:** Create tasks using voice input
+
+**Features:**
+- [ ] Voice recording button
+- [ ] Speech-to-text conversion
+- [ ] AI parsing to extract task details (title, date, time, priority)
+- [ ] Confirmation before creating task
+- [ ] Support for follow-up questions
+
+**Technical Requirements:**
+- ❌ **Backend Optional** - Can use iOS Speech framework locally
+- ✅ **Backend Beneficial** - For AI parsing of natural language
+- iOS Speech framework OR cloud speech-to-text
+- AI parsing service (if backend used)
+
+**Example:**
+"Add morning workout tomorrow at 7 AM with high priority"
+→ Parses to: Title: "Morning workout", Date: Tomorrow, Time: 7 AM, Priority: High
+
+---
+
+#### Siri Integration 🗣️ **[NO BACKEND]**
+**Purpose:** Siri Shortcuts for quick task management
+
+**Features:**
+- [ ] "Add task to DailyDo"
+- [ ] "Show my tasks for today"
+- [ ] "Complete [task name]"
+- [ ] "What's next on my list?"
+- [ ] Custom shortcut phrases
+
+**Technical Requirements:**
+- ❌ **No Backend Required** - iOS Intents framework
+- SiriKit / App Intents framework
+- Intent definitions
+- Siri response handling
+
+---
+
+#### Dark Mode Enhancements 🌙 **[NO BACKEND]**
+**Purpose:** Enhanced dark mode with customization
+
+**Features:**
+- [ ] Pure black OLED mode
+- [ ] Schedule dark mode (sunset to sunrise)
+- [ ] Custom accent colors for dark mode
+- [ ] Different background options for dark mode
+
+**Technical Requirements:**
+- ❌ **No Backend Required** - Pure SwiftUI
+- SwiftUI environment detection
+- Color scheme preferences
+- Custom color palettes
+
+---
+
+#### Expense Tracking 💰 **[OPTIONAL BACKEND]**
+**Purpose:** Track expenses alongside tasks
+
+**Features:**
+- [ ] Add expense amount to tasks
+- [ ] Expense categories
+- [ ] Budget limits per subtype
+- [ ] Monthly expense summary
+- [ ] Export expense reports
+- [ ] Currency support
+
+**Technical Requirements:**
+- ❌ **Backend Optional** - Can work locally with SwiftData
+- ✅ **Backend Beneficial** - For cross-device sync and analytics
+- Local: SwiftData models for expenses
+- Backend: Sync expense data, generate reports
+
+---
+
+#### Period Tracking (Women's Health) 🌸 **[NO BACKEND]**
+**Purpose:** Menstrual cycle tracking and predictions
+
+**Features:**
+- [ ] Log period start/end dates
+- [ ] Cycle predictions
+- [ ] Symptom tracking (mood, pain, flow)
+- [ ] Ovulation predictions
+- [ ] Reminder notifications
+- [ ] Privacy and security focus
+
+**Technical Requirements:**
+- ❌ **No Backend Required** - Local storage with encryption
+- ✅ **Must be HealthKit compliant**
+- SwiftData with encryption
+- HealthKit integration (optional)
+- Privacy-first design
+- Prediction algorithm
+
+**Privacy Note:**
+- All data stored locally
+- Optional HealthKit integration
+- No cloud sync (unless user explicitly opts in)
+
+---
+
+#### Dashboard & Analytics 📊 **[OPTIONAL BACKEND]**
+**Purpose:** Visualize productivity and patterns
+
+**Features:**
+- [ ] Completion rate charts
+- [ ] Streak tracking
+- [ ] Time-of-day productivity heatmap
+- [ ] Category breakdown (Habits vs Plans vs Lists)
+- [ ] Weekly/Monthly summaries
+- [ ] Goal progress visualization
+- [ ] Mood correlation with productivity
+
+**Technical Requirements:**
+- ❌ **Backend Optional** - Can work with local data
+- ✅ **Backend Beneficial** - For advanced analytics and ML insights
+- Charts framework (Swift Charts)
+- Data aggregation logic
+- Export to PDF/image
+
+---
+
+#### Focus Mode Live Activity 📱 **[NO BACKEND]**
+**Purpose:** Show Focus Mode timer on iPhone lock screen and Dynamic Island
+
+**Features:**
+- [ ] Live Activity for active Focus session
+- [ ] Show current task name
+- [ ] Timer countdown
+- [ ] Dynamic Island integration
+- [ ] Quick actions (Pause, Complete, Skip)
+- [ ] Progress ring animation
+
+**Technical Requirements:**
+- ❌ **No Backend Required** - iOS ActivityKit
+- ActivityKit framework
+- Live Activity setup
+- Dynamic Island UI design
+- Push notification updates
+
+---
+
+#### Daily Mood Popup 😊 **[NO BACKEND]**
+**Purpose:** Daily mood check-in prompt
+
+**Features:**
+- [ ] "How is your mood today?" popup
+- [ ] Appears once daily (customizable time)
+- [ ] Quick emoji selection
+- [ ] Optional note entry
+- [ ] Automatically creates/updates daily note
+- [ ] Can snooze or skip
+- [ ] Mood streak tracking
+
+**Technical Requirements:**
+- ❌ **No Backend Required** - Local notifications
+- Local notification scheduling
+- Daily check logic
+- Integration with DailyNote model
+
+---
+
+#### Widget Variations 📲 **[NO BACKEND]**
+**Purpose:** Multiple widget sizes and styles
+
+**Widget Types:**
+- [ ] **Small Widget:** Today's task count + next task
+- [ ] **Medium Widget:** Next 3-5 tasks with checkboxes
+- [ ] **Large Widget:** Full day view with all tasks
+- [ ] **Habit Streak Widget:** Show habit streaks
+- [ ] **Focus Widget:** Current focus task timer
+- [ ] **Mood Widget:** Weekly mood calendar
+- [ ] **Priority Widget:** High priority tasks only
+
+**Technical Requirements:**
+- ❌ **No Backend Required** - WidgetKit framework
+- WidgetKit framework
+- Timeline provider
+- Widget intents for configuration
+- Different widget families
+
+---
+
+## 7.1 Backend Requirements Summary
+
+### Features That REQUIRE Backend Server 🔴
+
+These features cannot be implemented without a backend server:
+
+1. **Share Subtype Feature** 🌐
+   - REST API for sharing
+   - Database to store shared data
+   - Web app to view shared links
+   - User authentication for "copy as template"
+
+2. **Background Images (Premium)** 🎨
+   - Image CDN/Storage (S3, CloudFront)
+   - Admin panel for uploading images
+   - Database for premium image catalog
+   - Purchase tracking and entitlements
+
+3. **AI Integration** 🤖 (Already Planned)
+   - AI API calls (OpenAI/Claude)
+   - Credit system tracking
+   - Usage limits and throttling
+
+4. **User Authentication & Sync** 👤 (Already Planned)
+   - User accounts
+   - CloudKit or custom sync
+   - Multi-device data sync
+
+### Features With OPTIONAL Backend 🟡
+
+These can work locally but benefit from backend:
+
+1. **Speech to Task** 🎤
+   - Can use iOS Speech framework locally
+   - Backend improves AI parsing accuracy
+
+2. **Expense Tracking** 💰
+   - Can use SwiftData locally
+   - Backend enables cross-device sync and analytics
+
+3. **Dashboard & Analytics** 📊
+   - Can work with local data
+   - Backend provides ML insights and advanced analytics
+
+### Features With NO Backend Needed 🟢
+
+These work entirely on-device:
+
+1. **iOS Calendar Sync** 📅 - EventKit
+2. **Siri Integration** 🗣️ - SiriKit/App Intents
+3. **Dark Mode Enhancements** 🌙 - SwiftUI
+4. **Period Tracking** 🌸 - Local + HealthKit
+5. **Focus Mode Live Activity** 📱 - ActivityKit
+6. **Daily Mood Popup** 😊 - Local Notifications
+7. **Widget Variations** 📲 - WidgetKit
+
+### Recommended Backend Stack
+
+When you're ready to build the backend, here's the recommended stack:
+
+**Option 1: Serverless (Recommended for MVP)**
+- **Platform:** AWS Amplify or Firebase
+- **API:** AWS Lambda + API Gateway OR Firebase Functions
+- **Database:** DynamoDB OR Firestore
+- **Storage:** S3 + CloudFront
+- **Auth:** Cognito OR Firebase Auth
+- **Benefits:** Low cost, auto-scaling, fast development
+
+**Option 2: Traditional Server**
+- **Platform:** Node.js/Express OR Python/FastAPI
+- **Database:** PostgreSQL
+- **Storage:** AWS S3 + CloudFront
+- **Auth:** JWT + OAuth
+- **Hosting:** Railway, Render, or DigitalOcean
+- **Benefits:** More control, easier debugging
+
+**Option 3: Hybrid (Best of Both)**
+- **CloudKit** for user data sync (free for < 1M users)
+- **Serverless functions** for AI, sharing, premium features
+- **S3/CDN** for images
+- **Benefits:** Leverage free CloudKit, add premium features as needed
+
+### Backend Development Priority
+
+**Phase 1 (MVP):**
+- User authentication (Apple Sign In)
+- CloudKit sync for basic data
+
+**Phase 2 (Post-Launch):**
+- AI integration API
+- Credit system
+
+**Phase 3 (Growth):**
+- Share feature API + web viewer
+- Premium background images API
+
+**Phase 4 (Scale):**
+- Advanced analytics backend
+- ML-powered insights
+
+---
+
 ## 8. Roadmap
 
 ### Next Up (Sprint 12-14: Weeks 12-14)
@@ -663,16 +1031,24 @@ Tasks:
 ### Should Have (High Value)
 - ⏭️ Advanced filtering
 - ⏭️ Search functionality
-- ⏭️ Analytics/insights
+- ⏭️ Dashboard & Analytics 📊
 - ⏭️ Export data
-- ⏭️ Themes/customization
+- ⏭️ Widget Variations 📲 (Small, Medium, Large, Habit Streak, Focus, Mood, Priority)
+- ⏭️ Background Images 🎨 (Free + Premium packs)
+- ⏭️ Focus Mode Live Activity 📱
+- ⏭️ Daily Mood Popup 😊
+- ⏭️ Share Subtype Feature 🌐
 
 ### Nice to Have (Future)
-- ⏭️ Collaboration/sharing
-- ⏭️ Widget support
+- ⏭️ iOS Calendar Sync 📅
+- ⏭️ Speech to Task 🎤
+- ⏭️ Siri Integration 🗣️
+- ⏭️ Dark Mode Enhancements 🌙
+- ⏭️ Expense Tracking 💰
+- ⏭️ Period Tracking 🌸
 - ⏭️ Apple Watch app
-- ⏭️ Siri shortcuts
 - ⏭️ iPad optimization
+- ⏭️ Icon auto-suggestion
 
 ---
 
@@ -745,5 +1121,5 @@ This is a living document. For questions about features or development:
 
 ---
 
-**Last Updated:** December 15, 2024
+**Last Updated:** December 18, 2024
 **Next Review:** After AI Integration (Sprint 12-14)

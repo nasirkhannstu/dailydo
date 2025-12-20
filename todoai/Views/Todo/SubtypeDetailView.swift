@@ -656,28 +656,28 @@ struct TodoRowView: View {
                         .lineLimit(2)
                 }
 
-                // Due Date
-                if let dueDate = todo.dueDate {
-                    HStack(spacing: 4) {
-                        Image(systemName: "calendar")
-                        Text(dueDate.formatted(date: .abbreviated, time: .omitted))
-                        if let dueTime = todo.dueTime {
-                            Text(dueTime.formatted(date: .omitted, time: .shortened))
+                // Due Date and Recurring Type (inline)
+                HStack(spacing: 8) {
+                    if let dueDate = todo.dueDate {
+                        HStack(spacing: 4) {
+                            Image(systemName: "calendar")
+                            Text(dueDate.formatted(date: .abbreviated, time: .omitted))
+                            if let dueTime = todo.dueTime {
+                                Text(dueTime.formatted(date: .omitted, time: .shortened))
+                            }
                         }
+                        .foregroundStyle(.black)
                     }
-                    .font(.caption2)
-                    .foregroundStyle(todo.isOverdue ? .red : .blue)
-                }
 
-                // Recurring indicator
-                if todo.recurringType != .dueDate && todo.recurringType != .oneTime {
-                    HStack(spacing: 4) {
-                        Image(systemName: "repeat")
-                        Text(todo.recurringType.displayName)
+                    if todo.recurringType != .dueDate && todo.recurringType != .oneTime {
+                        HStack(spacing: 4) {
+                            Image(systemName: "repeat")
+                            Text(todo.recurringType.displayName)
+                        }
+                        .foregroundStyle(.purple)
                     }
-                    .font(.caption2)
-                    .foregroundStyle(.purple)
                 }
+                .font(.caption2)
 
                 // Subtasks indicator
                 if !todo.subtasks.isEmpty {
@@ -716,6 +716,7 @@ struct TodoRowView: View {
             .buttonStyle(.plain)
         }
         .padding(.vertical, 4)
+        .contentShape(Rectangle())
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button(role: .destructive) {
                 // Delete handled by parent

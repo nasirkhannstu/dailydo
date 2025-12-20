@@ -481,99 +481,7 @@ struct CalendarView: View {
 
                 // Quick Actions
                 HStack(spacing: 12) {
-                    // Priority quick filters in ScrollView
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            // All button
-                            Button {
-                                withAnimation {
-                                    selectedPriorityFilter = .all
-                                }
-                            } label: {
-                                Text("All")
-                                    .font(.caption)
-                                    .fontWeight(selectedPriorityFilter == .all ? .semibold : .regular)
-                                    .foregroundStyle(selectedPriorityFilter == .all ? .white : .gray)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(
-                                        Capsule()
-                                            .fill(selectedPriorityFilter == .all ? Color.blue : Color.gray.opacity(0.2))
-                                    )
-                            }
-
-                            Button {
-                                withAnimation {
-                                    selectedPriorityFilter = selectedPriorityFilter == .high ? .all : .high
-                                }
-                            } label: {
-                                Circle()
-                                    .fill(selectedPriorityFilter == .high ? Color.red : Color.red.opacity(0.3))
-                                    .frame(width: 24, height: 24)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(selectedPriorityFilter == .high ? Color.red : Color.clear, lineWidth: 2)
-                                            .padding(-2)
-                                    )
-                            }
-
-                            Button {
-                                withAnimation {
-                                    selectedPriorityFilter = selectedPriorityFilter == .medium ? .all : .medium
-                                }
-                            } label: {
-                                Circle()
-                                    .fill(selectedPriorityFilter == .medium ? Color.orange : Color.orange.opacity(0.3))
-                                    .frame(width: 24, height: 24)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(selectedPriorityFilter == .medium ? Color.orange : Color.clear, lineWidth: 2)
-                                            .padding(-2)
-                                    )
-                            }
-
-                            Button {
-                                withAnimation {
-                                    selectedPriorityFilter = selectedPriorityFilter == .low ? .all : .low
-                                }
-                            } label: {
-                                Circle()
-                                    .fill(selectedPriorityFilter == .low ? Color.green : Color.green.opacity(0.3))
-                                    .frame(width: 24, height: 24)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(selectedPriorityFilter == .low ? Color.green : Color.clear, lineWidth: 2)
-                                            .padding(-2)
-                                    )
-                            }
-
-                            // None button
-                            Button {
-                                withAnimation {
-                                    selectedPriorityFilter = selectedPriorityFilter == .none ? .all : .none
-                                }
-                            } label: {
-                                Circle()
-                                    .fill(selectedPriorityFilter == .none ? Color.gray : Color.gray.opacity(0.3))
-                                    .frame(width: 24, height: 24)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(selectedPriorityFilter == .none ? Color.gray : Color.clear, lineWidth: 2)
-                                            .padding(-2)
-                                    )
-                            }
-
-                            Button {
-                                showingFilterSheet = true
-                            } label: {
-                                Image(systemName: "line.3.horizontal.decrease.circle")
-                                    .font(.title3)
-                                    .foregroundStyle(.blue)
-                            }
-                        }
-                        .padding(.leading, 8)
-                    }
-
+                    // Today button on the left
                     if !calendar.isDateInToday(selectedDate) {
                         Button {
                             withAnimation {
@@ -588,6 +496,49 @@ struct CalendarView: View {
                                     .font(.caption)
                             }
                             .foregroundStyle(.blue)
+                        }
+                    }
+
+                    Spacer()
+
+                    // Priority quick filters on the right
+                    HStack(spacing: 8) {
+                        // Cycling priority filter button
+                        Button {
+                            withAnimation {
+                                switch selectedPriorityFilter {
+                                case .all:
+                                    selectedPriorityFilter = .high
+                                case .high:
+                                    selectedPriorityFilter = .medium
+                                case .medium:
+                                    selectedPriorityFilter = .low
+                                case .low:
+                                    selectedPriorityFilter = .none
+                                case .none:
+                                    selectedPriorityFilter = .all
+                                }
+                            }
+                        } label: {
+                            Text(priorityFilterLabel())
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(
+                                    Capsule()
+                                        .fill(priorityFilterColor())
+                                )
+                        }
+
+                        Button {
+                            showingFilterSheet = true
+                        } label: {
+                            Text("Filter")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.blue)
                         }
                     }
                 }
@@ -628,7 +579,17 @@ struct CalendarView: View {
                                     focusedTodo = todo
                                 },
                                 onTap: {
-                                    selectedTodo = todo
+                                    // If this is a completion instance, navigate to parent template
+                                    if todo.isCompletionInstance,
+                                       let parentId = todo.parentRecurringTodoId,
+                                       let parent = allTodos.first(where: { $0.id == parentId }) {
+                                        selectedTodo = parent
+                                    } else {
+                                        selectedTodo = todo
+                                    }
+                                },
+                                onFocusSwipe: {
+                                    focusedTodo = todo
                                 }
                             )
                             .listRowBackground(Color.clear)
@@ -645,9 +606,14 @@ struct CalendarView: View {
                             showingDailyNote = true
                         } label: {
                             HStack(spacing: 8) {
-                                Image(systemName: "note.text")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.white)
+                                if let note = noteForSelectedDate {
+                                    Text(note.noteMood.emoji)
+                                        .font(.title3)
+                                } else {
+                                    Image(systemName: "note.text")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.white)
+                                }
 
                                 Text("Daily Note")
                                     .font(.subheadline)
@@ -971,6 +937,36 @@ struct CalendarView: View {
         }
     }
 
+    private func priorityFilterColor() -> Color {
+        switch selectedPriorityFilter {
+        case .high:
+            return .red
+        case .medium:
+            return .orange
+        case .low:
+            return .green
+        case .none:
+            return .gray
+        case .all:
+            return .blue
+        }
+    }
+
+    private func priorityFilterLabel() -> String {
+        switch selectedPriorityFilter {
+        case .high:
+            return "High"
+        case .medium:
+            return "Medium"
+        case .low:
+            return "Low"
+        case .none:
+            return "None"
+        case .all:
+            return "All"
+        }
+    }
+
     private var monthYearText: String {
         let referenceDate = currentWeekDates[3] // Middle of week
         let formatter = DateFormatter()
@@ -1049,6 +1045,7 @@ struct TodoCalendarRow: View {
     let completionDate: Date
     let onFocus: () -> Void
     let onTap: () -> Void
+    let onFocusSwipe: () -> Void
 
     var isHabit: Bool {
         todo.subtype?.type == .habit
@@ -1068,12 +1065,22 @@ struct TodoCalendarRow: View {
     }
 
     var body: some View {
-        if isHabit {
-            // Simple flat design for Habits
-            habitRow
-        } else {
-            // Card design for Plans and Lists
-            planListRow
+        Group {
+            if isHabit {
+                // Simple flat design for Habits
+                habitRow
+            } else {
+                // Card design for Plans and Lists
+                planListRow
+            }
+        }
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button {
+                onFocusSwipe()
+            } label: {
+                Image(systemName: "scope")
+            }
+            .tint(.purple)
         }
     }
 
@@ -1090,10 +1097,7 @@ struct TodoCalendarRow: View {
                 .frame(width: 8)
 
             // White card with content
-            Button {
-                onTap()
-            } label: {
-                HStack(spacing: 0) {
+            HStack(spacing: 0) {
                     // Time with AM/PM
                     if let dueTime = todo.dueTime {
                         VStack(alignment: .center, spacing: 1) {
@@ -1177,8 +1181,7 @@ struct TodoCalendarRow: View {
                         .stroke(Color.blue.opacity(0.1), lineWidth: 1)
                 )
                 .shadow(color: Color(.systemGray4).opacity(0.2), radius: 2, x: 0, y: 1)
-            }
-            .buttonStyle(.plain)
+                .onTapGesture(perform: onTap)
             .padding(.vertical, 4)
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 32, bottom: 0, trailing: 16))
@@ -1188,10 +1191,7 @@ struct TodoCalendarRow: View {
 
     // MARK: - Plan/List Row (Card)
     private var planListRow: some View {
-        Button {
-            onTap()
-        } label: {
-            HStack(alignment: .center, spacing: 0) {
+        HStack(alignment: .center, spacing: 0) {
                 // Time on the left with full-height gray background
                 if let dueTime = todo.dueTime {
                     VStack(spacing: 2) {
@@ -1303,8 +1303,7 @@ struct TodoCalendarRow: View {
             )
             .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
             .contentShape(RoundedRectangle(cornerRadius: 16))
-        }
-        .buttonStyle(.plain)
+            .onTapGesture(perform: onTap)
     }
 
     private func handleCompletion() {

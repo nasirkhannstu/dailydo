@@ -107,7 +107,7 @@ struct DailyNoteView: View {
 
                 // How was your day + Mood Picker
                 VStack(spacing: 12) {
-                    Text("How was your day?")
+                    Text("How was your day (Mood)?")
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .foregroundStyle(.white.opacity(0.9))
@@ -217,6 +217,9 @@ struct DailyNoteView: View {
                 initialMood = note.noteMood
                 let hasText = !note.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 userSelectedMood = (note.noteMood != .neutral) || hasText
+
+                // Auto-focus the text editor
+                isEditorFocused = true
             }
             .onDisappear {
                 finalSave()

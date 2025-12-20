@@ -19,17 +19,17 @@ enum NoteMood: String, Codable, CaseIterable {
     var color: Color {
         switch self {
         case .happy:
-            return Color(red: 0.2, green: 0.8, blue: 0.4) // Green
+            return Color(red: 0.4, green: 0.8, blue: 0.4) // Vibrant green - joyful and energetic
         case .calm:
-            return Color(red: 0.4, green: 0.7, blue: 0.9) // Light blue
+            return Color(red: 0.596, green: 0.875, blue: 0.596) // Soft pastel green - peaceful and gentle
         case .neutral:
-            return Color(red: 0.6, green: 0.6, blue: 0.6) // Gray
+            return Color(red: 0.506, green: 0.631, blue: 0.757) // Soft blue-gray - calm and balanced
         case .sad:
-            return Color(red: 0.4, green: 0.5, blue: 0.8) // Soft blue
+            return Color(red: 0.878, green: 0.478, blue: 0.373) // Soft coral - warmer, less harsh
         case .stressed:
-            return Color(red: 0.9, green: 0.6, blue: 0.3) // Orange
+            return Color(red: 1.0, green: 0.647, blue: 0.4) // Cute orange - warm and approachable
         case .angry:
-            return Color(red: 0.9, green: 0.3, blue: 0.3) // Red
+            return Color(red: 1.0, green: 0.4, blue: 0.5) // Cute red - soft and less aggressive
         }
     }
 

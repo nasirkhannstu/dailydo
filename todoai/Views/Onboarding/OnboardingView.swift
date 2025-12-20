@@ -23,6 +23,7 @@ struct OnboardingView: View {
     let pages: [OnboardingPage] = [
         OnboardingPage(
             icon: "repeat.circle.fill",
+            imageName: "HabitOnboarding",
             title: "Build Lasting Habits",
             benefits: [
                 "Track daily routines with ease",
@@ -35,6 +36,7 @@ struct OnboardingView: View {
         ),
         OnboardingPage(
             icon: "calendar.badge.checkmark",
+            imageName: "PlanOnboarding",
             title: "Plan Future, Focus Today",
             benefits: [
                 "Break down big goals into actionable tasks",
@@ -47,6 +49,7 @@ struct OnboardingView: View {
         ),
         OnboardingPage(
             icon: "list.clipboard.fill",
+            imageName: "ListOnboarding",
             title: "Stay Organized",
             benefits: [
                 "Create custom lists for anything",
@@ -59,6 +62,7 @@ struct OnboardingView: View {
         ),
         OnboardingPage(
             icon: "calendar",
+            imageName: "CalendarOnboarding",
             title: "See Your Day at a Glance",
             benefits: [
                 "Visualize all tasks in one place",
@@ -94,35 +98,8 @@ struct OnboardingView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Skip button
-                HStack {
-                    Spacer()
-                    if showSkipButton && currentPage < totalPages - 1 {
-                        Button {
-                            skipOnboarding()
-                        } label: {
-                            Text("Skip")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                        }
-                        .transition(.opacity.combined(with: .move(edge: .top)))
-                    }
-                }
-                .frame(height: 44)
-                .padding(.horizontal, 16)
-
-                // Page indicator dots
-                HStack(spacing: 8) {
-                    ForEach(0..<totalPages, id: \.self) { index in
-                        Circle()
-                            .fill(index == currentPage ? currentPageColor : Color.gray.opacity(0.3))
-                            .frame(width: index == currentPage ? 10 : 6, height: index == currentPage ? 10 : 6)
-                            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentPage)
-                    }
-                }
-                .padding(.vertical, 12)
+                Spacer()
+                    .frame(height: 44)
 
                 // Page content with custom gesture
                 GeometryReader { geometry in
@@ -165,8 +142,29 @@ struct OnboardingView: View {
                     )
                 }
 
-                // Bottom button
-                VStack(spacing: 20) {
+                // Bottom buttons (inline)
+                HStack(spacing: 16) {
+                    // Back button (only show if not on first page)
+                    if currentPage > 0 {
+                        Button {
+                            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                                currentPage -= 1
+                            }
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "arrow.left")
+                                Text("Back")
+                                    .font(.headline)
+                            }
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(currentPageColor.opacity(0.6))
+                            .cornerRadius(16)
+                        }
+                    }
+
+                    // Next or Get Started button
                     if currentPage == totalPages - 1 {
                         // Get Started button on last page
                         Button {
@@ -187,7 +185,6 @@ struct OnboardingView: View {
                                 .cornerRadius(16)
                                 .shadow(color: Color.indigo.opacity(0.4), radius: 8, x: 0, y: 4)
                         }
-                        .padding(.horizontal, 32)
                     } else {
                         // Next button
                         Button {
@@ -211,9 +208,9 @@ struct OnboardingView: View {
                             .cornerRadius(16)
                             .shadow(color: currentPageColor.opacity(0.4), radius: 8, x: 0, y: 4)
                         }
-                        .padding(.horizontal, 32)
                     }
                 }
+                .padding(.horizontal, 32)
                 .padding(.bottom, 32)
             }
         }
@@ -315,13 +312,24 @@ struct OnboardingPageView: View {
         VStack(spacing: 32) {
             Spacer()
 
-            // Icon with floating animation
-            Image(systemName: page.icon)
-                .font(.system(size: 80))
-                .foregroundStyle(page.color)
-                .padding(.bottom, 10)
-                .offset(y: offset * 0.5)
-                .shadow(color: page.color.opacity(0.3), radius: 20, x: 0, y: 10)
+            // Image with floating animation
+            if let imageName = page.imageName {
+                Image(imageName)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 280, height: 280)
+                    .cornerRadius(40)
+                    .shadow(color: page.color.opacity(0.3), radius: 20, x: 0, y: 10)
+                    .offset(y: offset * 0.5)
+            } else {
+                // Fallback to icon if no image
+                Image(systemName: page.icon)
+                    .font(.system(size: 80))
+                    .foregroundStyle(page.color)
+                    .padding(.bottom, 10)
+                    .offset(y: offset * 0.5)
+                    .shadow(color: page.color.opacity(0.3), radius: 20, x: 0, y: 10)
+            }
 
             // Title
             Text(page.title)
@@ -536,9 +544,18 @@ struct PurposeSelectionView: View {
 
 struct OnboardingPage {
     let icon: String
+    let imageName: String?
     let title: String
     let benefits: [String]
     let color: Color
+
+    init(icon: String, imageName: String? = nil, title: String, benefits: [String], color: Color) {
+        self.icon = icon
+        self.imageName = imageName
+        self.title = title
+        self.benefits = benefits
+        self.color = color
+    }
 }
 
 #Preview {

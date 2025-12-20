@@ -19,11 +19,33 @@ struct TodoDetailView: View {
     @State private var showingAddSubtask = false
     @State private var newSubtaskTitle = ""
     @State private var notificationService = NotificationService.shared
+    @State private var showingDeleteConfirmation = false
+    @State private var showingFocusMode = false
 
     private var completionInstances: [TodoItem] {
         guard todo.isRecurringTemplate else { return [] }
         return allTodos.filter { $0.parentRecurringTodoId == todo.id }
             .sorted { ($0.dueDate ?? Date()) > ($1.dueDate ?? Date()) }
+    }
+
+    private var deleteWarningMessage: String {
+        var warnings: [String] = []
+
+        // Check for subtasks
+        if !todo.subtasks.isEmpty {
+            warnings.append("\(todo.subtasks.count) subtask\(todo.subtasks.count == 1 ? "" : "s")")
+        }
+
+        // Check for completion history
+        if todo.isRecurringTemplate && !completionInstances.isEmpty {
+            warnings.append("\(completionInstances.count) completion record\(completionInstances.count == 1 ? "" : "s")")
+        }
+
+        if warnings.isEmpty {
+            return "Are you sure you want to delete this task?"
+        } else {
+            return "This will also delete \(warnings.joined(separator: " and ")). Are you sure?"
+        }
     }
 
     var body: some View {
@@ -242,6 +264,20 @@ struct TodoDetailView: View {
                     Label("Show in Calendar", systemImage: "calendar")
                         .foregroundStyle(.secondary)
                 }
+
+                // Focus Button
+                Button {
+                    startFocusMode()
+                } label: {
+                    HStack {
+                        Label("Focus Mode", systemImage: "scope")
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .foregroundStyle(.primary)
             }
 
                 // MARK: - Created Date Section
@@ -261,7 +297,7 @@ struct TodoDetailView: View {
                 Section {
                 // Delete Todo
                 Button(role: .destructive) {
-                    deleteTodo()
+                    showingDeleteConfirmation = true
                 } label: {
                     Label("Delete Task", systemImage: "trash")
                 }
@@ -299,6 +335,15 @@ struct TodoDetailView: View {
                                     }
 
                                     Spacer()
+
+                                    Button(role: .destructive) {
+                                        deleteCompletionInstance(completion)
+                                    } label: {
+                                        Image(systemName: "trash")
+                                            .foregroundStyle(.red)
+                                            .font(.subheadline)
+                                    }
+                                    .buttonStyle(.plain)
                                 }
                             }
                         }
@@ -309,6 +354,27 @@ struct TodoDetailView: View {
         .navigationTitle(todo.isCompletionInstance ? "Completed Task" : "Task Details")
         .navigationBarTitleDisplayMode(.inline)
         .disabled(todo.isCompletionInstance)
+        .alert("Delete Task", isPresented: $showingDeleteConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                deleteTodo()
+            }
+        } message: {
+            Text(deleteWarningMessage)
+        }
+        .fullScreenCover(isPresented: $showingFocusMode) {
+            if let dueDate = todo.dueDate {
+                let todosForDay = allTodos.filter { otherTodo in
+                    guard let otherDueDate = otherTodo.dueDate else { return false }
+                    return Calendar.current.isDate(otherDueDate, inSameDayAs: dueDate) && !otherTodo.completed
+                }
+                FocusView(
+                    initialTodo: todo,
+                    allTodosForDay: todosForDay,
+                    onDismiss: { showingFocusMode = false }
+                )
+            }
+        }
         .sheet(isPresented: $showingAddSubtask) {
             NavigationStack {
                 Form {
@@ -362,9 +428,26 @@ struct TodoDetailView: View {
         }
     }
 
+    private func deleteCompletionInstance(_ completion: TodoItem) {
+        modelContext.delete(completion)
+    }
+
+    private func startFocusMode() {
+        showingFocusMode = true
+    }
+
     private func deleteTodo() {
         // Cancel notification before deleting
         notificationService.cancelNotification(for: todo)
+
+        // If this is a recurring template, delete all completion instances first
+        if todo.isRecurringTemplate {
+            for completion in completionInstances {
+                modelContext.delete(completion)
+            }
+        }
+
+        // Delete the todo itself (this will cascade delete subtasks via @Relationship)
         modelContext.delete(todo)
         dismiss()
     }

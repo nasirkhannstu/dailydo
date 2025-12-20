@@ -1,8 +1,8 @@
 # DailyDo Backend Server & Features
 ## Architecture & Implementation Reference
 
-**Version:** 1.0
-**Last Updated:** December 5, 2025
+**Version:** 1.1
+**Last Updated:** December 18, 2024
 **Purpose:** Complete backend feature specification and implementation guide
 
 ---
@@ -14,16 +14,17 @@
 4. [AI Credits Management](#ai-credits-management)
 5. [Subscription Management](#subscription-management)
 6. [Sharing System](#sharing-system)
-7. [Referral/Affiliate Program](#referralaffiliate-program)
-8. [Purchase Validation](#purchase-validation)
-9. [Analytics & Tracking](#analytics--tracking)
-10. [Admin Dashboard](#admin-dashboard)
-11. [Database Schema](#database-schema)
-12. [API Endpoints](#api-endpoints)
-13. [Technology Stack](#technology-stack)
-14. [Implementation Phases](#implementation-phases)
-15. [Security Considerations](#security-considerations)
-16. [Scaling Strategy](#scaling-strategy)
+7. [**NEW** Background Images Management](#background-images-management)
+8. [Referral/Affiliate Program](#referralaffiliate-program)
+9. [Purchase Validation](#purchase-validation)
+10. [Analytics & Tracking](#analytics--tracking)
+11. [Admin Dashboard](#admin-dashboard)
+12. [Database Schema](#database-schema)
+13. [API Endpoints](#api-endpoints)
+14. [Technology Stack](#technology-stack)
+15. [Implementation Phases](#implementation-phases)
+16. [Security Considerations](#security-considerations)
+17. [Scaling Strategy](#scaling-strategy)
 
 ---
 
@@ -243,28 +244,39 @@ Manage premium subscriptions and unlock features.
 ## Sharing System
 
 ### Purpose
-Allow users to share subtypes (habits/plans/lists) via read-only links with time-based expiry.
+Allow users to share subtypes (habits/plans/lists) via web link with advanced permissions.
 
-### Features
+### Features (UPDATED December 2024)
 - Generate shareable link for any subtype
-- Read-only access (no editing)
-- Time-based expiry (1 hour, 1 day, 1 week, 1 month)
+- **Permission levels:**
+  - **View Only** - Recipients can only read (no editing)
+  - **Passcode Protected** - Require 4-6 digit passcode to view
+  - **Copy as Template** - Recipients can copy to their own DailyDo account (requires login)
+- Time-based expiry (1 hour, 1 day, 1 week, 1 month, never)
 - Automatic deletion after expiry
-- View counter
-- Public access (no login required to view)
+- View counter and analytics
+- Public access (no login required for view-only)
+- Share via multiple channels (Message, Email, Link copy)
 
 ### Implementation Approach
 1. User selects subtype to share in iOS app
-2. User chooses expiry duration
-3. iOS sends subtype ID and duration to backend
+2. User configures share settings:
+   - Permission level (View Only / Passcode / Copy Template)
+   - Expiry duration (1h, 1d, 1w, 1m, never)
+   - Optional passcode (if Passcode Protected selected)
+3. iOS sends request to backend with settings
 4. Backend copies subtype + todos snapshot to database
 5. Backend generates unique share token
 6. Backend calculates expiry timestamp
-7. Backend returns shareable URL
-8. iOS displays link (copy/send via share sheet)
-9. Recipient opens link in browser or app
-10. Backend serves read-only view of data
-11. Link expires and data auto-deleted after duration
+7. Backend stores permission settings
+8. Backend returns shareable URL
+9. iOS displays link with share sheet
+10. Recipient opens link in browser or app
+11. Backend checks permission level:
+    - **View Only:** Display read-only web view
+    - **Passcode:** Prompt for passcode, then show view
+    - **Copy Template:** Require login, allow copy to user's account
+12. Link expires and data auto-deleted after duration (if set)
 
 ### Sharing Durations
 - 1 hour: Quick temporary share
@@ -299,6 +311,140 @@ Allow users to share subtypes (habits/plans/lists) via read-only links with time
 - Clean read-only interface
 - Branded footer with DailyDo logo
 - "Get DailyDo" call-to-action
+- Copy to DailyDo button (for logged-in users with Copy Template permission)
+
+---
+
+## Background Images Management
+
+### Purpose
+Provide customizable background images for app views with free and premium options.
+
+### Features
+- Free background image library (10-15 images)
+- Premium images (individual purchase via IAP)
+- Admin panel to upload and manage images
+- Image CDN delivery for fast loading
+- User preference storage (per subtype or global)
+- Categories and collections
+- Preview before applying
+- Download and cache management
+
+### Image Categories
+- **Nature:** Mountains, beaches, forests, sunsets
+- **Abstract:** Gradients, patterns, geometric shapes
+- **Minimal:** Solid colors, subtle textures
+- **Seasonal:** Spring, summer, fall, winter themes
+- **Premium Collections:** Exclusive curated packs
+
+### Implementation Approach
+
+**Admin Upload Flow:**
+1. Admin logs into admin dashboard
+2. Navigate to Background Images section
+3. Upload image file (JPG/PNG, max 5MB)
+4. Set metadata:
+   - Name
+   - Category
+   - Is Premium (free or paid)
+   - Price (if premium - individual price)
+   - Product ID (StoreKit identifier)
+   - Tags
+5. Backend validates image
+6. Backend uploads to S3/CDN
+7. Backend creates database record
+8. Image appears in admin panel and iOS app
+
+**iOS App Flow:**
+1. User opens Settings → Background Images
+2. iOS fetches image catalog from backend
+3. Display grid with free and premium images
+4. Free images: Download and apply immediately
+5. Premium images: Show individual price, require purchase
+6. User selects image
+7. iOS downloads and caches image
+8. User applies to specific subtype or globally
+9. Backend saves user's preference
+
+**Purchase Flow (Individual Premium Images):**
+1. User browses image gallery
+2. User taps on premium image
+3. Shows preview with price (e.g., $0.99, $1.99)
+4. User taps "Purchase" button
+5. StoreKit processes payment for individual image
+6. iOS sends receipt to backend
+7. Backend validates receipt
+8. Backend unlocks that specific image for user
+9. iOS downloads the image
+10. User can now apply purchased background
+
+### Data Storage
+
+**Backend Database:**
+- Image metadata (ID, URL, category, premium status, individual price, product ID)
+- User purchases (which individual images user owns)
+- User preferences (which image applied to which subtype)
+
+**iOS Local:**
+- Downloaded images cached locally
+- User preferences synced via CloudKit
+- Automatic cache cleanup for unused images
+
+### CDN Strategy
+- Store images on S3 or CloudFlare R2
+- Serve via CloudFront or CloudFlare CDN
+- Multiple resolutions (thumbnail, preview, full)
+- Optimized formats (WebP for web, HEIC for iOS)
+- Lazy loading and progressive enhancement
+
+### Premium Image Pricing
+- **Standard Premium:** $0.99 per image
+- **Premium Collection:** $1.99 per image (higher quality/exclusive)
+- **Seasonal Special:** $0.99 per image
+- All purchases are one-time, not subscriptions
+- User owns image forever after purchase
+
+### Admin Dashboard Features
+- Upload new images
+- Edit image metadata (name, category, price, premium status)
+- Delete images
+- View download statistics
+- Set individual image pricing
+- View purchase analytics
+- Bulk upload support
+- Toggle free/premium status
+
+### Technical Requirements
+- **Storage:** AWS S3 or CloudFlare R2
+- **CDN:** CloudFront or CloudFlare
+- **Image Processing:** Sharp (Node.js) or Pillow (Python)
+- **Formats:** JPG, PNG, WebP
+- **Max Size:** 5MB per image
+- **Resolutions:** Thumbnail (200x200), Preview (800x600), Full (1920x1080+)
+
+### Security
+- Signed URLs for premium content
+- Validate user ownership before serving premium images
+- Rate limiting on downloads
+- Prevent hotlinking
+- Watermark prevention (images tied to user account)
+
+### API Endpoints
+- GET /api/images/catalog - List all available images
+- GET /api/images/:id - Get specific image details
+- GET /api/images/user-purchases - Get user's purchased images
+- GET /api/images/user-preferences - Get user's saved preferences
+- POST /api/images/set-preference - Save user's image preference
+- POST /api/images/purchase - Validate individual image purchase
+- GET /api/images/download/:id - Download image (premium check)
+
+### Admin API Endpoints
+- POST /api/admin/images/upload - Upload new image
+- PUT /api/admin/images/:id - Update image metadata (including price)
+- DELETE /api/admin/images/:id - Delete image
+- GET /api/admin/images/stats - View download/purchase stats
+- PATCH /api/admin/images/:id/price - Update individual image price
+- PATCH /api/admin/images/:id/toggle-premium - Toggle free/premium status
 
 ---
 
@@ -501,6 +647,9 @@ Internal tool for monitoring, managing users, and viewing analytics.
 - Refund purchases
 - View transaction history
 - Export data
+- **Upload and manage background images** (NEW)
+- **Create premium image packs** (NEW)
+- **View image download statistics** (NEW)
 
 ### Analytics Views
 - Real-time dashboard
@@ -573,15 +722,18 @@ Internal tool for monitoring, managing users, and viewing analytics.
 - currency (string)
 - created_at
 
-**shared_subtypes**
+**shared_subtypes** (UPDATED)
 - id (UUID, primary key)
 - user_id (foreign key → users, owner)
 - share_token (string, unique, indexed)
 - subtype_snapshot (JSON)
-- duration (enum: 1_hour, 1_day, 1_week, 1_month)
+- permission_level (enum: view_only, passcode_protected, copy_template) - NEW
+- passcode_hash (string, nullable) - NEW
+- duration (enum: 1_hour, 1_day, 1_week, 1_month, never) - UPDATED
 - created_at
-- expires_at (indexed)
+- expires_at (indexed, nullable) - UPDATED (can be null if never expires)
 - view_count (integer, default 0)
+- copy_count (integer, default 0) - NEW
 - deleted_at (nullable)
 
 **referral_codes**
@@ -639,14 +791,57 @@ Internal tool for monitoring, managing users, and viewing analytics.
 - error_message (text, nullable)
 - created_at
 
+**background_images** (NEW)
+- id (UUID, primary key)
+- name (string)
+- description (text, nullable)
+- category (enum: nature, abstract, minimal, seasonal)
+- is_premium (boolean, default false)
+- price (decimal, nullable) - Individual price if premium
+- product_id (string, unique, nullable) - StoreKit product identifier if premium
+- thumbnail_url (string)
+- preview_url (string)
+- full_url (string)
+- file_size (integer, bytes)
+- width (integer)
+- height (integer)
+- tags (array of strings or JSON)
+- download_count (integer, default 0)
+- purchase_count (integer, default 0)
+- created_at
+- updated_at
+- deleted_at (nullable, soft delete)
+
+**user_image_purchases** (NEW)
+- id (UUID, primary key)
+- user_id (foreign key → users)
+- image_id (foreign key → background_images)
+- transaction_id (string, unique)
+- purchase_date
+- validated_at
+- created_at
+
+**user_image_preferences** (NEW)
+- id (UUID, primary key)
+- user_id (foreign key → users)
+- image_id (foreign key → background_images)
+- scope (enum: global, subtype_specific)
+- subtype_id (UUID, nullable) - References user's subtype if scope=subtype_specific
+- applied_at
+- created_at
+- updated_at
+
 ### Indexes
 - users: apple_id, email, referral_code
 - credit_transactions: user_id, created_at, transaction_type
 - subscriptions: user_id, status, expires_at
-- shared_subtypes: share_token, expires_at, user_id
+- shared_subtypes: share_token, expires_at, user_id, permission_level
 - referrals: referrer_id, referred_user_id, status
 - analytics_events: user_id, event_type, timestamp
 - device_sessions: user_id, device_id
+- background_images: category, is_premium, product_id, created_at (NEW)
+- user_image_purchases: user_id, image_id, transaction_id (NEW)
+- user_image_preferences: user_id, scope, subtype_id (NEW)
 
 ### Relationships
 - users ← credit_transactions (one to many)
@@ -655,6 +850,10 @@ Internal tool for monitoring, managing users, and viewing analytics.
 - users ← shared_subtypes (one to many)
 - users ← referrals (one to many, as referrer and referred)
 - users ← device_sessions (one to many)
+- users ← user_image_purchases (one to many) (NEW)
+- users ← user_image_preferences (one to many) (NEW)
+- background_images ← user_image_purchases (one to many) (NEW)
+- background_images ← user_image_preferences (one to many) (NEW)
 
 ---
 
@@ -683,11 +882,22 @@ Internal tool for monitoring, managing users, and viewing analytics.
 - POST /api/subscriptions/cancel
 - POST /api/subscriptions/webhook (Apple server notification)
 
-### Sharing
-- POST /api/share/create
-- GET /api/share/:token (public, no auth)
+### Sharing (UPDATED)
+- POST /api/share/create (now includes permission_level and passcode)
+- GET /api/share/:token (public, checks permission, may require passcode)
+- POST /api/share/:token/verify-passcode (verify passcode for protected shares)
+- POST /api/share/:token/copy-template (copy to user's account, requires auth)
 - DELETE /api/share/:shareId
 - GET /api/share/my-shares
+
+### Background Images (NEW)
+- GET /api/images/catalog - List all available images
+- GET /api/images/:id - Get specific image details
+- GET /api/images/user-purchases - Get user's purchased images
+- GET /api/images/user-preferences - Get user's saved preferences
+- POST /api/images/set-preference - Save user's image preference
+- POST /api/images/purchase - Validate individual image purchase
+- GET /api/images/download/:id - Download image (premium check)
 
 ### Referrals
 - GET /api/referrals/my-code
@@ -714,6 +924,14 @@ Internal tool for monitoring, managing users, and viewing analytics.
 - GET /api/admin/ai-costs
 - GET /api/admin/referrals
 - GET /api/admin/shares
+
+### Admin - Background Images (NEW)
+- POST /api/admin/images/upload - Upload new image
+- PUT /api/admin/images/:id - Update image metadata (including price)
+- DELETE /api/admin/images/:id - Delete image
+- GET /api/admin/images/stats - View download/purchase stats
+- PATCH /api/admin/images/:id/price - Update individual image price
+- PATCH /api/admin/images/:id/toggle-premium - Toggle free/premium status
 
 ### Health
 - GET /api/health
@@ -1123,7 +1341,8 @@ This document serves as the complete reference for DailyDo's backend architectur
 
 | Version | Date | Changes | Author |
 |---------|------|---------|--------|
-| 1.0 | 2025-12-05 | Initial complete specification | DailyDo Team |
+| 1.0 | 2024-12-05 | Initial complete specification | DailyDo Team |
+| 1.1 | 2024-12-18 | Added Background Images Management, Updated Sharing System with permissions (View Only/Passcode/Copy Template), Added new database tables and API endpoints | DailyDo Team |
 
 ---
 
