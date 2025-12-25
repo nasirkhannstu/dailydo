@@ -11,8 +11,11 @@ import SwiftData
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var users: [User]
+    @State private var notificationsEnabled = true
+    @State private var iCloudSyncEnabled = true
+    @State private var showCompletedTasks = true
+    @State private var autoDeleteCompleted = false
     @State private var showingResetAlert = false
-    @State private var showingProfileEditorSheet = false
 
     var currentUser: User? {
         users.first
@@ -20,116 +23,95 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                // Hero Banner Profile Section
+            Form {
+                // Notifications Section
                 Section {
-                    if let user = currentUser, user.hasCompletedOnboarding {
-                        ProfileHeroBanner(user: user) {
-                            showingProfileEditorSheet = true
-                        }
-                    } else {
-                        ProfileReminderCard {
-                            showingProfileEditorSheet = true
-                        }
+                    Toggle(isOn: $notificationsEnabled) {
+                        Label("Enable Notifications", systemImage: "bell.fill")
                     }
-                }
-                .listRowInsets(EdgeInsets())
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
 
-                // AI Credits Section
-                Section("AI Credits") {
-                    HStack {
-                        Label("Current Balance", systemImage: "sparkles")
-                        Spacer()
-                        Text("\(currentUser?.aiCreditBalance ?? 5) credits")
-                            .foregroundStyle(.secondary)
+                    if notificationsEnabled {
+                        NavigationLink(destination: Text("Notification Settings")) {
+                            Label("Notification Preferences", systemImage: "bell.badge")
+                        }
                     }
-                    Button {
-                        // Purchase credits
-                    } label: {
-                        Label("Purchase More Credits", systemImage: "cart")
-                    }
+                } header: {
+                    Text("Notifications")
+                } footer: {
+                    Text("Get reminded about your tasks and habits")
                 }
 
-                // Premium Section
-                Section("Premium") {
-                    Button {
-                        // Upgrade to premium
-                    } label: {
+                // Data & Sync Section
+                Section {
+                    Toggle(isOn: $iCloudSyncEnabled) {
+                        Label("iCloud Sync", systemImage: "icloud.fill")
+                    }
+
+                    NavigationLink(destination: Text("Data Management")) {
+                        Label("Manage Data", systemImage: "externaldrive")
+                    }
+                } header: {
+                    Text("Data & Sync")
+                } footer: {
+                    Text("Sync your tasks across all your devices")
+                }
+
+                // Display Preferences Section
+                Section {
+                    Toggle(isOn: $showCompletedTasks) {
+                        Label("Show Completed Tasks", systemImage: "checkmark.circle")
+                    }
+
+                    Toggle(isOn: $autoDeleteCompleted) {
+                        Label("Auto-delete Old Completed", systemImage: "trash")
+                    }
+                } header: {
+                    Text("Display")
+                } footer: {
+                    if autoDeleteCompleted {
+                        Text("Completed tasks older than 30 days will be automatically deleted")
+                    }
+                }
+
+                // Language & Region Section
+                Section("Language & Region") {
+                    NavigationLink(destination: Text("Language Settings")) {
                         HStack {
-                            Label("Upgrade to Premium", systemImage: "crown.fill")
+                            Label("Language", systemImage: "globe")
                             Spacer()
-                            Text("$4.99/month")
-                                .font(.caption)
+                            Text("English")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
+                    NavigationLink(destination: Text("Date Format")) {
+                        HStack {
+                            Label("Date Format", systemImage: "calendar")
+                            Spacer()
+                            Text("MM/DD/YYYY")
                                 .foregroundStyle(.secondary)
                         }
                     }
                 }
 
-                // Customization Section
-                Section("Customization") {
-                    NavigationLink(destination: Text("Colors")) {
-                        Label("My Colors", systemImage: "paintpalette")
-                    }
-                    NavigationLink(destination: Text("Textures")) {
-                        Label("My Textures", systemImage: "square.grid.3x3")
-                    }
-                    NavigationLink(destination: Text("Themes")) {
-                        Label("My Themes", systemImage: "rectangle.fill")
-                    }
-                }
-
-                // Help & Support Section
-                Section("Help & Support") {
-                    NavigationLink(destination: FeatureGuideView()) {
-                        Label("Features Guide", systemImage: "book.fill")
-                    }
-                }
-
-                // App Settings Section
-                Section("App Settings") {
-                    NavigationLink(destination: Text("Notifications")) {
-                        Label("Notifications", systemImage: "bell")
-                    }
-                    NavigationLink(destination: Text("Sync")) {
-                        Label("iCloud Sync", systemImage: "icloud")
-                    }
-
+                // Advanced Section
+                Section("Advanced") {
                     Button {
                         showingResetAlert = true
                     } label: {
                         Label("Reset Onboarding", systemImage: "arrow.counterclockwise")
+                            .foregroundStyle(.primary)
                     }
-                }
 
-                // Referral Section
-                Section("Referral Program") {
-                    NavigationLink(destination: Text("Referral")) {
-                        Label("Invite Friends", systemImage: "gift")
-                    }
-                }
-
-                // About Section
-                Section("About") {
-                    NavigationLink(destination: Text("About")) {
-                        Label("About DailyDo", systemImage: "info.circle")
-                    }
-                    NavigationLink(destination: Text("Privacy")) {
-                        Label("Privacy Policy", systemImage: "hand.raised")
-                    }
-                    NavigationLink(destination: Text("Terms")) {
-                        Label("Terms of Service", systemImage: "doc.text")
-                    }
-                    HStack {
-                        Text("Version")
-                        Spacer()
-                        Text("1.0.0")
-                            .foregroundStyle(.secondary)
+                    Button(role: .destructive) {
+                        // Clear cache
+                    } label: {
+                        Label("Clear Cache", systemImage: "trash.circle")
                     }
                 }
             }
             .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
             .alert("Reset Onboarding", isPresented: $showingResetAlert) {
                 Button("Cancel", role: .cancel) { }
                 Button("Reset", role: .destructive) {
@@ -137,9 +119,6 @@ struct SettingsView: View {
                 }
             } message: {
                 Text("This will close the app and show the welcome screens again when you reopen it.")
-            }
-            .sheet(isPresented: $showingProfileEditorSheet) {
-                ProfileEditorSheet(user: currentUser)
             }
         }
     }

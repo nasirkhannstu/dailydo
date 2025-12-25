@@ -75,10 +75,10 @@ struct MainTabView: View {
                 }
                 .tag(3)
 
-            // Tab 5: Settings
-            SettingsView()
+            // Tab 5: Menu
+            MenuView()
                 .tabItem {
-                    Label("Settings", systemImage: selectedTab == 4 ? "gearshape.fill" : "gearshape")
+                    Label("Menu", systemImage: selectedTab == 4 ? "square.grid.2x2.fill" : "square.grid.2x2")
                 }
                 .tag(4)
         }
